@@ -9,6 +9,6 @@ sony = GetSONY()
 df_models = sony.getModels()
 
 fileName=f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
-df_models.to_excel(fileName, index=False)# 엑셀 파일로 저장
+df_models.to_excel(fileName)# 엑셀 파일로 저장
 
 
