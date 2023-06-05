@@ -15,57 +15,30 @@ class GetSONY:
         pass
 
     def getModels(self) -> pd.DataFrame:
-        # url='https://electronics.sony.com/tv-video/televisions/c/all-tvs'
-        # ## 메인 페이지에서 시리즈를 추출
-        # seriesUrls = self.getPage1st(url= url)
-        #
-        # ##############################################################################
-        import pickle
-        # # 객체를 파일로 저장
-        # with open("dict_seriesUrls.pickle", "wb") as f:
-        #     pickle.dump(seriesUrls, f)
 
-        # 파일에서 객체 불러오기
-        # with open("dict_seriesUrls.pickle", "rb") as f:
-        #     seriesUrls = pickle.load(f)
-        # ##############################################################################
-        #
-        # ## 서브 시리즈 페이지에서 모델을 추출
-        # dict_allSeries = {}
-        # for url in seriesUrls:
-        #     dictSeries = self.getPage2nd(url=url)
-        #     print(dictSeries)
-        #     dict_allSeries.update(dictSeries)
-        # print("Number of all Series:", len(dict_allSeries))
+        ## 메인 페이지에서 시리즈를 추출
+        seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
 
+        ## 서브 시리즈 페이지에서 모델을 추출
+        dict_allSeries = {}
+        for url in seriesUrls:
+            dictSeries = self.getPage2nd(url=url)
+            print(dictSeries)
+            dict_allSeries.update(dictSeries)
+        print("Number of all Series:", len(dict_allSeries))
 
-##############################################################################
-        import pickle
-        # # 객체를 파일로 저장
-        # with open("dict_allSeries.pickle", "wb") as f:
-        #     pickle.dump(dict_allSeries, f)
-
-        # 파일에서 객체 불러오기
-        with open("dict_allSeries.pickle", "rb") as f:
-            dict_allSeries = pickle.load(f)
-##############################################################################
 
         ## 모든 모델 리스트를 추출
-        # dfModels = pd.DataFrame()
         dictModels = {}
         for model_url in dict_allSeries.values():
             print(model_url)
-
             try:
                 dictModels.update(self.getPage3rd(model_url))
-                # dfModel = pd.DataFrame(self.getPage3rd(model_url))
             except:
                 print("page error:",model_url)
-            # dfModels= pd.concat([dfModels, dfModel], axis=0)
             print("dictModels",dictModels)
         dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
         return dfModels
-
 
 
     ###=====================get info main page====================================##
@@ -101,7 +74,7 @@ class GetSONY:
         wait = WebDriverWait(wd, pageWaiting)
 
         seriesName = self.getNamefromURL(url)
-        time.sleep(5)
+        # time.sleep(5)
         elements = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'custom-variant-selector__item')))  ## 시리즈의 모든 인치 모델 가져 옴
         # elements = wd.find_elements(By.CLASS_NAME, 'custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
         for element in elements:
@@ -172,25 +145,4 @@ class GetSONY:
 
     def parseTextToDict(self, text):
         return {text[i].strip(): text[i + 1].strip() for i in range(0, len(text) - 1, 2)}
-
-
-
-
-
-
-
-
-    # def parse_text_to_dict(self, text):
-    #     lines = text.split('\n')
-    #     dict_spec = {}
-    #     i = 0
-    #     while i < len(lines) - 1:  # 마지막 줄 다음에는 빈 줄이 없도록 범위 체크
-    #         key = lines[i].strip()
-    #         value = lines[i + 1].strip()
-    #         dict_spec[key] = [value]
-    #         i += 2
-    #     return dict_spec
-
-
-
 

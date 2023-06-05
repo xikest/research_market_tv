@@ -1,9 +1,0 @@
-README.md
-setup.py
-getmodelspec/__init__.py
-getmodelspec.egg-info/PKG-INFO
-getmodelspec.egg-info/SOURCES.txt
-getmodelspec.egg-info/dependency_links.txt
-getmodelspec.egg-info/entry_points.txt
-getmodelspec.egg-info/requires.txt
-getmodelspec.egg-info/top_level.txt
