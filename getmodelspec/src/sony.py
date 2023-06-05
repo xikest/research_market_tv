@@ -19,7 +19,7 @@ class GetSONY:
         pass
 
     def getModels(self) -> pd.DataFrame:
-
+        #
         ## 메인 페이지에서 시리즈를 추출
         seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
 
@@ -34,9 +34,9 @@ class GetSONY:
             print(dictSeries)
             dictAllSeries.update(dictSeries)
         print("Number of all Series:", len(dictAllSeries))
-
-
-        # ==========================================================================
+        #
+        #
+        # # ==========================================================================
         self.backUp(dictAllSeries, "dictAllSeries")
         # with open(f"dictAllSeries.pickle", "rb") as file:
         #     dictAllSeries = pickle.load(file)
@@ -85,6 +85,7 @@ class GetSONY:
         self.waitingPage(5)
 
         elements = wd.find_elements(By.CLASS_NAME, 'custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
+
         for element in elements:
             try:
                 element_url = element.get_attribute('href')
@@ -131,13 +132,15 @@ class GetSONY:
 
         # print("spec open")
         # spec 열기
-        click_element = wd.find_elements(By.CSS_SELECTOR, ".cx-icon.black_plus")[0]
+        click_element = wd.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]/cx-icon')
+        # click_element = wd.find_elements(By.CSS_SELECTOR, ".cx-icon.black_plus")[0]
         ActionChains(wd).move_to_element(click_element).click().perform()
         time.sleep(1)
 
         # print("see more")
-        # 클래스에 매칭되는 see_more 요소 모두 가져오기
-        click_element = wd.find_elements(By.CSS_SELECTOR, '.cx-icon.see-more-features.atom-icon-arrow-down-blue')[1]  # 두 번째 요소 클릭
+        # 클래스에 매칭되는 see_more 요소 모두
+        click_element = wd.find_element(By.XPATH, '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
+        # click_element = wd.find_elements(By.CSS_SELECTOR, '.cx-icon.see-more-features.atom-icon-arrow-down-blue')[1]  # 두 번째 요소 클릭
         click_element.click()
         time.sleep(1)
 
