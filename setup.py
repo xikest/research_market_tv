@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='getModelSpec',
-    version='1.0.0',
+    name='getmodelspec',
+    version='1.0.6',
     author='xikest',
     description='get model spec,',
     packages=find_packages(),

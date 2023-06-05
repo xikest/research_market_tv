@@ -1,13 +1,12 @@
 import time
 import re
 import pandas as pd
-import numpy as np
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from tools.webdriver import WebDriver
+from ..tools.webdriver import WebDriver
 
 
 
@@ -16,26 +15,55 @@ class GetSONY:
         pass
 
     def getModels(self) -> pd.DataFrame:
+        # url='https://electronics.sony.com/tv-video/televisions/c/all-tvs'
+        # ## 메인 페이지에서 시리즈를 추출
+        # seriesUrls = self.getPage1st(url= url)
+        #
+        # ##############################################################################
+        import pickle
+        # # 객체를 파일로 저장
+        # with open("dict_seriesUrls.pickle", "wb") as f:
+        #     pickle.dump(seriesUrls, f)
 
-        ## 메인 페이지에서 시리즈를 추출
-        seriesUrls = self.getPage1st(url='https://electronics.sony.com/tv-video/televisions/c/all-tvs')
+        # 파일에서 객체 불러오기
+        # with open("dict_seriesUrls.pickle", "rb") as f:
+        #     seriesUrls = pickle.load(f)
+        # ##############################################################################
+        #
+        # ## 서브 시리즈 페이지에서 모델을 추출
+        # dict_allSeries = {}
+        # for url in seriesUrls:
+        #     dictSeries = self.getPage2nd(url=url)
+        #     print(dictSeries)
+        #     dict_allSeries.update(dictSeries)
+        # print("Number of all Series:", len(dict_allSeries))
 
-        ## 서브 시리즈 페이지에서 모델을 추출
-        dict_allSeries = {}
-        for url in seriesUrls:
-            dict_allSeries.update(self.getPage2nd(url=url))
-        print("Number of all Series:", len(dict_allSeries))
+
+##############################################################################
+        import pickle
+        # # 객체를 파일로 저장
+        # with open("dict_allSeries.pickle", "wb") as f:
+        #     pickle.dump(dict_allSeries, f)
+
+        # 파일에서 객체 불러오기
+        with open("dict_allSeries.pickle", "rb") as f:
+            dict_allSeries = pickle.load(f)
+##############################################################################
 
         ## 모든 모델 리스트를 추출
-        dfModels = pd.DataFrame()
+        # dfModels = pd.DataFrame()
+        dictModels = {}
         for model_url in dict_allSeries.values():
+            print(model_url)
+
             try:
-                dfModel = pd.DataFrame(self.getPage3rd(model_url))
+                dictModels.update(self.getPage3rd(model_url))
+                # dfModel = pd.DataFrame(self.getPage3rd(model_url))
             except:
                 print("page error:",model_url)
-            dfModels= pd.concat([dfModels, dfModel], axis=0)
-            print(dfModels)
-        print(dfModels)
+            # dfModels= pd.concat([dfModels, dfModel], axis=0)
+            print("dictModels",dictModels)
+        dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
         return dfModels
 
 
@@ -66,16 +94,16 @@ class GetSONY:
     ###=====================get info Sub page====================================##
     def getPage2nd(self, url:str) -> dict:
         dictSeries = {}
-        # pageWaiting:int = 10
+        pageWaiting:int = 10
 
         wd = WebDriver.get_crome()
         wd.get(url=url)
-        # wait = WebDriverWait(wd, pageWaiting)
+        wait = WebDriverWait(wd, pageWaiting)
 
         seriesName = self.getNamefromURL(url)
-        time.sleep(1)
-        # elements = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'custom-variant-selector__item')))  ## 시리즈의 모든 인치 모델 가져 옴
-        elements = wd.find_elements(By.CLASS_NAME, 'custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
+        time.sleep(5)
+        elements = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'custom-variant-selector__item')))  ## 시리즈의 모든 인치 모델 가져 옴
+        # elements = wd.find_elements(By.CLASS_NAME, 'custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
         for element in elements:
             try:
                 element_url = element.get_attribute('href')
@@ -98,7 +126,7 @@ class GetSONY:
         wait = WebDriverWait(wd, pageWaiting)
 
         #모델 정보 확인
-        dictModel["Model"] = [wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'product-intro__code'))).text.replace("Model: ", "")]
+        model = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'product-intro__code'))).text.replace("Model: ", "")
         descr = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'product-intro__title'))).text.strip()
         # print(descr)
         dictModel["Year"] = re.findall(r"\((\d{4})\)", descr)
@@ -106,11 +134,11 @@ class GetSONY:
         dictModel["Descr"] = descr
 
         #가격 정보 확인
-        dictModel["price"] = [wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'custom-product-summary__price'))).text]
+        dictModel["price"] = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'custom-product-summary__price'))).text
 
         #이미지 정보 및 url 저장
-        dictModel["src_url"] = [url]
-        dictModel["Img_url"] = [wait.until(EC.presence_of_element_located((By.XPATH, '//app-custom-cx-media//img'))).get_attribute('src')]
+        dictModel["src_url"] = url
+        dictModel["Img_url"] = wait.until(EC.presence_of_element_located((By.XPATH, '//app-custom-cx-media//img'))).get_attribute('src')
 
         # spec 열기
         wd.find_elements(By.CSS_SELECTOR, ".cx-icon.black_plus")[0].click()
@@ -130,11 +158,11 @@ class GetSONY:
                 dictModel.update(self.parseTextToDict(element.text.split('\n')))
                 # print(element.text)
             wd.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-        print(dictModel)
+        # print({model:dictModel})
 
 
         wd.quit()
-        return dictModel
+        return {model:dictModel}
 
     def getNamefromURL(self, url):
         """
