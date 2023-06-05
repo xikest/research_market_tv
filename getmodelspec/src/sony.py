@@ -20,28 +20,28 @@ class GetSONY:
 
     def getModels(self) -> pd.DataFrame:
         #
-        ## 메인 페이지에서 시리즈를 추출
-        seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
-
-        # ==========================================================================
-        self.backUp(seriesUrls, "seriesUrls")
-        # ==========================================================================
-
-        ## 서브 시리즈 페이지에서 모델을 추출
-        dictAllSeries = {}
-        for url in seriesUrls:
-            dictSeries = self.getPage2nd(url=url)
-            print(dictSeries)
-            dictAllSeries.update(dictSeries)
-        print("Number of all Series:", len(dictAllSeries))
-        #
+        # ## 메인 페이지에서 시리즈를 추출
+        # seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
         #
         # # ==========================================================================
-        self.backUp(dictAllSeries, "dictAllSeries")
-        # with open(f"dictAllSeries.pickle", "rb") as file:
-        #     dictAllSeries = pickle.load(file)
+        # self.backUp(seriesUrls, "seriesUrls")
+        # # ==========================================================================
+        #
+        # ## 서브 시리즈 페이지에서 모델을 추출
+        # dictAllSeries = {}
+        # for url in seriesUrls:
+        #     dictSeries = self.getPage2nd(url=url)
+        #     print(dictSeries)
+        #     dictAllSeries.update(dictSeries)
+        # print("Number of all Series:", len(dictAllSeries))
+        # #
+        # #
+        # # # ==========================================================================
+        # self.backUp(dictAllSeries, "dictAllSeries")
+        with open(f"dictAllSeries.pickle", "rb") as file:
+            dictAllSeries = pickle.load(file)
 
-        # dictAllSeries = {"w":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/kd43x80k", "c":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr55x90l ", "a":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr85x90l", "b":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr98x90l"}
+        # dictAllSeries = {"w":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/kd85x80k", "c":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr55x90l ", "a":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr85x90l", "b":"https://electronics.sony.com/tv-video/televisions/all-tvs/p/xr98x90l"}
         # ==========================================================================
 
         ## 모든 모델 리스트를 추출
@@ -135,6 +135,11 @@ class GetSONY:
         # click_element = wd.find_elements(By.CSS_SELECTOR, ".cx-icon.black_plus")[0]
         ActionChains(wd).move_to_element(click_element).click().perform()
         self.waitingPage(5)
+
+        # 스크롤 다운
+        for i in range(20):
+            ActionChains(wd).key_down(Keys.DOWN).perform()
+        self.waitingPage(10)
 
         # print("see more")
         # 클래스에 매칭되는 see_more 요소 모두
