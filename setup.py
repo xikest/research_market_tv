@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='getmodelspec',
-    version='1.0.7',
+    version='1.0.8',
     author='xikest',
     description='get model spec,',
     packages=find_packages(),
