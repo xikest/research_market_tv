@@ -127,22 +127,21 @@ class GetSONY:
         # 스크롤 다운
         for i in range(25):
             ActionChains(wd).key_down(Keys.DOWN).perform()
-        time.sleep(1)
-
+        self.waitingPage(5)
 
         # print("spec open")
         # spec 열기
         click_element = wd.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]/cx-icon')
         # click_element = wd.find_elements(By.CSS_SELECTOR, ".cx-icon.black_plus")[0]
         ActionChains(wd).move_to_element(click_element).click().perform()
-        time.sleep(1)
+        self.waitingPage(5)
 
         # print("see more")
         # 클래스에 매칭되는 see_more 요소 모두
         click_element = wd.find_element(By.XPATH, '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
         # click_element = wd.find_elements(By.CSS_SELECTOR, '.cx-icon.see-more-features.atom-icon-arrow-down-blue')[1]  # 두 번째 요소 클릭
         click_element.click()
-        time.sleep(1)
+        self.waitingPage(5)
 
         # print("pop up")
         #스펙 팝업 창의 스크롤 선택 후 클릭: 팝업 창으로 이동
