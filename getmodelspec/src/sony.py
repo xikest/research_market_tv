@@ -94,7 +94,7 @@ class GetSONY:
         wd = WebDriver.get_crome()
         wd.get(url=url)
         self.waitingPage(5)
-        elements = wd.find_elements(By.CLASS_NAME, 'custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
+        elements = wd.find_elements(By.CSS_SELECTOR, '.custom-variant-selector__item')  ## 시리즈의 모든 인치 모델 가져 옴
 
         for element in elements:
             try:
@@ -117,7 +117,7 @@ class GetSONY:
                 wd = WebDriver.get_crome()
                 wd.get(url=url)
                 wait = WebDriverWait(wd, self.watingTime)
-                # self.waitingPage(1)
+                self.waitingPage(1)
 
                 #모델 정보 확인
                 model = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'product-intro__code'))).text.replace("Model: ", "")
