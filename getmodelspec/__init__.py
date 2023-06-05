@@ -1,3 +1,2 @@
-from .tools.webdriver import WebDriver as WebDriver
-
-from .src.sony import GetSONY as GetSONY
+from getmodelspec.tools.webdriver import WebDriver as WebDriver
+from getmodelspec.src.sony import GetSONY as GetSONY
