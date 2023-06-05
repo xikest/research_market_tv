@@ -16,15 +16,19 @@ class GetSONY:
         pass
 
     def getModels(self) -> pd.DataFrame:
+        #
+        # ## 메인 페이지에서 시리즈를 추출
+        # seriesUrls = self.getPage1st(url='https://electronics.sony.com/tv-video/televisions/c/all-tvs')
+        #
+        # ## 서브 시리즈 페이지에서 모델을 추출
+        # dict_allSeries = {}
+        # for url in seriesUrls:
+        #     dict_allSeries.update(self.getPage2nd(url=url))
+        # print("Number of all Series:", len(dict_allSeries))
 
-        ## 메인 페이지에서 시리즈를 추출
-        seriesUrls = self.getPage1st(url='https://electronics.sony.com/tv-video/televisions/c/all-tvs')
-
-        ## 서브 시리즈 페이지에서 모델을 추출
-        dict_allSeries = {}
-        for url in seriesUrls:
-            dict_allSeries.update(self.getPage2nd(url=url))
-        print("Number of all Series:", len(dict_allSeries))
+        import pickle
+        with open('dict_b.pickle', 'rb') as file:
+            dict_allSeries = pickle.load(file)
 
         ## 모든 모델 리스트를 추출
         dfModels = pd.DataFrame()

@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: getModelSpec
+Version: 1.0.0
+Summary: get model spec,
+Author: xikest
+Requires-Python: >=3.7
