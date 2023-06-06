@@ -73,6 +73,10 @@ class GetSONY:
         wait = WebDriverWait(wd, 10)
 
         for cnt in range(scrolling_cnt):
+
+            waitingPage(1)
+            closeModalCookie(wd) #쿠키 모달창 닫기
+
             elements = wait.until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'custom-product-grid-item__product-name')))  ## 모든 인치 모델 가져 옴
             for element in elements:
                 try: set_mainSeries.add(element.get_attribute('href')) #URL만 저장 함
@@ -81,7 +85,6 @@ class GetSONY:
                     pass
             wd.find_element(By.TAG_NAME,'body').send_keys(Keys.PAGE_DOWN)
             wd.save_screenshot(f"./{self.dir_1st}/Main_Series_{cnt}_{get_today()}.png")  # 스크린 샷
-            waitingPage(1)
         wd.quit()
         print("Number of SONY Main Series:", len(set_mainSeries))
         return set_mainSeries
@@ -95,6 +98,9 @@ class GetSONY:
                 wd = WebDriver.get_crome()
                 wd.get(url=url)
                 print("connect to",url)
+
+                waitingPage(1)
+                closeModalCookie(wd)  # 쿠키 모달창 닫기
 
                 wd.execute_script("window.scrollTo(0, 200);")
                 wait = WebDriverWait(wd, 10)
@@ -132,6 +138,8 @@ class GetSONY:
                 wd = WebDriver.get_crome()
                 wd.get(url=url)
                 waitingPage(5)
+
+                closeModalCookie(wd)  # 쿠키 모달창 닫기
 
                 #모델 정보 확인
                 wd.execute_script("window.scrollTo(0, 200);")
@@ -196,7 +204,7 @@ class GetSONY:
                     elements = wd.find_elements(By.CLASS_NAME, "full-specifications__specifications-single-card__sub-list")
                     for element in elements:
                         soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                        dictSpec.update(SoupToDict(soup))
+                        dictSpec.update(soupToDict(soup))
                     ActionChains(wd).key_down(Keys.PAGE_DOWN).perform()
                 wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_4_end_{get_today()}.png")  # 스크린 샷
 
@@ -216,7 +224,7 @@ class GetSONY:
 # ===============================
 
 
-def SoupToDict(soup):
+def soupToDict(soup):
     try:
         h4_tag = soup.find('h4').text.strip()
         p_tag = soup.find('p').text.strip()
@@ -226,3 +234,11 @@ def SoupToDict(soup):
         p_tag =  ""
         pass
     return {h4_tag: p_tag}
+
+
+
+def closeModalCookie(webdriver):
+        # 모달 창 요소를 식별하여 클릭
+        close_button = webdriver.find_element(By.XPATH, "//button[@class='onetrust-close-btn-handler']")
+        close_button.click()
+        return None
