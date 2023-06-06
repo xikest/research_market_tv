@@ -75,7 +75,7 @@ class GetSONY:
         for cnt in range(scrolling_cnt):
 
             waitingPage(1)
-            wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
+            # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
 
             elements = wait.until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'custom-product-grid-item__product-name')))  ## 모든 인치 모델 가져 옴
             for element in elements:
@@ -100,7 +100,7 @@ class GetSONY:
                 print("connect to",url)
 
                 waitingPage(1)
-                wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
+                # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
 
                 wd.execute_script("window.scrollTo(0, 200);")
                 wait = WebDriverWait(wd, 10)
@@ -139,7 +139,7 @@ class GetSONY:
                 wd.get(url=url)
                 waitingPage(5)
 
-                wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
+                # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
 
                 #모델 정보 확인
                 wd.execute_script("window.scrollTo(0, 200);")
@@ -241,10 +241,9 @@ def closeModalCookie(webdriver):
         # 모달 창 요소를 식별하여 클릭
         try:
             close_button = webdriver.find_element(By.CLASS_NAME, '//*[@id="onetrust-close-btn-container"]/button')
-            # webdriver = WebDriver.move_element_to_center(webdriver, close_button)
+            webdriver = WebDriver.move_element_to_center(webdriver, close_button)
             close_button.click()
-            wait = WebDriverWait(webdriver, 10)
-            wait.until(EC.invisibility_of_element_located((By.XPATH,'//*[@id="onetrust-banner-sdk"]')))
+            waitingPage()
         except:
             pass
         return webdriver
