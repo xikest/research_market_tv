@@ -14,7 +14,7 @@ from ..tools.webdriver import WebDriver
 
 
 class GetSONY:
-    def __init__(self, env:str=None):
+    def __init__(self, envr:str=None):
         self.dir_1st = "sony/log/MainSeries"
         self.dir_2nd = "sony/log/SubSeries"
         self.dir_3rd = "sony/log/models"
@@ -22,40 +22,43 @@ class GetSONY:
         makeDir(self.dir_2nd)
         makeDir(self.dir_3rd)
 
-        self.env = env
+        self.envr = envr
         pass
     #
     def getModels(self) -> pd.DataFrame:
 
-        # # 메인 페이지에서 시리즈를 추출
-        # seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
-        #
-        # # ==========================================================================
-        # backUp(seriesUrls, "seriesUrls")
-        # # ==========================================================================
-        #
-        # ## 서브 시리즈 페이지에서 모델을 추출
-        # dictAllSeries = {}
-        # for url in seriesUrls:
-        #     dictSeries = self.getPage2nd(url=url)
-        #     print(dictSeries)
-        #     dictAllSeries.update(dictSeries)
-        # print("Number of all Series:", len(dictAllSeries))
-        #
-        # #
-        # # ==========================================================================
-        # backUp(dictAllSeries, "dictAllSeries")
+        # 메인 페이지에서 시리즈를 추출
+        seriesUrls = self.getPage1st(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
 
+        # ==========================================================================
+        backUp(seriesUrls, "seriesUrls")
+        # ==========================================================================
 
-        with open(f"dictAllSeries.pickle", "rb") as file:
-            dictAllSeries = pickle.load(file)
+        ## 서브 시리즈 페이지에서 모델을 추출
+        dictAllSeries = {}
+        for url in seriesUrls:
+            dictSeries = self.getPage2nd(url=url)
+            print(dictSeries)
+            dictAllSeries.update(dictSeries)
+        print("Number of all Series:", len(dictAllSeries))
+
+        # ==========================================================================
+        backUp(dictAllSeries, "dictAllSeries")
+        # with open(f"dictAllSeries.pickle", "rb") as file:
+        #     dictAllSeries = pickle.load(file)
         # ==========================================================================
 
         # 모든 모델 리스트를 추출
         dictModels = {}
         for model_url in dictAllSeries.values():
             print(model_url)
-            dictModels.update(self.getPage3rd(model_url))
+            try:
+                dictModels.update(self.getPage3rd(model_url))
+            except:
+                print(f"fail to get info from {model_url}")
+
+                dictModels.update({getNamefromURL(url): dict()})
+                pass
 
         dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
         return dfModels
@@ -128,8 +131,7 @@ class GetSONY:
                 dictSpec = {}
                 wd = WebDriver.get_crome()
                 wd.get(url=url)
-                wait = WebDriverWait(wd, 10)
-                waitingPage()
+                waitingPage(5)
 
                 #모델 정보 확인
                 wd.execute_script("window.scrollTo(0, 200);")
@@ -153,41 +155,38 @@ class GetSONY:
                 #이미지 정보 및 url 저장
                 dictSpec["src_url"] = url
                 dictSpec["Img_url"] = wd.find_element(By.XPATH, '//app-custom-cx-media//img').get_attribute('src')
-
+                if self.envr == "colab":
+                    wd.quit()
+                    dictModel = {model: dictSpec}
+                    return dictModel
 
 
                 elementSpec = wd.find_element(By.ID,"PDPSpecificationsLink")
                 wd = WebDriver.move_element_to_center(wd,elementSpec)
-                # ActionChains(wd).move_to_element(elementSpec).perform()
-                # wd.execute_script("window.scrollTo(0, 1000);")
                 wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_1_move_to_spec_{get_today()}.png")  # 스크린 샷
 
-                if self.env == "colab":
-                    waitingPage(60)
 
-                # wait.until(EC.visibility_of_element_located((By.ID, 'PDPSpecificationsLink')))
-                elementClickSpec = wait.until(EC.element_to_be_clickable((By.ID, 'PDPSpecificationsLink')))
+
+                # elementClickSpec = wait.until(EC.element_to_be_clickable((By.ID, 'PDPSpecificationsLink')))
+                elementClickSpec = wd.find_element(By.ID, 'PDPSpecificationsLink')
                 elementClickSpec.click()
+                waitingPage(2)  # 페이지 로딩 대기 -
 
-                # waitingPage(5)  # 페이지 로딩 대기 -
                 wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_2_after_click_specification_{get_today()}.png")  # 스크린 샷
                 try:
                     element_seeMore=wd.find_element(By.XPATH, '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
                     wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    # ActionChains(wd).move_to_element(element_seeMore).perform()
                     wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
                     element_seeMore.click()
                 except:
                     element_seeMore=wd.find_element(By.XPATH, '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[2]/button')
                     wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    # ActionChains(wd).move_to_element(element_seeMore).perform()
                     wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
                     element_seeMore.click()
 
 
-                waitingPage(1)
-
                 #스펙 팝업 창의 스크롤 선택 후 클릭: 팝업 창으로 이동
+                waitingPage(2)  # 페이지 로딩 대기 -
                 wd.find_element(By.ID, "ngb-nav-0-panel").click()
                 #스펙 팝업 창의 스펙 가져오기
                 for cnt in range(15):
