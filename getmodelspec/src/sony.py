@@ -239,6 +239,10 @@ def soupToDict(soup):
 
 def closeModalCookie(webdriver):
         # 모달 창 요소를 식별하여 클릭
-        close_button = webdriver.find_element(By.XPATH, "//button[@class='onetrust-close-btn-handler']")
-        close_button.click()
+        try:
+            close_button = webdriver.find_element(By.XPATH, '//*[@id="onetrust-close-btn-container"]/button')
+            close_button.click()
+            # "onetrust-close-btn-handler banner-close-button ot-close-icon"
+        except:
+            pass
         return None
