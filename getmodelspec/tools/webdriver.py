@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 
 class WebDriver:
     def __init__(self):
@@ -29,3 +30,23 @@ class WebDriver:
         wd = webdriver.Firefox(executable_path='geckodriver', options=firefox_options)
         return wd
 
+    @staticmethod
+    def move_element_to_center(wd:webdriver, element):
+        # 객체로 이동
+        ActionChains(wd).move_to_element(element).perform()
+
+        # 뷰포트 크기 얻기
+        viewport_width = wd.execute_script("return window.innerWidth;")
+        viewport_height = wd.execute_script("return window.innerHeight;")
+
+        # 객체의 위치 얻기
+        object_x = element.location['x']
+        object_y = element.location['y']
+        object_width = element.size['width']
+        object_height = element.size['height']
+
+        # 화면 중앙으로 이동
+        target_x = object_x + object_width / 2 - viewport_width / 2
+        target_y = object_y + object_height / 2 - viewport_height / 2
+        wd.execute_script(f"window.scrollTo({target_x}, {target_y});")
+        return wd

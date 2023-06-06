@@ -15,8 +15,8 @@ def makeDir(folder_path):
         if not os.path.exists(current_path):
             os.makedirs(current_path)
             print(f"폴더 '{folder_name}'가 생성되었습니다.")
-        else:
-            print(f"폴더 '{folder_name}'가 이미 존재합니다.")
+        # else:
+            # print(f"폴더 '{folder_name}'가 이미 존재합니다.")
 
 
 def waitingPage(sec:int=5):
@@ -43,3 +43,7 @@ def getNamefromURL(url):
     마지막 / 이후 문자만 가져 옴
     """
     return url.rsplit('/', 1)[-1]
+
+
+
+
