@@ -50,8 +50,8 @@ class GetSONY:
 
         # 모든 모델 리스트를 추출
         dictModels = {}
-        for model_url in dictAllSeries.values():
-            print(model_url)
+        for cnt, model_url in enumerate(dictAllSeries.values()):
+            print(f"{cnt+1}/{len(dictAllSeries)} | {model_url}")
             try:
                 dictModels.update(self.getPage3rd(model_url))
             except:
@@ -125,7 +125,7 @@ class GetSONY:
     ###======================final stage===============================##
     def getPage3rd(self, url:str) -> dict:
 
-        cntTryTotal = 10
+        cntTryTotal = 20
         for cntTry in range(cntTryTotal):
             try:
                 dictSpec = {}
@@ -155,8 +155,11 @@ class GetSONY:
                 #이미지 정보 및 url 저장
                 dictSpec["src_url"] = url
                 dictSpec["Img_url"] = wd.find_element(By.XPATH, '//app-custom-cx-media//img').get_attribute('src')
+
+
                 if self.envr == "colab":
                     wd.quit()
+                    print(f"{model}\n", dictModel)
                     dictModel = {model: dictSpec}
                     return dictModel
 
