@@ -66,11 +66,11 @@ class GetSONY:
                 pass
 
         dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
-        dfModels = dfModels.rename_axis('model')
+        dfModels = dfModels.rename_axis('model').reset_index()
 
         if toExcel == True:
             fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
-            dfModels.to_excel(fileName)  # 엑셀 파일로 저장
+            dfModels.to_excel(fileName, index=False)  # 엑셀 파일로 저장
     #
 
 
