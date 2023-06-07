@@ -185,12 +185,12 @@ class GetSONY:
                 # 이미지 정보 및 url 저장
                 dictSpec["src_url"] = url
                 dictSpec["Img_url"] = wd.find_element(By.XPATH, '//app-custom-cx-media//img').get_attribute('src')
-
-                if self.envr == self.weakCon:
-                    wd.quit()
-                    dictModel = {model: dictSpec}
-                    print(f"{model}\n", dictModel)
-                    return dictModel
+                #
+                # if self.envr == self.weakCon:
+                #     wd.quit()
+                #     dictModel = {model: dictSpec}
+                #     print(f"{model}\n", dictModel)
+                #     return dictModel
 
                 elementSpec = wd.find_element(By.ID, "PDPSpecificationsLink")
                 wd = WebDriver.move_element_to_center(wd, elementSpec)
