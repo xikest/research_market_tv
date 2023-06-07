@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='getmodelspec',
-    version='1.0.31',
+    version='1.0.32',
     author='xikest',
     description='get model spec,',
     packages=find_packages(),
@@ -15,5 +15,11 @@ setup(
         'console_scripts': [
             'mycommand = mypackage.module:main',
         ],
+    },
+
+    url='https://github.com/xikest/Research-on-the-TV-market',  # GitHub 프로젝트 페이지 링크
+    project_urls={
+        'Source': 'https://github.com/xikest/Research-on-the-TV-market',  # GitHub 프로젝트 페이지 링크
+        'Bug Tracker': 'https://github.com/xikest/Research-on-the-TV-market/issues',  # 버그 트래커 링크
     },
 )
