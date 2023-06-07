@@ -1,5 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
+from typing import Union, Tuple
+
 
 class WebDriver:
     def __init__(self):
@@ -50,3 +57,51 @@ class WebDriver:
         target_y = object_y + object_height / 2 - viewport_height / 2
         wd.execute_script(f"window.scrollTo({target_x}, {target_y});")
         return wd
+    #
+    #
+    #
+    # @staticmethod
+    # def move_and_wait_for_element(wd: webdriver, by: str, value: str, timeout: int = 10,
+    #                               expected_conditions: Union[None, str, Tuple] = None) -> webdriver:
+    #     """
+    #     요소를 화면 중앙으로 이동한 후 해당 요소가 불러와질 때까지 대기합니다.
+    #
+    #     :param wd: 웹 드라이버 객체
+    #     :param by: 요소를 찾기 위한 방법 (예: 'id', 'name', 'class_name' 등)
+    #     :param value: 요소를 찾기 위한 값
+    #     :param timeout: 대기 시간 (기본값: 10)
+    #     :param expected_conditions: 요소의 상태를 확인하기 위한 조건 (기본값: None)
+    #                                예: 'visibility_of_element_located', 'element_to_be_clickable' 등
+    #     :return: 웹 드라이버 객체
+    #     """
+    #
+    #     wait = WebDriverWait(wd, timeout)
+    #
+    #     # 요소 찾기
+    #     element = wd.find_element(by, value)
+    #
+    #     # 객체로 이동
+    #     ActionChains(wd).move_to_element(element).perform()
+    #
+    #     # 뷰포트 크기 얻기
+    #     viewport_width = wd.execute_script("return window.innerWidth;")
+    #     viewport_height = wd.execute_script("return window.innerHeight;")
+    #
+    #     # 객체의 위치 얻기
+    #     object_x = element.location['x']
+    #     object_y = element.location['y']
+    #     object_width = element.size['width']
+    #     object_height = element.size['height']
+    #
+    #     # 화면 중앙으로 이동
+    #     target_x = object_x + object_width / 2 - viewport_width / 2
+    #     target_y = object_y + object_height / 2 - viewport_height / 2
+    #     wd.execute_script(f"window.scrollTo({target_x}, {target_y});")
+    #
+    #     if expected_conditions is None:
+    #         element = wait.until(EC.visibility_of_element_located((by, value)))
+    #     else:
+    #         condition_func = getattr(EC, expected_conditions) if isinstance(expected_conditions,
+    #                                                                         str) else expected_conditions
+    #         element = wait.until(condition_func((by, value)))
+    #     return element
