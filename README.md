@@ -1,4 +1,4 @@
-# 프로젝트명
+# Research on the TV market
 
 TV 제품의 Spec 및 평가 지표 정보를 수집합니다.
 
