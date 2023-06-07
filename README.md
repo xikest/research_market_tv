@@ -1,6 +1,6 @@
 # Research on the TV market
 
-TV 제품의 Spec 및 평가 지표 정보를 수집합니다.
+TV 제품의 사양 및 평가 지표 정보를 수집합니다.
 
 ## 개요
 
