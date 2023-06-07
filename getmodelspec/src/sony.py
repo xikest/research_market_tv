@@ -75,6 +75,8 @@ class GetSONY:
 
 
         dfModels = self.__getData4th__(dfModels)
+
+
         return dfModels
 
     ###=====================get info main page====================================##
@@ -201,7 +203,7 @@ class GetSONY:
                 # elementClickSpec = wait.until(EC.element_to_be_clickable((By.ID, 'PDPSpecificationsLink')))
                 elementClickSpec = wd.find_element(By.ID, 'PDPSpecificationsLink')
                 elementClickSpec.click()
-                waitingPage(self.waitTime)  # 페이지 로딩 대기 -
+                # waitingPage(self.waitTime)  # 페이지 로딩 대기 -
 
                 wd.save_screenshot(
                     f"./{dir_model}/{getNamefromURL(url)}_2_after_click_specification_{get_today()}.png")  # 스크린 샷
