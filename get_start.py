@@ -1,7 +1,7 @@
 import  sys
 
 from getmodelspec import GetSONY
-
+from datetime import date
 
 sys.path.insert(0, '/chromedriver_win32/chromedriver')  # 크롬 드라이버 지정
 

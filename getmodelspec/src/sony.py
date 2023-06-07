@@ -27,8 +27,9 @@ class GetSONY:
         makeDir(self.dir_1st)
         makeDir(self.dir_2nd)
         makeDir(self.dir_3rd)
+        pass
 
-    #
+    # #
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
 
         # 메인 페이지에서 시리즈를 추출
@@ -65,11 +66,15 @@ class GetSONY:
                 pass
 
         dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
+        dfModels = dfModels.rename_axis('model')
 
         if toExcel == True:
             fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
             dfModels.to_excel(fileName)  # 엑셀 파일로 저장
+    #
 
+
+        dfModels = self.__getData4th__(dfModels)
         return dfModels
 
     ###=====================get info main page====================================##
@@ -165,7 +170,7 @@ class GetSONY:
                 elementModel = wd.find_element(By.CLASS_NAME, 'product-intro__code')
                 model = elementModel.text.replace("Model: ", "")
 
-                dictSpec["Descr"] = wd.find_element(By.CLASS_NAME, 'product-intro__title').text.strip()
+                dictSpec["descr"] = wd.find_element(By.CLASS_NAME, 'product-intro__title').text.strip()
 
                 dir_model = f"{self.dir_3rd}/{model}"
                 makeDir(dir_model)
@@ -238,9 +243,36 @@ class GetSONY:
                 wd.quit()
                 pass
 
+    def __getData4th__(self, dfModels):
+        new_columns = dfModels['model'].apply(self.__extractInfo__)
+        df_combined = pd.concat([new_columns, dfModels], axis=1).set_index('model')
+        return df_combined
+
 
 # ===============================
 
+    def __extractInfo__(self, row):
+        grade = row.split("-")[0]
+        size = row.split("-")[1][:2]
+        series = row.split("-")[1][2:-1]
+        year = row.split("-")[1][-1]
+
+        year_mapping = {
+            "N": 2025,
+            "M": 2024,
+            'L': 2023,
+            'K': 2022,
+            'J': 2021,
+            # 추가적인 알파벳과 연도 대응 관계를 추가할 수 있음
+        }
+
+        if year in year_mapping:
+            year = year_mapping[year]
+        else:
+            # 알파벳과 대응하는 연도가 없을 경우 기본값으로 설정할 연도를 지정
+            year = ""
+
+        return pd.Series([year, series, size, grade], index=['year', 'series', 'size', 'grade'])
 
 def soupToDict(soup):
     try:
