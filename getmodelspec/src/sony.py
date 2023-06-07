@@ -17,6 +17,10 @@ from ..tools.webdriver import WebDriver
 
 class GetSONY:
     def __init__(self, envr:str=None):
+        self.weakCon = 'weak'
+        self.waitTime = 5
+
+        self.envr = envr
         self.dir_1st = "sony/log/MainSeries"
         self.dir_2nd = "sony/log/SubSeries"
         self.dir_3rd = "sony/log/models"
@@ -24,13 +28,6 @@ class GetSONY:
         makeDir(self.dir_2nd)
         makeDir(self.dir_3rd)
 
-        self.envr = envr
-        self.weakCon = 'weak'
-        if envr == self.weakCon:
-            self.waitTime = 30
-        else:
-            self.waitTime = 5
-        pass
     #
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
 
@@ -185,12 +182,12 @@ class GetSONY:
                 # 이미지 정보 및 url 저장
                 dictSpec["src_url"] = url
                 dictSpec["Img_url"] = wd.find_element(By.XPATH, '//app-custom-cx-media//img').get_attribute('src')
-                #
-                # if self.envr == self.weakCon:
-                #     wd.quit()
-                #     dictModel = {model: dictSpec}
-                #     print(f"{model}\n", dictModel)
-                #     return dictModel
+
+                if self.envr == self.weakCon:
+                    wd.quit()
+                    dictModel = {model: dictSpec}
+                    print(f"{model}\n", dictModel)
+                    return dictModel
 
                 elementSpec = wd.find_element(By.ID, "PDPSpecificationsLink")
                 wd = WebDriver.move_element_to_center(wd, elementSpec)
