@@ -13,6 +13,7 @@ from selenium.common.exceptions import TimeoutException
 from ..tools.functions import *
 from ..tools.webdriver import WebDriver
 
+## 가격 정보만 찾기
 
 
 class GetSONY:
