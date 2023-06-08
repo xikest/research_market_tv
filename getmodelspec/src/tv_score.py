@@ -3,16 +3,16 @@ from ..tools.webdriver import WebDriver
 from ..tools.functions import *
 import time
 
-class GetScore():
+class Score():
     def __init__(self):
         pass
 
     def getRthinsScore(prefix:str="https://www.rtings.com/tv/reviews/sony/",
-                           model:str="x85k"):
+                           series:str="x85k") -> dict:
 
         # Chrome WebDriver 생성
         wd = WebDriver.get_crome()
-        url = prefix + model
+        url = prefix + series
 
         # 웹 페이지 로드
         wd.get(url)
@@ -22,21 +22,21 @@ class GetScore():
         elements = wd.find_elements(By.CLASS_NAME, "scorecard-row-content")
 
         # 결과를 저장할 딕셔너리 초기화
-        scores = {}
+        dictScores = {}
 
         try:
             for element in elements:
                 label = element.find_element(By.CLASS_NAME, 'scorecard-row-name').text.strip()
                 score = element.find_element(By.CLASS_NAME, 'e-score_box-value ').text.strip()
-                scores[label] = score
+                dictScores[label] = score
 
             # WebDriver 종료
             wd.quit()
-            return {model: scores}
+            return dictScores
 
         except Exception as e:
             # WebDriver 종료
             wd.quit()
 
-            return {model: ""}
+            return dictScores
 

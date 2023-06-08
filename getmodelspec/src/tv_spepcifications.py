@@ -5,22 +5,39 @@ import time
 from ..tools.functions import *
 
 
-class GetSepcifications:
-    def __init__(self):
+class Sepcifications:
+    def __init__(self, escapeNum:int=200):
+        self.escapeNum = escapeNum
+        self.dictUrlModel = {"sony":"https://www.displayspecifications.com/en/brand/47e6f",
+                             "lge":"",
+                             "panasonic":"",
+                             "hisense":"",
+                             "tpv":"",
+                             "sharp":""}
+
         pass
 
-    def getSepc(self, url = "https://www.displayspecifications.com/en/brand/47e6f"):
+    def getSpec(self, maker:str = "sony", model:str="XR-65A80L"):
+        dictLink = self.__getAllModels__(self.dictUrlModel.get(maker))
+        urlModel = dictLink.get(model)
+        return self.__getSpec__(urlModel)
+
+    def getSepcs(self, url = "https://www.displayspecifications.com/en/brand/47e6f"):
         dictLink = self.__getAllModels__(url)
-        print(dictLink)
-        dictspec = {}
-        for model, modelUrl in dictLink.items():
-            dictspec[model] = self.__getSpec__(modelUrl)
-            print(model, modelUrl)
-        return dictspec
+        print(f'total: {len(dictLink)}')
+        dictspecs = {}
+        cnt = 0
+        for model, urlModel in dictLink.items():
+            dictspecs[model] = self.__getSpec__(urlModel)
+            print(model, urlModel)
+            cnt += 1
+            if cnt == self.escapeNum:
+                return dictspecs
+        return dictspecs
 
 
     def __getAllModels__(self, url: str = "https://www.displayspecifications.com/en/brand/47e6f") -> dict:
-        time.sleep(generate_random_number())
+        time.sleep(1)
         response = requests.get(url)
         if response.ok:
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -40,7 +57,7 @@ class GetSepcifications:
 
 
     def __getSpec__(self, url: str = "https://www.displayspecifications.com/en/model/01b732ea") -> dict:
-        time.sleep(generate_random_number())
+        time.sleep(1)
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
         section_headers = soup.find_all(class_='section-header')

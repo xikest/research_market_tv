@@ -12,6 +12,8 @@ from selenium.common.exceptions import TimeoutException
 
 from ..tools.functions import *
 from ..tools.webdriver import WebDriver
+from ..src.tv_spepcifications import Sepcifications
+from ..src.tv_score import Score
 
 ## 가격 정보만 찾기
 
@@ -22,8 +24,8 @@ class GetSONY:
         self.waitTime = 5
 
         self.envr = envr
-        self.dir_1st = "sony/log/MainSeries"
-        self.dir_2nd = "sony/log/SubSeries"
+        self.dir_1st = "sony/log/Stream"
+        self.dir_2nd = "sony/log/Series"
         self.dir_3rd = "sony/log/models"
         makeDir(self.dir_1st)
         makeDir(self.dir_2nd)
@@ -34,7 +36,7 @@ class GetSONY:
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
 
         # 메인 페이지에서 시리즈를 추출
-        seriesUrls = self.__getPage1st__(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
+        seriesUrls = self.__getStream__(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
 
         # ==========================================================================
         backUp(seriesUrls, "seriesUrls")
@@ -43,7 +45,7 @@ class GetSONY:
         ## 서브 시리즈 페이지에서 모델을 추출
         dictAllSeries = {}
         for url in seriesUrls:
-            dictSeries = self.__getPage2nd__(url=url)
+            dictSeries = self.__getSeries__(url=url)
             print(dictSeries)
             dictAllSeries.update(dictSeries)
         print("Number of all Series:", len(dictAllSeries))
@@ -56,14 +58,15 @@ class GetSONY:
 
         # 모든 모델 리스트를 추출
         dictModels = {}
-        for cnt, model_url in enumerate(dictAllSeries.values()):
-            print(f"{cnt+1}/{len(dictAllSeries)} | {model_url}")
+        for cnt, model in enumerate(dictAllSeries.keys()):
+            print(f"{cnt+1}/{len(dictAllSeries)} | {model}")
             try:
-                dictModels.update(self.__getPage3rd__(model_url))
-            except:
-                print(f"fail to get info from {model_url}")
+                dictModels.update({model:self.__getSpec__(model)})
 
-                dictModels.update({getNamefromURL(model_url): dict()})
+            except:
+                print(f"fail to get info from {model}")
+
+                dictModels.update({model:self.__getSpec__(model)})
                 pass
 
         dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
@@ -81,7 +84,7 @@ class GetSONY:
         return dfModels
 
     ###=====================get info main page====================================##
-    def __getPage1st__(self, url:str) -> set:
+    def __getStream__(self, url:str) -> set:
         set_mainSeries = set()
         scrolling_cnt: int = 10
 
@@ -115,7 +118,7 @@ class GetSONY:
         return set_mainSeries
 
     ###=====================get info Sub page====================================##
-    def __getPage2nd__(self, url: str) -> dict:
+    def __getSeries__(self, url: str) -> dict:
         cntTryTotal = 5
         for cntTry in range(cntTryTotal):
             try:
@@ -156,95 +159,14 @@ class GetSONY:
                 print(f"stage 2nd try: {cntTry}/{cntTryTotal}")
 
     ###======================final stage===============================##
-    def __getPage3rd__(self, url: str) -> dict:
-
-        cntTryTotal = 20
-        for cntTry in range(cntTryTotal):
-            try:
-                dictSpec = {}
-                wd = WebDriver.get_crome()
-                wd.get(url=url)
-                waitingPage(self.waitTime)
-
-                # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
-
-                # 모델 정보 확인
-                wd.execute_script("window.scrollTo(0, 200);")
-                elementModel = wd.find_element(By.CLASS_NAME, 'product-intro__code')
-                model = elementModel.text.replace("Model: ", "")
-
-                dictSpec["descr"] = wd.find_element(By.CLASS_NAME, 'product-intro__title').text.strip()
-
-                dir_model = f"{self.dir_3rd}/{model}"
-                makeDir(dir_model)
-
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
-
-                # 가격 정보 확인
-                try:
-                    dictSpec["price"] = wd.find_element(By.CLASS_NAME, 'custom-product-summary__price').text
-                except Exception as e:
-                    print("price error")
-                    dictSpec["price"] = ""
-
-                # 이미지 정보 및 url 저장
-                dictSpec["src_url"] = url
-                dictSpec["Img_url"] = wd.find_element(By.XPATH, '//app-custom-cx-media//img').get_attribute('src')
-
-                if self.envr == self.weakCon:
-                    wd.quit()
-                    dictModel = {model: dictSpec}
-                    print(f"{model}\n", dictModel)
-                    return dictModel
-
-                elementSpec = wd.find_element(By.ID, "PDPSpecificationsLink")
-                wd = WebDriver.move_element_to_center(wd, elementSpec)
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_1_move_to_spec_{get_today()}.png")  # 스크린 샷
-
-                # elementClickSpec = wait.until(EC.element_to_be_clickable((By.ID, 'PDPSpecificationsLink')))
-                elementClickSpec = wd.find_element(By.ID, 'PDPSpecificationsLink')
-                elementClickSpec.click()
-                # waitingPage(self.waitTime)  # 페이지 로딩 대기 -
-
-                wd.save_screenshot(
-                    f"./{dir_model}/{getNamefromURL(url)}_2_after_click_specification_{get_today()}.png")  # 스크린 샷
-                try:
-                    element_seeMore = wd.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
-                    wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    wd.save_screenshot(
-                        f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
-                    element_seeMore.click()
-                except:
-                    element_seeMore = wd.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[2]/button')
-                    wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    wd.save_screenshot(
-                        f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
-                    element_seeMore.click()
-
-                # 스펙 팝업 창의 스크롤 선택 후 클릭: 팝업 창으로 이동
-                waitingPage(self.waitTime)  # 페이지 로딩 대기 -
-                wd.find_element(By.ID, "ngb-nav-0-panel").click()
-                # 스펙 팝업 창의 스펙 가져오기
-                for cnt in range(15):
-                    elements = wd.find_elements(By.CLASS_NAME,
-                                                "full-specifications__specifications-single-card__sub-list")
-                    for element in elements:
-                        soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                        dictSpec.update(soupToDict(soup))
-                    ActionChains(wd).key_down(Keys.PAGE_DOWN).perform()
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_4_end_{get_today()}.png")  # 스크린 샷
-
-                wd.quit()
-                dictModel = {model: dictSpec}
-                print(f"{model}\n", dictModel)
-                return dictModel
-
-            except Exception as e:
-                print(f"getPage3rd error: {model} try {cntTry + 1}/{cntTryTotal}")
-                wd.quit()
-                pass
+    def __getSpec__(self, model) -> dict:
+        specs = Sepcifications()
+        score = Score()
+        dictSpec = specs.getSpec(maker="sony", )
+        series = model.split("-")[1][2:-1]
+        dictSpec.update(score.getRthinsScore(series))
+        return dictSpec
+        pass
 
     def __getData4th__(self, dfModels):
         new_columns = dfModels['model'].apply(self.__extractInfo__)
@@ -254,11 +176,11 @@ class GetSONY:
 
 # ===============================
 
-    def __extractInfo__(self, row):
-        grade = row.split("-")[0]
-        size = row.split("-")[1][:2]
-        series = row.split("-")[1][2:-1]
-        year = row.split("-")[1][-1]
+    def __extractInfo__(self, model):
+        grade = model.split("-")[0]
+        size = model.split("-")[1][:2]
+        series = model.split("-")[1][2:-1]
+        year = model.split("-")[1][-1]
 
         year_mapping = {
             "N": 2025,
