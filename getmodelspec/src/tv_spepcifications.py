@@ -18,6 +18,7 @@ class Sepcifications:
         pass
 
     def getSpec(self, maker:str = "sony", model:str="XR-65A80L"):
+        print(f"TV spec info: {maker} {model}")
         dictLink = self.__getAllModels__(self.dictUrlModel.get(maker))
         urlModel = dictLink.get(model)
         return self.__getSpec__(urlModel)

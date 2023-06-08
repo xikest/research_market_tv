@@ -7,9 +7,9 @@ class Score():
     def __init__(self):
         pass
 
-    def getRthinsScore(prefix:str="https://www.rtings.com/tv/reviews/sony/",
+    def getRthinsScore(self, prefix:str="https://www.rtings.com/tv/reviews/sony/",
                            series:str="x85k") -> dict:
-
+        print(f"TV score info: {prefix}{series}")
         # Chrome WebDriver 생성
         wd = WebDriver.get_crome()
         url = prefix + series
