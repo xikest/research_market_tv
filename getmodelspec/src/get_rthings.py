@@ -1,4 +1,5 @@
 from selenium import webdriver
+import time
 
 def get_tv_model_score(prefix, model):
     """
@@ -22,6 +23,7 @@ def get_tv_model_score(prefix, model):
 
     # 웹 페이지 로드
     wd.get(url)
+    time.sleep(1)
 
     # scorecard-row-content 클래스를 가진 요소들을 선택
     elements = wd.find_elements_by_css_selector('.scorecard-row-content')
