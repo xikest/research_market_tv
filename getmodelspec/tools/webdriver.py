@@ -22,7 +22,7 @@ class WebDriver:
         chrome_options.add_argument('--disable-dev-shm-usage')  # 헤드리스
         chrome_options.add_argument('user-agent={0}'.format(user_agent))  # 에이전트 우회
         # chrome_options.add_argument('lang=ko_kr')  # 브라우저 언어
-        wd = webdriver.Chrome('chromedriver', options=chrome_options)
+        wd = webdriver.Chrome(executable_path = 'chromedriver', options=chrome_options)
         return wd
 
 
