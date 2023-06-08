@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from ..tools.webdriver import WebDriver
+from ..tools.functions import *
 import time
-
 
 class GetScore():
     def __init__(self):
@@ -16,7 +16,7 @@ class GetScore():
 
         # 웹 페이지 로드
         wd.get(url)
-        time.sleep(1)
+        time.sleep(generate_random_number())
 
         # scorecard-row-content 클래스를 가진 요소들을 선택
         elements = wd.find_elements(By.CLASS_NAME, "scorecard-row-content")

@@ -2,6 +2,8 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from ..tools.functions import *
+
 
 class GetSepcifications:
     def __init__(self):
@@ -18,7 +20,7 @@ class GetSepcifications:
 
 
     def __getAllModels__(self, url: str = "https://www.displayspecifications.com/en/brand/47e6f") -> dict:
-        time.sleep(1)
+        time.sleep(generate_random_number())
         response = requests.get(url)
         if response.ok:
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -38,7 +40,7 @@ class GetSepcifications:
 
 
     def __getSpec__(self, url: str = "https://www.displayspecifications.com/en/model/01b732ea") -> dict:
-        time.sleep(1)
+        time.sleep(generate_random_number())
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
         section_headers = soup.find_all(class_='section-header')

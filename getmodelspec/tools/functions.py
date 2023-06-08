@@ -2,6 +2,11 @@ import os
 import time
 import pickle
 from datetime import datetime
+import random
+
+
+def generate_random_number(start:int=3, end:int=5):
+    return random.randint(start, end)
 
 
 def makeDir(folder_path):
