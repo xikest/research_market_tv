@@ -3,7 +3,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service as ChromeService
 import subprocess
 
-class WebDriver:
+class Wdriver:
     def __init__(self):
 
         pass

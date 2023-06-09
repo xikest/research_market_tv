@@ -1,7 +1,6 @@
 
 import requests
 from bs4 import BeautifulSoup
-import time
 from ..tools.functions import *
 
 

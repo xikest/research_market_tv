@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from ..tools.webdriver import WebDriver
+from ..tools.wdriver import Wdriver
 from ..tools.functions import *
 import time
 
@@ -11,7 +11,7 @@ class Score():
                            series:str="x85k") -> dict:
         print(f"TV score info: {prefix}{series}")
         # Chrome WebDriver 생성
-        wd = WebDriver.get_crome()
+        wd = Wdriver.get_crome()
         url = prefix + series
 
         # 웹 페이지 로드
