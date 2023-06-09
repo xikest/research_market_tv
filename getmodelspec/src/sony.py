@@ -11,7 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 
 from ..tools.functions import *
-from ..tools.wdriver import Wdriver
+from ..tools.WebDriver import WebDriver
 from ..src.tv_spepcifications import Sepcifications
 from ..src.tv_score import Score
 
@@ -90,7 +90,7 @@ class GetSONY:
         scrolling_cnt: int = 10
         prefix = "https://electronics.sony.com/"
 
-        wd = Wdriver.get_crome()
+        wd = WebDriver.get_crome()
         url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/"
         wd.get(url=url)
         time.sleep(1)
@@ -142,7 +142,7 @@ class GetSONY:
         for cntTry in range(cntTryTotal):
             try:
                 dictSeries = {}
-                wd = Wdriver.get_crome()
+                wd = WebDriver.get_crome()
                 wd.get(url=url)
                 print("connect to", url)
 
@@ -235,7 +235,7 @@ def closeModalCookie(webdriver):
         # 모달 창 요소를 식별하여 클릭
         try:
             close_button = webdriver.find_element(By.CLASS_NAME, '//*[@id="onetrust-close-btn-container"]/button')
-            webdriver = Wdriver.move_element_to_center(webdriver, close_button)
+            webdriver = WebDriver.move_element_to_center(webdriver, close_button)
             close_button.click()
             waitingPage()
         except:

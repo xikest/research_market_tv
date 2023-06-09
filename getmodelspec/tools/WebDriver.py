@@ -3,7 +3,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service as ChromeService
 import subprocess
 
-class Wdriver:
+class WebDriver:
     def __init__(self):
 
         pass
@@ -98,19 +98,6 @@ class Wdriver:
            Pin-Priority: 700
            EOF
 
-           # Install chromium and chromium-driver
-           apt-get update
-           apt-get install chromium chromium-driver
-
-           # Install selenium
-           pip install selenium
-
-           # Install bs4
-           pip install beautifulsoup4
-           
-           # Kill the process after installation
-           import os
-           os.kill(os.getpid(), 9)
 
        """
         subprocess.run(['bash', '-c', script], check=True, shell=True)
