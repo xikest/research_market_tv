@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from ..tools.functions import *
 
 
-class Sepcifications:
+class Specifications:
     def __init__(self, escapeNum:int=200):
         self.escapeNum = escapeNum
         self.dictUrlModel = {"sony":"https://www.displayspecifications.com/en/brand/47e6f",
