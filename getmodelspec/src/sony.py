@@ -85,36 +85,55 @@ class GetSONY:
 
     ###=====================get info main page====================================##
     def __getStream__(self, url:str) -> set:
+        dictSeries = {}
         set_mainSeries = set()
         scrolling_cnt: int = 10
+        prefix = "https://electronics.sony.com/"
 
-        wd =  WebDriver.get_crome()
+        wd = WebDriver.get_crome()
+        url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/"
         wd.get(url=url)
-        wait = WebDriverWait(wd, 30)
+        time.sleep(1)
 
-        for cnt in range(scrolling_cnt):
-            try:
-                # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
-                waitingPage(self.waitTime)
-                elements = wait.until(
-                    EC.visibility_of_all_elements_located((By.CLASS_NAME, 'custom-product-grid-item__product-name')))
-                for element in elements:
-                    try:
-                        set_mainSeries.add(element.get_attribute('href'))  # URL만 저장
-                    except Exception as e:
-                        print(f"getPage1st error ({e})")
-                        pass
-                wd.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-                waitingPage(self.waitTime)
+        html = wd.page_source
+        soup = BeautifulSoup(html, 'html.parser')
 
-                wd.save_screenshot(f"./{self.dir_1st}/Main_Series_{cnt}_{get_today()}.png")  # 스크린 샷
-            except TimeoutException:
-                print("TimeoutException: 엘리먼트 로딩 시간 초과")
-                # 대기 시간 초과에 대한 처리 코드 작성
+        elements = soup.find_all('a', class_='custom-product-grid-item__product-name')
+        for element in elements:
+            link = prefix + element['href']
+            label = element.text
+            dictSeries.update({label: link})
 
-            wd.save_screenshot(f"./{self.dir_1st}/Main_Series_{cnt}_{get_today()}.png")  # 스크린 샷
-        wd.quit()
-        print("Number of SONY Main Series:", len(set_mainSeries))
+        # set_mainSeries = set()
+        # scrolling_cnt: int = 10
+        #
+        # wd =  WebDriver.get_crome()
+        # wd.get(url=url)
+        # wait = WebDriverWait(wd, 30)
+        #
+        # for cnt in range(scrolling_cnt):
+        #     try:
+        #         # wd = closeModalCookie(wd)  # 쿠키 모달창 닫기
+        #         waitingPage(self.waitTime)
+        #         elements = wait.until(
+        #             EC.visibility_of_all_elements_located((By.CLASS_NAME, 'custom-product-grid-item__product-name')))
+        #         for element in elements:
+        #             try:
+        #                 set_mainSeries.add(element.get_attribute('href'))  # URL만 저장
+        #             except Exception as e:
+        #                 print(f"getPage1st error ({e})")
+        #                 pass
+        #         wd.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        #         waitingPage(self.waitTime)
+        #
+        #         wd.save_screenshot(f"./{self.dir_1st}/Main_Series_{cnt}_{get_today()}.png")  # 스크린 샷
+        #     except TimeoutException:
+        #         print("TimeoutException: 엘리먼트 로딩 시간 초과")
+        #         # 대기 시간 초과에 대한 처리 코드 작성
+        #
+        #     wd.save_screenshot(f"./{self.dir_1st}/Main_Series_{cnt}_{get_today()}.png")  # 스크린 샷
+        # wd.quit()
+        # print("Number of SONY Main Series:", len(set_mainSeries))
         return set_mainSeries
 
     ###=====================get info Sub page====================================##
