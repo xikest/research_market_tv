@@ -11,7 +11,7 @@ class Score():
                            series:str="x85k") -> dict:
         print(f"TV score info: {prefix}{series}")
         # Chrome WebDriver 생성
-        wd = WebDriver.get_crome()
+        wd = WebDriver.getChrome()
         url = prefix + series
 
         # 웹 페이지 로드

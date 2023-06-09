@@ -90,7 +90,7 @@ class GetSONY:
         scrolling_cnt: int = 10
         prefix = "https://electronics.sony.com/"
 
-        wd = WebDriver.get_crome()
+        wd = WebDriver.getChrome()
         url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/"
         wd.get(url=url)
         time.sleep(1)
@@ -142,7 +142,7 @@ class GetSONY:
         for cntTry in range(cntTryTotal):
             try:
                 dictSeries = {}
-                wd = WebDriver.get_crome()
+                wd = WebDriver.getChrome()
                 wd.get(url=url)
                 print("connect to", url)
 
