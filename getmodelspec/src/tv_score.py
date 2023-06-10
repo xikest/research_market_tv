@@ -49,6 +49,7 @@ class Score():
             return dictScores
 
         except Exception as e:
+            print(f"get specification error: {e}")
             # WebDriver 종료
             wd.quit()
 

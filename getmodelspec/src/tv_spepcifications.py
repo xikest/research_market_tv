@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from ..tools.functions import *
-import re
+import pandas as pd
 class Specifications:
     dictLinks = None
 
@@ -16,20 +16,24 @@ class Specifications:
         pass
 
     def getSpec(self, maker:str = "sony", model:str="XR-65A80L",  url = "https://www.displayspecifications.com/en/brand/47e6f"):
+        try:
+            # print(f"{maker}: {model} specification ")
 
-        # print(f"{maker}: {model} specification ")
-
-        # 클래스 변수에 각 모델의 spec 접속 Link 업데이트
-        if Specifications.dictLinks == None:
-            try:
+            # 클래스 변수에 각 모델의 spec 접속 Link 업데이트
+            if Specifications.dictLinks == None:
                 urlSpecs = self.dictUrlModel.get(maker)
-            except:
+            else:
                 urlSpecs = url
             Specifications.dictLinks = self.__getAllModels__(urlSpecs)
-        # 클래스 변수 spec 접속 Link에서 접속 주소 가져 옴
-        urlModel = Specifications.dictLinks.get(model)
-        return self.__getSpec__(urlModel)
 
+            # 클래스 변수 spec 접속 Link에서 접속 주소 가져 옴
+            urlModel = Specifications.dictLinks.get(model)
+            print("urlModel", urlModel)
+            return self.__getSpec__(urlModel)
+
+        except Exception as e:
+            print(f"get specification error: {e}")
+            return None
     def getSepcs(self, maker:str = "sony", url = "https://www.displayspecifications.com/en/brand/47e6f"):
         dictspecs = {}
         cnt = 0
@@ -57,6 +61,7 @@ class Specifications:
             soup = BeautifulSoup(response.text, 'html.parser')
             containers = soup.find_all(class_='model-listing-container-80')
             result = {}
+
             for cnt, container in enumerate(containers):
                 for element in container:
                     linkLabel = element.find('h3').find('a')
@@ -68,7 +73,6 @@ class Specifications:
         else:
             print("Failed to retrieve the webpage.")
             return None
-
     def __getSpec__(self, url: str = "https://www.displayspecifications.com/en/model/01b732ea") -> dict:
         time.sleep(1)
         response = requests.get(url)
