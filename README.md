@@ -35,10 +35,4 @@ Contributions are welcome! If you find any issues or want to add new features, f
 License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-vbnet
-Copy code
-
-Make sure to replace `GetSONY` with the appropriate file name if needed. Additionally, you may want to include sections like "Features," "Requirements," or "Examples" based on the specific details and functionality of your code.
-
-
 
