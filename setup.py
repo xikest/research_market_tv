@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='getmodelspec',
-    version='1.0.341',
+    version='1.0.342',
     author='xikest',
     description='get model spec,',
     packages=find_packages(),
@@ -10,7 +10,8 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'selenium'
+        'selenium',
+        'bs4'
     ],
     entry_points={
         'console_scripts': [

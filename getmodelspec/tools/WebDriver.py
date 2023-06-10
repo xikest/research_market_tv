@@ -1,15 +1,17 @@
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service as ChromeService
-import subprocess
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 
+import time
 class WebDriver:
     def __init__(self):
 
         pass
 
-    @staticmethod
-    def getChrome():
+    @classmethod
+    def getChrome(cls):
         """
         설명:
             헤드리스 모드로 실행되는 Chrome 웹 드라이버 객체를 반환합니다.
@@ -28,7 +30,7 @@ class WebDriver:
         return driver
 
     @staticmethod
-    def move_element_to_center(driver:"WebDriver", element):
+    def move_element_to_center(driver, element):
         """
         설명:
             주어진 웹 요소(element)를 뷰포트의 중앙으로 이동시킵니다.
@@ -58,50 +60,57 @@ class WebDriver:
         return driver
 
     @staticmethod
-    def installChromiumSeleniumBs4():
-        """
-        설명:
-            Colab 환경에서 Chromium, Selenium 및 BeautifulSoup4(bs4)를 설치합니다.
-        """
-        script = """
-           # Add debian buster
-           cat > /etc/apt/sources.list.d/debian.list <<'EOF'
-           deb [arch=amd64 signed-by=/usr/share/keyrings/debian-buster.gpg] http://deb.debian.org/debian buster main
-           deb [arch=amd64 signed-by=/usr/share/keyrings/debian-buster-updates.gpg] http://deb.debian.org/debian buster-updates main
-           deb [arch=amd64 signed-by=/usr/share/keyrings/debian-security-buster.gpg] http://deb.debian.org/debian-security buster/updates main
-           EOF
+    def getDistanceScrollToBtm(driver):
+        # 스크롤을 페이지 아래로 내리기
+        driver.find_element_by_tag_name('body').send_keys(Keys.END)
+        time.sleep(1)  # 스크롤이 내려가는 동안 대기
 
-           # Add keys
-           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DCC9EFBF77E11517
-           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
-           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 112695A0E562B32A
+        # 스크롤이 이동한 거리 계산
+        scrollDistance = driver.execute_script("return window.pageYOffset;")
 
-           apt-key export 77E11517 | gpg --dearmour -o /usr/share/keyrings/debian-buster.gpg
-           apt-key export 22F3D138 | gpg --dearmour -o /usr/share/keyrings/debian-buster-updates.gpg
-           apt-key export E562B32A | gpg --dearmour -o /usr/share/keyrings/debian-security-buster.gpg
+        # 계산한 거리를 500씩 이동하며 스크롤 내리기
+        # 스크롤이 이동한 거리 계산
+        scrollDistance = driver.execute_script("return window.pageYOffset;")
 
-           # Prefer debian repo for chromium* packages only
-           # Note the double-blank lines between entries
-           cat > /etc/apt/preferences.d/chromium.pref << 'EOF'
-           Package: *
-           Pin: release a=eoan
-           Pin-Priority: 500
-
-
-           Package: *
-           Pin: origin "deb.debian.org"
-           Pin-Priority: 300
-
-
-           Package: chromium*
-           Pin: origin "deb.debian.org"
-           Pin-Priority: 700
-           EOF
-
-
-       """
-        subprocess.run(['bash', '-c', script], check=True, shell=True)
+        # Home 키를 눌러 시작 위치로 복귀
+        driver.find_element_by_tag_name('body').send_keys(Keys.HOME)
+        time.sleep(1)  # 스크롤이 위로 올라가는 동안 대기
+        return scrollDistance
 
 
 
+    @staticmethod
+    def getScrollDistanceTotal(driver):
+        total_scroll_distance = 0
+        prev_scroll_distance = -1
 
+        while True:
+            scroll_distance = get_scroll_distance(driver)
+            total_scroll_distance += scroll_distance
+
+            # 새로운 스크롤 위치와 이전 스크롤 위치가 같다면 스크롤이 더 이상 되지 않았으므로 종료합니다.
+            if scroll_distance == 0 or scroll_distance == prev_scroll_distance:
+                break
+
+            prev_scroll_distance = scroll_distance
+
+        # 초기 위치로 복귀하기 위해 페이지 맨 위로 스크롤합니다.
+        driver.execute_script("window.scrollTo(0, 0)")
+        time.sleep(1)
+
+        # 총 이동한 거리를 출력합니다.
+        # print("Total scroll distance:", total_scroll_distance)
+        return total_scroll_distance
+
+def get_scroll_distance(driver):
+    # 현재 페이지의 스크롤 위치를 가져옵니다.
+    current_scroll_position = driver.execute_script("return window.pageYOffset")
+    # 스크롤 이벤트를 발생시킵니다.
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+    time.sleep(1)
+    # 새로운 스크롤 위치를 가져옵니다.
+    new_scroll_position = driver.execute_script("return window.pageYOffset")
+    # 페이지 이동 거리를 계산합니다.
+    scroll_distance = new_scroll_position - current_scroll_position
+    # print(f"scroll_distance: {scroll_distance}")
+    return scroll_distance
