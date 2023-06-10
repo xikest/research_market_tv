@@ -1,48 +1,44 @@
-# Research on the TV market
 
-TV 제품의 사양 및 평가 지표 정보를 수집합니다.
+# GetSONY
+GetSONY is a Python script for scraping Sony TV models and extracting their specifications and scores.
+It utilizes web scraping techniques to gather information from Sony's official website and other sources.
 
-## 개요
+## Installation
+To use GetSONY, you'll need to install the required dependencies. Run the following command to install them:
 
-이 프로젝트는 TV 제품의 모델 정보를 수집하는 스크래핑 도구입니다. 주요 기능은 다음과 같습니다:
+```shell
+pip install pandas beautifulsoup4 selenium tqdm
+```
+Usage
+The GetSONY class provides methods for retrieving Sony TV models and their specifications. Here's an example of how to use it:
 
-- Current TV Line up 정보 수집
-- TV specification 정보 수집
-- Rthings score 정보 수집
-
-## 요구사항
-
-- Python 3.7 이상
-- pandas 라이브러리
-- BeautifulSoup 라이브러리
-- Selenium 4.0 이상
-
-## 사용법
-
-### 1) GetSONY 클래스의 인스턴스 생성:
-envr 매개변수는 실행 환경을 지정합니다. "weak"로 설정하면 샘플 데이터만 추출하고 스크래핑을 빠르게 완료합니다.
 ```python
-sony_scraper = GetSONY(envr="weak")
+from GetSONY import GetSONY
 ```
-### 2) 모델 정보 가져오기:
-toExcel 매개변수를 True로 설정하면 추출한 모델 정보를 Excel 파일로 저장합니다.
+# Create an instance of GetSONY
 ```python
-dfModels = sony_scraper.getModels()
+get_sony = GetSONY()
 ```
-
-### 3) 결과 확인:
-#### 3-1) 데이터프레임 출력:
+# Get the Sony TV models and their information
 ```python
-print(dfModels)
-
+models = get_sony.getModels()
 ```
-#### 3-2) Excel 파일로 저장된 경우:
-```pytohn
-dfModels = pd.read_excel("sony_TV_series_YYYY-MM-DD.xlsx")
+# Print the models
+```python
+print(models)
 ```
+By default, the script will scrape information from Sony's official website and save the results to an Excel file. You can customize the behavior by passing different parameters to the GetSONY constructor.
 
-## 참고 문서
-- [SONY 공식 웹사이트](https://electronics.sony.com)
-- [pandas 공식 문서](https://pandas.pydata.org/docs/)
-- [BeautifulSoup 공식 문서](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
-- [Selenium 공식 문서](https://selenium-python.readthedocs.io/)
+Contributing
+Contributions are welcome! If you find any issues or want to add new features, feel free to open a pull request.
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+vbnet
+Copy code
+
+Make sure to replace `GetSONY` with the appropriate file name if needed. Additionally, you may want to include sections like "Features," "Requirements," or "Examples" based on the specific details and functionality of your code.
+
+
+
