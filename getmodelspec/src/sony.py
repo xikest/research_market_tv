@@ -301,7 +301,7 @@ class GetSONYjp:
         pass
 
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
-
+        self.toExcel=toExcel
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getSpecSeries__()
         print(setUrlSeries)
@@ -313,7 +313,7 @@ class GetSONYjp:
 
         ## 웹페이지의 모든 모델 url을 추출
         dictModels = {}
-        for model, url in setUrlSeries.items():
+        for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpec__(url=url)
             print(modelspec)
