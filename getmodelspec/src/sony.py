@@ -29,7 +29,7 @@ class GetSONY:
 
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
         # 메인 페이지에서 시리즈를 추출
-        setUrlSeries = self.__getUrlSeries__(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
+        setUrlSeries = self.__getUrlSeries__()
         # print(urlStream)
         # ==========================================================================
         # backUp(setUrlSeries, "setUrlSeries")
@@ -38,7 +38,7 @@ class GetSONY:
         # # ==========================================================================
 
         ## 웹페이지의 모든 모델 url을 추출
-        dictUrlSeries = {}
+        dictUrlSeries = OrderedDict()
         for url in setUrlSeries:
             urlModels = self.__getModels__(url=url)
             print(urlModels)
@@ -51,7 +51,7 @@ class GetSONY:
         #     dictUrlSeries = pickle.load(file)
         # ==========================================================================
     #     # 모델 정보 추출, 모델명/url/가격
-        dictModels = {}
+        dictModels = OrderedDict()
         score = Score()
         for key, urlModel in tqdm(dictUrlSeries.items()):
             try:
@@ -140,7 +140,7 @@ class GetSONY:
         cntTryTotal = 5
         for cntTry in range(cntTryTotal):
             try:
-                dictUrlModels = {}
+                dictUrlModels = OrderedDict()
                 if modeStatic == True:
                     response = requests.get(url)
                     # print("connect to", url)
@@ -181,7 +181,7 @@ class GetSONY:
         print("connect to", url)
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
-        dictInfo = {}
+        dictInfo = OrderedDict()
         label = soup.find('h2', class_='product-intro__code').text.strip()
         dictInfo["model"] = label.split()[-1]
         dictInfo["price"] = soup.find('div', class_='custom-product-summary__price').text.strip()
@@ -200,7 +200,7 @@ class GetSONY:
         cntTryTotal = 20
         for cntTry in range(cntTryTotal):
             try:
-                dictSpec = {}
+                dictSpec = OrderedDict()
                 wd = WebDriver.getChrome()
                 wd.get(url=url)
 
@@ -262,7 +262,7 @@ class GetSONY:
 
     ###===================help func============================##
     def __extractInfo__(self, model):
-        dictInfo = {}
+        dictInfo = OrderedDict()
         dictInfo["year"] = model.split("-")[1][-1]
         dictInfo["series"] = model.split("-")[1][2:-1]
         dictInfo["size"] = model.split("-")[1][:2]
@@ -312,7 +312,7 @@ class GetSONYjp:
         # ==========================================================================
 
         ## 웹페이지의 모든 모델 url을 추출
-        dictModels = {}
+        dictModels = OrderedDict()
         for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpec__(url=url)
@@ -335,7 +335,7 @@ class GetSONYjp:
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
         step: int = 200
-        dictSeries = dict()
+        dictSeries = OrderedDict()
 
         wd = WebDriver.getChrome()
         wd.get(url=url)
@@ -462,8 +462,9 @@ class GetSONYjp:
         if "【" in text:
             listText = text.split("【")
             listText = [text.split("】") for text in listText]
-
-            dictText = {term[0].strip(): term[1].strip() for term in listText if len(term) > 1}
+            print(listText)
+      
+            dictText = OrderedDict((term[0].strip(): term[1].strip()) for term in listText if len(term) > 1)
             return dictText
         else:
             return text
@@ -475,7 +476,7 @@ class GetSONYjp:
         return text
 
     def __extractInfo__(self, model):
-        dictInfo = {}
+        dictInfo = OrderedDict()
         dictInfo["year"] = model.split("-")[1][-1]
         dictInfo["series"] = model.split("-")[1][2:-1]
         dictInfo["size"] = model.split("-")[1][:2]
