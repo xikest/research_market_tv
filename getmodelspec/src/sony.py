@@ -92,7 +92,7 @@ class GetSONY:
 
 
         if self.toExcel == True:
-            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
+            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}"
             dfModels.to_excel(fileName, index=False)  # 엑셀 파일로 저장
 
         return dfModels
@@ -324,7 +324,7 @@ class GetSONYjp:
         backUp(dictModels, "dictModels1")
     # ======export====================================================================
         if self.toExcel == True:
-            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
+            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}"
             dictToexcel(dictModels, fileName=fileName, orient_col=False)  # 엑셀 파일로 저장
 
         return dictModels
