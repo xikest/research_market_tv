@@ -462,9 +462,10 @@ class GetSONYjp:
         if "【" in text:
             listText = text.split("【")
             listText = [text.split("】") for text in listText]
-            print(listText)
+            print("listText before :",listText)
       
             dictText = OrderedDict((term[0].strip(): term[1].strip()) for term in listText if len(term) > 1)
+            print("dictText after :", dictText)
             return dictText
         else:
             return text
