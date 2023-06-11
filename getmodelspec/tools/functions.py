@@ -3,6 +3,7 @@ import time
 import pickle
 from datetime import datetime
 import random
+import pandas as pd
 
 
 def generate_random_number(start:int=3, end:int=5):
@@ -37,6 +38,12 @@ def backUp(data, filename:str="backup"):
         data = pickle.load(file)
     return data
 
+
+def load_pickle_file(filename:str="backup"):
+    with open(f"{filename}.pickle", 'rb') as file:
+        data = pickle.load(file)
+    return data
+
 def get_time():# 현재 시간 얻기
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -51,4 +58,11 @@ def getNamefromURL(url):
 
 
 
+def dictToexcel(dictData, fileName="dictToExcel", orient_col=True):
+    if orient_col == True: orient = 'columns'
+    else: orient = 'index'
+    df = pd.DataFrame.from_dict(dictData, orient=orient)
+    # Create a Pandas Excel writer
+    df.to_excel(f"{fileName}"+".xlsx", index=True)
+    return None
 

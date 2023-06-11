@@ -1,19 +1,21 @@
 
-import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
 import requests
 from tqdm import tqdm
 import traceback
+from collections import OrderedDict
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
-from ..tools.functions import *
-from ..tools.WebDriver import WebDriver
-from ..src.tv_spepcifications import Specifications
-from ..src.tv_score import Score
+from getmodelspec.src.tv_spepcifications import Specifications
+from getmodelspec.src.tv_score import Score
+from getmodelspec.tools.functions import *
+from getmodelspec.tools.webdriver import WebDriver
+
+
 
 class GetSONY:
     def __init__(self, fastMode=True, srcfromOfficial=True, toExcel=True):
@@ -27,7 +29,7 @@ class GetSONY:
 
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
         # 메인 페이지에서 시리즈를 추출
-        setUrlSeries = self.__getSeriesModeHybrid__(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
+        setUrlSeries = self.__getUrlSeries__(url= 'https://electronics.sony.com/tv-video/televisions/c/all-tvs')
         # print(urlStream)
         # ==========================================================================
         # backUp(setUrlSeries, "setUrlSeries")
@@ -71,6 +73,9 @@ class GetSONY:
                 # print(dictSpec)
                 series = model.split("-")[1][2:]
                 dictScore = score.getRthinsScore(maker="sony", series=series)
+
+                print(series,":", dictScore)
+
                 dictModels[key].update(dictScore)
 
                 # print(dictModels)
@@ -93,13 +98,12 @@ class GetSONY:
         return dfModels
 
     ###=====================get info main page====================================##
-    def __getSeriesModeHybrid__(self, url:str="https://electronics.sony.com/tv-video/televisions/c/all-tvs/",
-                      className:str='custom-product-grid-item__product-name',
-                      prefix = "https://electronics.sony.com/") -> set:
+    def __getUrlSeries__(self)-> set:
         """
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
-
+        url: str = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/"
+        prefix:str = "https://electronics.sony.com/"
         step: int = 200
         setUrlSeries=set()
 
@@ -114,7 +118,7 @@ class GetSONY:
             html = wd.page_source
             soup = BeautifulSoup(html, 'html.parser')
 
-            elements = soup.find_all('a', class_=className)
+            elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
             for element in elements:
                 urlSeries = prefix + element['href']
                 # label = element.text
@@ -171,44 +175,6 @@ class GetSONY:
             except Exception as e:
                 print(f"stage 2nd try: {cntTry}/{cntTryTotal}")
 
-    def __getModelsModeDynamic__(self, url: str,
-                      prefix = "https://electronics.sony.com/") -> dict:
-        cntTryTotal = 5
-        for cntTry in range(cntTryTotal):
-            try:
-                dictUrlModels = {}
-                wd = WebDriver.getChrome()
-                wd.get(url=url)
-                print("connect to", url)
-
-                waitingPage(self.waitTime)
-
-                page_source = wd.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-                elements = soup.find_all('a', class_='custom-variant-selector__item')
-
-                for element in elements:
-                    try:
-                        element_url = prefix + element['href']
-                        label = getNamefromURL(element_url)
-
-                        dictUrlModels[label] = element_url.strip()
-                    except Exception as e:
-                        print(f"getPage2nd error ({e})")
-                        pass
-                wd.save_screenshot(f"./{self.dir_2nd}/{getNamefromURL(url)}_Sub_Series_{get_today()}.png")
-                wd.quit()
-                if len(dictUrlModels) == 0:
-                    raise Exception
-
-                waitingPage(self.waitTime)
-                print(f"Number of SONY {getNamefromURL(url)[4:]} series:", len(dictUrlModels))
-                return dictUrlModels
-            except Exception as e:
-                wd.quit()
-                waitingPage(self.waitTime)
-                print(f"stage 2nd try: {cntTry}/{cntTryTotal}")
-
     ###====================================================================================##
     def __getModelInfo__(self,url: str) -> dict:
         response = requests.get(url)
@@ -223,13 +189,12 @@ class GetSONY:
         dictInfo["descr"] = soup.find('h1', class_='product-intro__title').text.strip()
         return dictInfo
 
-    ###======================final stage===============================##
+    ###======================get spec===============================##
     def __getSpec__(self, maker:str ='sony', model='XR-65A80L') -> dict:
         specs = Specifications()
         dictSpec = specs.getSpec(maker=maker, model=model)
         return dictSpec
 
-    ###======================final stage===============================##
     def __getSpecOfficial__(self, url: str) -> dict:
 
         cntTryTotal = 20
@@ -280,7 +245,7 @@ class GetSONY:
                                                 "full-specifications__specifications-single-card__sub-list")
                     for element in elements:
                         soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                        dictSpec.update(soupToDict(soup))
+                        dictSpec.update(self.__soupToDict__(soup))
                     ActionChains(wd).key_down(Keys.PAGE_DOWN).perform()
                 wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_4_end_{get_today()}.png")  # 스크린 샷
 
@@ -295,14 +260,7 @@ class GetSONY:
                 wd.quit()
                 pass
 
-    def __getData4th__(self, dfModels):
-        new_columns = dfModels['model'].apply(self.__extractInfo__)
-        df_combined = pd.concat([new_columns, dfModels], axis=1).set_index('model')
-        return df_combined
-
-
-# ===============================
-
+    ###===================help func============================##
     def __extractInfo__(self, model):
         dictInfo = {}
         dictInfo["year"] = model.split("-")[1][-1]
@@ -324,16 +282,215 @@ class GetSONY:
         except:year = ""
         return dictInfo
 
+    def __soupToDict__(self,soup):
+        try:
+            h4_tag = soup.find('h4').text.strip()
+            p_tag = soup.find('p').text.strip()
+        except Exception as e:
+            print("parser err", e)
+            h4_tag = soup.find('h4').text.strip()
+            p_tag =  ""
+            pass
+        return {h4_tag: p_tag}
 
-def soupToDict(soup):
-    try:
-        h4_tag = soup.find('h4').text.strip()
-        p_tag = soup.find('p').text.strip()
-    except Exception as e:
-        print("parser err", e)
-        h4_tag = soup.find('h4').text.strip()
-        p_tag =  ""
+class GetSONYjp:
+    def __init__(self, fastMode=True,  toExcel=True):
+        self.waitTime = 10
+        self.fastMode = fastMode
+        self.toExcel = toExcel
         pass
-    return {h4_tag: p_tag}
+
+    def getModels(self, toExcel:bool = True) -> pd.DataFrame:
+
+        # 메인 페이지에서 시리즈를 추출
+        setUrlSeries = self.__getSpecSeries__()
+        print(setUrlSeries)
+        # ==========================================================================
+        backUp(setUrlSeries, "setUrlSeries")
+        with open(f"setUrlSeries.pickle", "rb") as file:
+            setUrlSeries = pickle.load(file)
+        # ==========================================================================
+
+        ## 웹페이지의 모든 모델 url을 추출
+        dictModels = {}
+        for model, url in setUrlSeries.items():
+            print(model,":", url)
+            modelspec = self.__getSpec__(url=url)
+            print(modelspec)
+            dictModels.update(modelspec)
+            backUp(dictModels, "dictModels_b")
+        print("Number of all Series:", len(dictModels))
+        print(dictModels)
+        backUp(dictModels, "dictModels1")
+    # ======export====================================================================
+        if self.toExcel == True:
+            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}.xlsx"
+            dictToexcel(dictModels, fileName=fileName, orient_col=False)  # 엑셀 파일로 저장
+
+        return dictModels
+
+    ###=====================get info main page====================================##
+    def __getSpecSeries__(self, url: str = "https://www.sony.jp/bravia/gallery/") -> dict:
+        """
+        스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
+        """
+        step: int = 200
+        dictSeries = dict()
+
+        wd = WebDriver.getChrome()
+        wd.get(url=url)
+        time.sleep(1)
+
+        scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
+        scrollDistance = 0  # 현재까지 스크롤한 거리
+
+        while scrollDistance < scrollDistanceTotal:
+            html = wd.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            button_containers = soup.find_all('div', class_='GalleryListItem__ButtonContainer')
+            for container in button_containers:
+                link = container.find('a')['href']
+                model = link.split("products/")[-1].split(".")[0].replace('/',"")
+                link = "https://www.sony.jp/bravia/products/" + model + "/spec.html"
+                dictSeries[model]=link
 
 
+            # 한 step씩 스크롤 내리기
+            wd.execute_script(f"window.scrollBy(0, {step});")
+            time.sleep(1)  # 스크롤이 내려가는 동안 대기
+            scrollDistance += step
+
+        wd.quit()
+        print(f"number of total Series: {len(dictSeries)}")
+        return dictSeries
+
+    def __getSpec__(self, url:str="https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
+
+        dictSpec = OrderedDict()
+        dictNote = OrderedDict()
+
+        response = requests.get(url)
+        html = response.text
+        soup = BeautifulSoup(html, 'html.parser')
+        table = soup.find('tbody', class_='SpecificationsTableSingle__Tbody')
+
+        if table:
+            rows = table.find_all('tr')
+            key = None
+            for row in rows:
+                subhead_element = row.find('th', class_='SpecificationsTable__TableSubhead')
+                value_element = row.find('td', class_='SpecificationsTable__TableValue -isSelected')
+                if subhead_element:
+                    key = subhead_element.get_text(strip=True)
+                    key = self.__extractFoot__(key)
+                if value_element and key:
+                    value = value_element.get_text(strip=True)
+                    value = self.__extractFoot__(value)
+                    dictSpec[key] = self.__extractProductInfo__(value)
+        else:
+            step: int = 200
+            wd = WebDriver.getChrome()
+            wd.get(url=url)
+            time.sleep(1)
+
+            scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
+            scrollDistance = 0  # 현재까지 스크롤한 거리
+            try:
+                while scrollDistance < scrollDistanceTotal:
+                    html = wd.page_source
+                    soup = BeautifulSoup(html, 'html.parser')
+                    table = soup.find('div', class_='s5-specTable')
+
+                    # if table is not None:  # 테이블이 있는 경우에만 데이터 추출
+                    for row in table.find_all('tr'):
+                        cells = row.find_all('td')
+                        if len(cells) >= 1:
+                            key = row.get_text(strip=True)
+                            value = cells[0].get_text(strip=True)
+                            key = key.replace(value, "")
+
+                            key = self.__extractFoot__(key)
+                            value = self.__extractFoot__(value)
+                            dictSpec[key] = self.__extractProductInfo__(value)
+
+                    # ## 노트 추출
+                    # notes = soup.select('.s5-specTableNote li')
+                    # for note in notes:
+                    #     bullet = note.select_one('.s5-specTableNote__bullet').text.strip()
+                    #     text = note.select_one('.s5-specTableNote__text').text.strip()
+                    #     dictNote[bullet] = " @" + text
+                    # 한 step씩 스크롤 내리기
+                    wd.execute_script(f"window.scrollBy(0, {step});")
+                    time.sleep(1)  # 스크롤이 내려가는 동안 대기
+                    scrollDistance += step
+                wd.quit()
+            except Exception as e:
+                print("An error occurred:", e)
+                # 웹페이지가 동적이 아닌 경우
+                wd.quit()
+
+        # ## 풋노트 끌어오기
+        # for kNote in dictNote.keys():
+        #     for k, v in dictSpec.items():
+        #         if kNote in k:
+        #             dictSpec[k] = k.replace(kNote, dictNote.get(kNote))
+        #         if kNote in v:
+        #             dictSpec[k] = v.replace(kNote, dictNote.get(kNote))
+        dictSpec['url'] = url
+        dictSpec = self.__splitModels__(dictSpec)
+        for k in dictSpec.keys(): dictSpec[k].update(self.__extractInfo__(k))
+
+        return dictSpec
+
+    def __splitModels__(self, dictModels):
+        dictNewModels = OrderedDict()
+        dictNewModel = OrderedDict()
+
+        dictModelsSplited = dictModels.get('型')
+        for model in dictModelsSplited.keys():
+            for k, v in dictModels.items():
+                try:
+                    # print(k, v.get(model))
+                    dictNewModel[k] = v.get(model)
+                except:
+                    dictNewModel[k] = v
+            dictNewModels[model] = dictNewModel
+        return dictNewModels
+
+
+    def __extractProductInfo__(self, text):
+        if "【" in text:
+            listText = text.split("【")
+            listText = [text.split("】") for text in listText]
+
+            dictText = {term[0].strip(): term[1].strip() for term in listText if len(term) > 1}
+            return dictText
+        else:
+            return text
+
+    def __extractFoot__(self, text):
+        footMarks = ["*" + str(i) for i in range(1, 15)]
+        for footMark in footMarks:
+            text = text.replace(footMark, "")
+        return text
+
+    def __extractInfo__(self, model):
+        dictInfo = {}
+        dictInfo["year"] = model.split("-")[1][-1]
+        dictInfo["series"] = model.split("-")[1][2:-1]
+        dictInfo["size"] = model.split("-")[1][:2]
+        dictInfo["grade"] = model.split("-")[0]
+
+        year_mapping = {
+            "N": 2025,
+            "M": 2024,
+            'L': 2023,
+            'K': 2022,
+            'J': 2021,
+            # 추가적인 알파벳과 연도 대응 관계를 추가할 수 있음
+        }
+
+        # 알파벳과 대응하는 연도가 없을 경우 기본값으로 설정할 연도를 지정
+        try: dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
+        except:year = ""
+        return dictInfo

@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from ..tools.WebDriver import WebDriver
+from ..tools.webdriver import WebDriver
 from ..tools.functions import *
 import time
 
