@@ -470,7 +470,7 @@ class GetSONYjp:
             return text
 
     def __extractFoot__(self, text):
-        footMarks = ["*" + str(i) for i in range(1, 15)]
+        footMarks = ["*" + str(i) for i in reversed(range(1, 20))]
         for footMark in footMarks:
             text = text.replace(footMark, "")
         return text
