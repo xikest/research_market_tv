@@ -82,7 +82,7 @@ class GetSONY:
     # ======export====================================================================
         if self.toExcel == True:
             fileName = f"sony_LineUpGlobal_{date.today().strftime('%Y-%m-%d')}"
-            dictToexcel(dictModels, fileName=fileName,sheetName="Global", orient_col=False)  # 엑셀 파일로 저장
+            dictToexcel(dictModels, fileName=fileName,sheetName="Global")  # 엑셀 파일로 저장
 
         return dictModels
 
@@ -313,7 +313,7 @@ class GetSONYjp:
     # ======export====================================================================
         if self.toExcel == True:
             fileName = f"sonyJp_LineUp_{date.today().strftime('%Y-%m-%d')}"
-            dictToexcel(dictModels, fileName=fileName,sheetName="Jp", orient_col=False)  # 엑셀 파일로 저장
+            dictToexcel(dictModels, fileName=fileName,sheetName="Jp")  # 엑셀 파일로 저장
 
         return dictModels
 
