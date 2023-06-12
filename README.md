@@ -8,7 +8,7 @@
 ## 설치
 "GetModelSpec" 프로젝트를 사용하기 위해 다음 단계를 따르세요:
 
-시스템에 Python 3.x를 설치합니다.
+시스템에 Python >= 3.7를 설치합니다.
 다음 명령을 실행하여 필요한 라이브러리를 설치합니다:
 ```python
 pip install selenium pandas
@@ -60,9 +60,9 @@ df_jp = lineup.getSony(src="jp", fastMode=True, toExcel=True)
 프로젝트는 다음과 같은 노트북 파일을 제공합니다:
 각 노트북 파일을 열어 자세한 사용법을 확인하세요
 
-- `quick_guide_lineup.ipynb`: 제품 라인업 가져오기에 대한 빠른 가이드
-- `quick_guide_score.ipynb`: 제품 스코어 가져오기에 대한 빠른 가이드
-- `quick_guide_specifications.ipyn`b: 제품 사양 가져오기에 대한 빠른 가이드
+- `[quick_guide_lineup.ipynb](https://githubtocolab.com/github/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb)`: 제품 라인업 가져오기에 대한 빠른 가이드
+- `[quick_guide_score.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb)`: 제품 스코어 가져오기에 대한 빠른 가이드
+- `[quick_guide_specifications.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb)': 제품 사양 가져오기에 대한 빠른 가이드
 
 ## 라이선스
 이 프로젝트는 MIT 라이선스를 따릅니다.
