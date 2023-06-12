@@ -306,7 +306,7 @@ class GetSONYjp:
             print(model,":", url)
             modelspec = self.__getSpec__(url=url)
             dictModels.update(modelspec)
-            backUp(dictModels, "dictModels_b")
+            # backUp(dictModels, "dictModels_b")
         print("Number of all Series:", len(dictModels))
         print(dictModels)
         # backUp(dictModels, "dictModels")
