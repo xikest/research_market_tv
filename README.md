@@ -25,33 +25,32 @@ cd GetModelSpec
 ```
 
 ## 사용법
-필요한 라이브러리 설치
+1. 필요한 라이브러리 설치
 ```bash
 pip install selenium pandas openpyxl
 ```
-lineup 모듈 임포트
+2. lineup 모듈 임포트
 ```python
 from getmodelspec.src.lineup import LineUp
 ```
-LineUp 클래스 인스턴스 생성
+3. LineUp 클래스 인스턴스 생성
 ```python
 lineup = LineUp()
 ```
-- Sony 글로벌 사이트에서 제품 정보 가져오기
+4-1. 사이트에서 제품 정보 가져오기
 ```python
 df_global = lineup.getSony(src="global", fastMode=True, toExcel=True)
 ```
-src: 가져올 Sony 웹사이트의 소스를 지정합니다. "global"을 선택하면 Sony 글로벌 사이트에서 제품 정보를 가져옵니다.
-fastMode: 빠른 모드를 사용할지 여부를 지정합니다. True로 설정하면 일부 정보를 생략하여 더 빠르게 가져옵니다.
-toExcel: 가져온 제품 정보를 Excel 파일로 저장할지 여부를 지정합니다. True로 설정하면 Excel 파일로 저장됩니다.
+- src: 가져올 Sony 웹사이트의 소스를 지정합니다. "global"을 선택하면 Sony 글로벌 사이트에서 제품 정보를 가져옵니다.
+- fastMode: 빠른 모드를 사용할지 여부를 지정합니다. True로 설정하면 일부 정보를 생략하여 더 빠르게 가져옵니다.
+- toExcel: 가져온 제품 정보를 Excel 파일로 저장할지 여부를 지정합니다. True로 설정하면 Excel 파일로 저장됩니다.
 
-- Sony 일본 사이트에서 제품 정보 가져오기
+4-2. Sony 일본 사이트에서 제품 정보 가져오기
 ```python
 df_jp = lineup.getSony(src="jp", fastMode=True, toExcel=True)
 ```
-src: 가져올 Sony 웹사이트의 소스를 지정합니다. "jp"를 선택하면 Sony 일본 사이트에서 제품 정보를 가져옵니다.
-fastMode: 빠른 모드를 사용할지 여부를 지정합니다. True로 설정하면 일부 정보를 생략하여 더 빠르게 가져옵니다.
-toExcel: 가져온 제품 정보를 Excel 파일로 저장할지 여부를 지정합니다. True로 설정하면 Excel 파일로 저장됩니다.
+- src: 가져올 Sony 웹사이트의 소스를 지정합니다. "jp"를 선택하면 Sony 일본 사이트에서 제품 정보를 가져옵니다.
+- toExcel: 가져온 제품 정보를 Excel 파일로 저장할지 여부를 지정합니다. True로 설정하면 Excel 파일로 저장됩니다.
 
 ## 주의사항
 이 도구는 Selenium을 사용하여 웹 스크래핑을 수행하므로 Chrome 웹 드라이버가 필요합니다. Chrome 웹 드라이버를 설치하고 경로를 올바르게 설정해야 합니다.
