@@ -2,9 +2,9 @@
 ## 노트북 파일
 이 프로젝트는 다음과 같은 노트북 파일을 제공합니다:
 각 노트북 파일을 열어 자세한 사용법을 확인하세요
-- [quick_guide_lineup.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb): 제품 라인업 가져오기에 대한 빠른 가이드
-- [quick_guide_score.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb): 제품 스코어 가져오기에 대한 빠른 가이드
-- [quick_guide_specifications.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb): 제품 사양 가져오기에 대한 빠른 가이드
+- [제품 라인업 가져오기에 대한 빠른 가이드](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb)
+- [제품 스코어 가져오기에 대한 빠른 가이드](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb)
+- [제품 사양 가져오기에 대한 빠른 가이드](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb)
 
 ## 설명
 이 프로젝트는 Selenium 라이브러리를 사용하여 웹사이트에서 제품 정보를 수집합니다. 
