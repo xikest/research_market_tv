@@ -24,7 +24,7 @@ git clone https://github.com/your-username/GetModelSpec.git
 cd GetModelSpec
 ```
 
-##사용법
+## 사용법
 필요한 라이브러리 설치
 ```bash
 pip install selenium pandas openpyxl
