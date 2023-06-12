@@ -31,7 +31,7 @@ class GetSONY:
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getUrlSeries__()
         print(setUrlSeries)
-        ==========================================================================
+        # ==========================================================================
         # backUp(setUrlSeries, "setUrlSeries")
         # with open(f"setUrlSeries.pickle", "rb") as file:
         #     setUrlSeries = pickle.load(file)
