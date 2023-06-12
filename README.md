@@ -60,9 +60,9 @@ df_jp = lineup.getSony(src="jp", fastMode=True, toExcel=True)
 프로젝트는 다음과 같은 노트북 파일을 제공합니다:
 각 노트북 파일을 열어 자세한 사용법을 확인하세요
 
-- `[quick_guide_lineup.ipynb](https://githubtocolab.com/github/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb)`: 제품 라인업 가져오기에 대한 빠른 가이드
-- `[quick_guide_score.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb)`: 제품 스코어 가져오기에 대한 빠른 가이드
-- `[quick_guide_specifications.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb)': 제품 사양 가져오기에 대한 빠른 가이드
+- [quick_guide_lineup.ipynb](https://githubtocolab.com/github/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb): 제품 라인업 가져오기에 대한 빠른 가이드
+- [quick_guide_score.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb): 제품 스코어 가져오기에 대한 빠른 가이드
+- [quick_guide_specifications.ipynb](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb): 제품 사양 가져오기에 대한 빠른 가이드
 
 ## 라이선스
 이 프로젝트는 MIT 라이선스를 따릅니다.
