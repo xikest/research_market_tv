@@ -30,57 +30,50 @@ class GetSONY:
     def getModels(self, toExcel:bool = True) -> pd.DataFrame:
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getUrlSeries__()
-        # print(urlStream)
-        # ==========================================================================
+        print(setUrlSeries)
+        ==========================================================================
         # backUp(setUrlSeries, "setUrlSeries")
         # with open(f"setUrlSeries.pickle", "rb") as file:
         #     setUrlSeries = pickle.load(file)
         # # ==========================================================================
 
         ## 웹페이지의 모든 모델 url을 추출
-        dictUrlSeries = OrderedDict()
+        dictUrlSeries = {}
         for url in setUrlSeries:
             urlModels = self.__getModels__(url=url)
             print(urlModels)
             dictUrlSeries.update(urlModels)
         print("Number of all Series:", len(dictUrlSeries))
 
-        # # ==========================================================================
+        # # # ==========================================================================
         # backUp(dictUrlSeries, "dictUrlSeries")
         # with open(f"dictUrlSeries.pickle", "rb") as file:
         #     dictUrlSeries = pickle.load(file)
         # ==========================================================================
     #     # 모델 정보 추출, 모델명/url/가격
-        dictModels = OrderedDict()
+        dictModels = {}
         score = Score()
         for key, urlModel in tqdm(dictUrlSeries.items()):
             try:
                 dictInfo = self.__getModelInfo__(urlModel)
                 time.sleep(1)
-                print(dictInfo)
                 dictModels[key] = dictInfo
                 model = dictInfo.get('model')
 
                 if self.fastMode == False:
                     if self.srcfromOfficial == True:
-                        dictSpec = self.__getSpecOfficial__(url=urlModel)
+                        dictSpec = self.__getSpecGlobal__(url=urlModel)
                         dictModels[key].update(dictSpec)
                     else:
+                        print("global")
                         dictSpec = self.__getSpec__(maker="sony", model=model)
                         dictModels[key].update(dictSpec)
 
                 time.sleep(1)
-                # print(dictSpec)
                 series = model.split("-")[1][2:]
                 dictScore = score.getRthinsScore(maker="sony", series=series)
-
-                print(series,":", dictScore)
-
+                print(series,"score:", dictScore)
                 dictModels[key].update(dictScore)
-
-                # print(dictModels)
-                # latest_key = list(dictModels.keys())[-1]
-                # print(dictModels.get(latest_key))
             except Exception as e:
                 print(f"fail to get info from {key}")
                 print(e)
@@ -140,7 +133,7 @@ class GetSONY:
         cntTryTotal = 5
         for cntTry in range(cntTryTotal):
             try:
-                dictUrlModels = OrderedDict()
+                dictUrlModels = {}
                 if modeStatic == True:
                     response = requests.get(url)
                     # print("connect to", url)
@@ -173,7 +166,7 @@ class GetSONY:
                 print(f"Number of SONY {getNamefromURL(url)[4:]} series:", len(dictUrlModels))
                 return dictUrlModels
             except Exception as e:
-                print(f"stage 2nd try: {cntTry}/{cntTryTotal}")
+                print(f"__getModels__ try: {cntTry}/{cntTryTotal}")
 
     ###====================================================================================##
     def __getModelInfo__(self,url: str) -> dict:
@@ -181,7 +174,7 @@ class GetSONY:
         print("connect to", url)
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
-        dictInfo = OrderedDict()
+        dictInfo = {}
         label = soup.find('h2', class_='product-intro__code').text.strip()
         dictInfo["model"] = label.split()[-1]
         dictInfo["price"] = soup.find('div', class_='custom-product-summary__price').text.strip()
@@ -195,12 +188,12 @@ class GetSONY:
         dictSpec = specs.getSpec(maker=maker, model=model)
         return dictSpec
 
-    def __getSpecOfficial__(self, url: str) -> dict:
-
+    def __getSpecGlobal__(self, url: str) -> dict:
+        print("get", url)
         cntTryTotal = 20
         for cntTry in range(cntTryTotal):
             try:
-                dictSpec = OrderedDict()
+                dictSpec = {}
                 wd = WebDriver.getChrome()
                 wd.get(url=url)
 
@@ -262,7 +255,7 @@ class GetSONY:
 
     ###===================help func============================##
     def __extractInfo__(self, model):
-        dictInfo = OrderedDict()
+        dictInfo = {}
         dictInfo["year"] = model.split("-")[1][-1]
         dictInfo["series"] = model.split("-")[1][2:-1]
         dictInfo["size"] = model.split("-")[1][:2]
@@ -306,22 +299,21 @@ class GetSONYjp:
         setUrlSeries = self.__getSpecSeries__()
         print(setUrlSeries)
         # ==========================================================================
-        backUp(setUrlSeries, "setUrlSeries")
-        with open(f"setUrlSeries.pickle", "rb") as file:
-            setUrlSeries = pickle.load(file)
+        # backUp(setUrlSeries, "setUrlSeries")
+        # with open(f"setUrlSeries.pickle", "rb") as file:
+        #     setUrlSeries = pickle.load(file)
         # ==========================================================================
 
         ## 웹페이지의 모든 모델 url을 추출
-        dictModels = OrderedDict()
+        dictModels = {}
         for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpec__(url=url)
-            print(modelspec)
             dictModels.update(modelspec)
             backUp(dictModels, "dictModels_b")
         print("Number of all Series:", len(dictModels))
         print(dictModels)
-        backUp(dictModels, "dictModels1")
+        # backUp(dictModels, "dictModels")
     # ======export====================================================================
         if self.toExcel == True:
             fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}"
@@ -335,7 +327,7 @@ class GetSONYjp:
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
         step: int = 200
-        dictSeries = OrderedDict()
+        dictSeries = {}
 
         wd = WebDriver.getChrome()
         wd.get(url=url)
@@ -366,8 +358,8 @@ class GetSONYjp:
 
     def __getSpec__(self, url:str="https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
 
-        dictSpec = OrderedDict()
-        dictNote = OrderedDict()
+        dictSpec = {}
+        dictNote = {}
 
         response = requests.get(url)
         html = response.text
@@ -411,7 +403,8 @@ class GetSONYjp:
 
                             key = self.__extractFoot__(key)
                             value = self.__extractFoot__(value)
-                            dictSpec[key] = self.__extractProductInfo__(value)
+                            value = self.__extractProductInfo__(value)
+                            dictSpec[key] = value
 
                     # ## 노트 추출
                     # notes = soup.select('.s5-specTableNote li')
@@ -443,38 +436,59 @@ class GetSONYjp:
         return dictSpec
 
     def __splitModels__(self, dictModels):
-        dictNewModels = OrderedDict()
-        dictNewModel = OrderedDict()
-
+        dictNewModels = {}
         dictModelsSplited = dictModels.get('型')
         if isinstance(dictModelsSplited, dict):
             for model in dictModelsSplited.keys():
+                dictNewModel = {}
                 for k, v in dictModels.items():
                     try:
-                        # print(k, v.get(model))
-                        dictNewModel[k] = v.get(model)
+                        value = v.get(model)
+                        dictNewModel[k] = value
                     except:
                         dictNewModel[k] = v
                 dictNewModels[model] = dictNewModel
-        else:
-            # 수정 해야 함 딕셔너리가 아닐 경우?
+        elif isinstance(dictModelsSplited, str):
             url = dictModels.get('url')
             model = url.split("/products/")[1].split("/")[0]
             dictNewModels[model] = dictModels
+        else:
+            # Handle other cases if needed
+            pass
         return dictNewModels
+
+    # def __splitModels__(self, dictModels):
+    #     dictNewModels = {}
+    #     dictNewModel = {}
+    #
+    #     dictModelsSplited = dictModels.get('型')
+    #     if isinstance(dictModelsSplited, dict):
+    #         for model in dictModelsSplited.keys():
+    #             for k, v in dictModels.items():
+    #                 try:
+    #                     # print(k, v.get(model))
+    #                     dictNewModel[k] = v.get(model)
+    #                 except:
+    #                     dictNewModel[k] = v
+    #             dictNewModels[model] = dictNewModel
+    #     else:
+    #         # 수정 해야 함 딕셔너리가 아닐 경우?
+    #         url = dictModels.get('url')
+    #         model = url.split("/products/")[1].split("/")[0]
+    #         dictNewModels[model] = dictModels
+    #     return dictNewModels
 
 
     def __extractProductInfo__(self, text):
         if "【" in text:
             listText = text.split("【")
             listText = [text.split("】") for text in listText]
-            print("listText before :",listText)
-      
-            dictText = OrderedDict((term[0].strip(): term[1].strip()) for term in listText if len(term) > 1)
-            print("dictText after :", dictText)
+            dictText = OrderedDict((term[0].strip(), term[1].strip()) for term in listText if len(term) > 1)
             return dictText
         else:
             return text
+
+
 
     def __extractFoot__(self, text):
         footMarks = ["*" + str(i) for i in reversed(range(1, 20))]
@@ -483,7 +497,7 @@ class GetSONYjp:
         return text
 
     def __extractInfo__(self, model):
-        dictInfo = OrderedDict()
+        dictInfo = {}
         dictInfo["year"] = model.split("-")[1][-1]
         dictInfo["series"] = model.split("-")[1][2:-1]
         dictInfo["size"] = model.split("-")[1][:2]
