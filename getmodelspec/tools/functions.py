@@ -58,11 +58,11 @@ def getNamefromURL(url):
 
 
 
-def dictToexcel(dictData, fileName="dictToExcel", orient_col=True):
+def dictToexcel(dictData, fileName="dictToExcel", sheetName="sheet1", orient_col=True):
     if orient_col == True: orient = 'columns'
     else: orient = 'index'
     df = pd.DataFrame.from_dict(dictData, orient=orient)
     # Create a Pandas Excel writer
-    df.to_excel(f"{fileName}"+".xlsx", index=True)
+    df.to_excel(f"{fileName}"+".xlsx", sheet_name=sheetName, index=True)
     return None
 
