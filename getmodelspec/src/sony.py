@@ -358,7 +358,7 @@ class GetSONYjp:
         dictSpec = OrderedDict()
         dictNote = {}
         TotalCnt = 5
-        for tryCnt in TotalCnt:
+        for tryCnt in range(TotalCnt):
             try:
                 response = requests.get(url)
                 html = response.text
