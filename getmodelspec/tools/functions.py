@@ -3,6 +3,8 @@ import time
 import pickle
 from datetime import datetime
 import random
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 import pandas as pd
 
 
@@ -56,13 +58,25 @@ def getNamefromURL(url):
     """
     return url.rsplit('/', 1)[-1]
 
-
-
 def dictToexcel(dictData, fileName="dictToExcel", sheetName="sheet1", orient_idx=True):
-    if orient_idx == True: orient = 'index'
-    else: orient = 'columns'
-    df = pd.DataFrame.from_dict(dictData, orient=orient)
-    # Create a Pandas Excel writer
-    df.to_excel(f"{fileName}"+".xlsx", sheet_name=sheetName, index=True)
-    return None
+    if orient_idx:
+        orient = 'index'
+    else:
+        orient = 'columns'
 
+    df = pd.DataFrame.from_dict(dictData, orient=orient)
+
+    try:
+        wb = load_workbook(filename=f"{fileName}.xlsx")
+        ws = wb.create_sheet(title=sheetName)
+    except FileNotFoundError:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = sheetName
+
+    for row in dataframe_to_rows(df, index=True, header=True):
+        ws.append(row)
+
+    wb.save(f"{fileName}.xlsx")
+    print(f"데이터가 {fileName}.xlsx 파일의 {sheetName} 시트에 저장되었습니다.")
+    return dictData
