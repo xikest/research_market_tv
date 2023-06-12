@@ -355,7 +355,7 @@ class GetSONYjp:
 
     def __getSpec__(self, url:str="https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
 
-        dictSpec = {}
+        dictSpec = OrderedDict()
         dictNote = {}
 
         response = requests.get(url)
@@ -488,7 +488,7 @@ class GetSONYjp:
 
 
     def __extractFoot__(self, text):
-        footMarks = ["*" + str(i) for i in reversed(range(1, 20))]
+        footMarks = ["*" + str(i) for i in reversed(range(1, 30))]
         for footMark in footMarks:
             text = text.replace(footMark, "")
         return text
