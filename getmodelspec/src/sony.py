@@ -18,16 +18,16 @@ from getmodelspec.tools.webdriver import WebDriver
 
 
 class GetSONY:
-    def __init__(self, fastMode=True, srcfromOfficial=True, toExcel=True):
+    def __init__(self, fastMode=True, srcfromGlobal=True, toExcel=True):
         self.waitTime = 10
         self.fastMode = fastMode
-        self.srcfromOfficial = srcfromOfficial
+        self.srcfromGlobal = srcfromGlobal
         self.toExcel = toExcel
         self.dir_3rd = "sony/log/models"
         makeDir(self.dir_3rd)
         pass
 
-    def getModels(self, toExcel:bool = True) -> pd.DataFrame:
+    def getModels(self, toExcel:bool = True) -> dict:
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getUrlSeries__()
         print(setUrlSeries)
@@ -61,7 +61,7 @@ class GetSONY:
                 model = dictInfo.get('model')
 
                 if self.fastMode == False:
-                    if self.srcfromOfficial == True:
+                    if self.srcfromGlobal == True:
                         dictSpec = self.__getSpecGlobal__(url=urlModel)
                         dictModels[key].update(dictSpec)
                     else:
@@ -80,15 +80,11 @@ class GetSONY:
                 pass
 
     # ======export====================================================================
-        dfModels = pd.DataFrame.from_dict(dictModels, orient="index")
-        # dfModels = dfModels.rename_axis('model').reset_index()
-
-
         if self.toExcel == True:
-            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}"
-            dfModels.to_excel(fileName, index=False)  # 엑셀 파일로 저장
+            fileName = f"sony_LineUpGlobal_{date.today().strftime('%Y-%m-%d')}"
+            dictToexcel(dictModels, fileName=fileName, orient_col=False)  # 엑셀 파일로 저장
 
-        return dfModels
+        return dictModels
 
     ###=====================get info main page====================================##
     def __getUrlSeries__(self)-> set:
@@ -293,7 +289,7 @@ class GetSONYjp:
         self.toExcel = toExcel
         pass
 
-    def getModels(self, toExcel:bool = True) -> pd.DataFrame:
+    def getModels(self, toExcel:bool = True) -> dict:
         self.toExcel=toExcel
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getSpecSeries__()
@@ -316,10 +312,11 @@ class GetSONYjp:
         # backUp(dictModels, "dictModels")
     # ======export====================================================================
         if self.toExcel == True:
-            fileName = f"sony_TV_series_{date.today().strftime('%Y-%m-%d')}"
+            fileName = f"sonyJp_LineUp_{date.today().strftime('%Y-%m-%d')}"
             dictToexcel(dictModels, fileName=fileName, orient_col=False)  # 엑셀 파일로 저장
 
         return dictModels
+
 
     ###=====================get info main page====================================##
     def __getSpecSeries__(self, url: str = "https://www.sony.jp/bravia/gallery/") -> dict:
