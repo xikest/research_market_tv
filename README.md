@@ -25,19 +25,19 @@ cd GetModelSpec
 ```
 
 ## 사용법
-1. 필요한 라이브러리 설치
+### 1. 필요한 라이브러리 설치
 ```bash
 pip install selenium pandas openpyxl
 ```
-2. lineup 모듈 임포트
+### 2. lineup 모듈 임포트
 ```python
 from getmodelspec.src.lineup import LineUp
 ```
-3. LineUp 클래스 인스턴스 생성
+### 3. LineUp 클래스 인스턴스 생성
 ```python
 lineup = LineUp()
 ```
-4-1. 사이트에서 제품 정보 가져오기
+### 4-1. 사이트에서 제품 정보 가져오기
 ```python
 df_global = lineup.getSony(src="global", fastMode=True, toExcel=True)
 ```
@@ -45,7 +45,7 @@ df_global = lineup.getSony(src="global", fastMode=True, toExcel=True)
 - fastMode: 빠른 모드를 사용할지 여부를 지정합니다. True로 설정하면 일부 정보를 생략하여 더 빠르게 가져옵니다.
 - toExcel: 가져온 제품 정보를 Excel 파일로 저장할지 여부를 지정합니다. True로 설정하면 Excel 파일로 저장됩니다.
 
-4-2. Sony 일본 사이트에서 제품 정보 가져오기
+### 4-2. Sony 일본 사이트에서 제품 정보 가져오기
 ```python
 df_jp = lineup.getSony(src="jp", fastMode=True, toExcel=True)
 ```
