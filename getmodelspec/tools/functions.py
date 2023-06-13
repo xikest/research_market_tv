@@ -74,7 +74,7 @@ def dictToexcel(dictData, fileName="dictToExcel", sheetName="sheet1", orient_idx
         ws = wb.active
         ws.title = sheetName
 
-    for row in dataframe_to_rows(df, index=True, header=False):  # 수정된 부분
+    for row in dataframe_to_rows(df, index=True, header=True):  # 수정된 부분
         ws.append(row)
 
     wb.save(f"{fileName}.xlsx")

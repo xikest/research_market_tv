@@ -1,5 +1,5 @@
 from getmodelspec.src.sony import GetSONY,  GetSONYjp
-
+from getmodelspec.src.panasonic import GetPanajp
 class LineUp:
 
     def __init__(self):
@@ -16,8 +16,17 @@ class LineUp:
         elif "jp":
             sony = GetSONYjp(toExcel=toExcel)
 
-        dfModels = sony.getModels()
-        return dfModels
+        dictModels = sony.getModels()
+        return dictModels
+
+    def getPana(self, toExcel: bool = True) -> None:
+        """
+
+        """
+        pana = GetPanajp(toExcel=toExcel)
+
+        dictModels = pana.getModels()
+        return dictModels
 
 
 

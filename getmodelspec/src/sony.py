@@ -267,8 +267,10 @@ class GetSONY:
         }
 
         # 알파벳과 대응하는 연도가 없을 경우 기본값으로 설정할 연도를 지정
-        try: dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
-        except:year = ""
+        try:
+            dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
+        except:
+            dictInfo["year"] =  ""
         return dictInfo
 
     def __soupToDict__(self,soup):
@@ -283,9 +285,8 @@ class GetSONY:
         return {h4_tag: p_tag}
 
 class GetSONYjp:
-    def __init__(self, fastMode=True,  toExcel=True):
+    def __init__(self, toExcel=True):
         self.waitTime = 10
-        self.fastMode = fastMode
         self.toExcel = toExcel
         pass
 
@@ -309,7 +310,7 @@ class GetSONYjp:
             # backUp(dictModels, "dictModels_b")
         print("Number of all Series:", len(dictModels))
         print(dictModels)
-        # backUp(dictModels, "dictModels")
+        backUp(dictModels, "dictModels")
     # ======export====================================================================
         if self.toExcel == True:
             fileName = f"sonyJp_LineUp_{date.today().strftime('%Y-%m-%d')}"
@@ -502,7 +503,7 @@ class GetSONYjp:
     def __extractInfo__(self, model):
         dictInfo = {}
         dictInfo["year"] = model.split("-")[1][-1]
-        dictInfo["series"] = model.split("-")[1][2:-1]
+        dictInfo["series"] = model.split("-")[1][2:]
         dictInfo["size"] = model.split("-")[1][:2]
         dictInfo["grade"] = model.split("-")[0]
 
@@ -516,6 +517,8 @@ class GetSONYjp:
         }
 
         # 알파벳과 대응하는 연도가 없을 경우 기본값으로 설정할 연도를 지정
-        try: dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
-        except:year = ""
+        try:
+            dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
+        except:
+            dictInfo["year"] = ""
         return dictInfo
