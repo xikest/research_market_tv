@@ -37,7 +37,7 @@ pip install selenium pandas openpyxl
 ```
 ### 2. lineup 모듈 임포트
 ```python
-from getmodelspec.src.lineup import LineUp
+from getmodelspec import LineUp
 ```
 ### 3. LineUp 클래스 인스턴스 생성
 ```python
