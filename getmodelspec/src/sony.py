@@ -472,7 +472,7 @@ class GetSONYjp:
         for k, v in dictData.items():
             k = translate_text(k, target_lang='en')
             if isinstance(v, dict):
-                v = self.translateDict(v)
+                v = self.＿translateDict＿(v)
             else:
                 v = translate_text(v, target_lang='en')
             dictNewData[k] = v
