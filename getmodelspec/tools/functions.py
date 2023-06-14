@@ -6,6 +6,7 @@ import random
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 import pandas as pd
+from googletrans import Translator
 
 
 def generate_random_number(start:int=3, end:int=5):
@@ -64,7 +65,7 @@ def dictToexcel(dictData, fileName="dictToExcel", sheetName="sheet1", orient_idx
     else:
         orient = 'columns'
 
-    df = pd.DataFrame.from_dict(dictData, orient=orient)
+    df = pd.DataFrame.from_dict(dictData, orient=orient).reset_index().rename(columns={'index': 'model'})
 
     try:
         wb = load_workbook(filename=f"{fileName}.xlsx")
@@ -74,9 +75,16 @@ def dictToexcel(dictData, fileName="dictToExcel", sheetName="sheet1", orient_idx
         ws = wb.active
         ws.title = sheetName
 
-    for row in dataframe_to_rows(df, index=True, header=True):  # 수정된 부분
+    for row in dataframe_to_rows(df, index=False, header=True):  # 수정된 부분
         ws.append(row)
 
     wb.save(f"{fileName}.xlsx")
     print(f"데이터가 {fileName}.xlsx 파일의 {sheetName} 시트에 저장되었습니다.")
     return dictData
+
+
+def translate_text(text, target_lang='en'):
+    translator = Translator()
+    translation = translator.translate(text, dest=target_lang)
+    translated_text = translation.text
+    return translated_text

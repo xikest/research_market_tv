@@ -113,38 +113,63 @@ class GetPanajp:
 
                 # BeautifulSoup를 사용하여 페이지 소스 파싱
                 soup = BeautifulSoup(page_source, 'html.parser')
-                classNames = ["speclist__item lv2", "speclist__item lv1"]
 
-                for className in classNames:
-                    dictSpec.update(self.__extractDataFromPage__(soup, className=className))
+                dictSpec = self.__extractDataFromPage__(soup)
+                print("ok")
+                # classNames = ["speclist__item lv2", "speclist__item lv1"]
+                #
+                # for className in classNames:
+                #     dictSpec.update(self.__extractDataFromPage__(soup))
                 return dictSpec
 
             except Exception as e:
                 print(f"getPage3rd error: {model} try {cntTry + 1}/{cntTryTotal}")
+                print(e)
                 with open("official spec error_log.txt", "a") as file:
                     traceback.print_exc(file=file)  # Traceback 정보를 파일에 저장
                 wd.quit()
                 pass
 
-    def __extractDataFromPage__(self, soup, className='speclist__item lv2'):
+    def __extractDataFromPage__(self, soup):
         # <li class="speclist__item lv2"> 요소 찾기
-        items = soup.find_all('li', class_=className)
+        # items = soup.find_all('li', class_=className)
 
         # 딕셔너리 초기화
         result_dict = {}
-
+        hierarchy = self.__extractHierarchy__(soup, [['speclist__item lv1'], ['speclist__item lv2'], ['speclist__item lv3'],['speclist__item lv3']])
+        return hierarchy
         # 각 <li class="speclist__item lv2"> 객체에서 정보 추출
-        for item in items:
-            key_element = item.find('div', class_='speclist__item__ttl')
-            value_element = item.find('ul', class_='speclist')
+        # for item in items:
+        #     key_element = item.find('div', class_='speclist__item__ttl')
+        #     value_element = item.find('ul', class_='speclist')
+        #
+        #     if key_element and value_element:
+        #         key = key_element.text.strip()
+        #         value = value_element.text.strip()
+        #         result_dict[key] = value
+        #
+        # return result_dict
 
-            if key_element and value_element:
-                key = key_element.text.strip()
-                value = value_element.text.strip()
-                result_dict[key] = value
 
-        return result_dict
+    # print(hierarchy)
+    def __extractHierarchy__(self, element, classNames=['speclist__item lv1'], cnt=0):
+        hierarchy = {}
+        lv1_elements = element.find_all('li', class_=classNames[cnt])
+        cnt += 1
+        for lv1_element in lv1_elements:
+            key_element = lv1_element.find('div', class_='speclist__item__ttl')
+            if key_element is not None:
+                key = key_element.get_text(strip=True)
+                try:
+                    siblings = lv1_element.find_next_siblings(['ul', 'li'], class_=['speclist__item', classNames[cnt]])
+                    value = [sibling.get_text(strip=True) for sibling in siblings]
+                except Exception as e:
+                    siblings = lv1_element.find_next_siblings('ul', class_='speclist')
+                    value = self.__extractHierarchy__(siblings, classNames=classNames, cnt=cnt)
+                    print(e)
+                hierarchy[key] = value
 
+        return hierarchy
     #
     #
     # def __extractProductInfo__(self, text):

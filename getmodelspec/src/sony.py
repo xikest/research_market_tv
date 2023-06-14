@@ -1,4 +1,4 @@
-
+import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
 import requests
@@ -9,6 +9,7 @@ from collections import OrderedDict
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+
 
 from getmodelspec.src.tv_spepcifications import Specifications
 from getmodelspec.src.tv_score import Score
@@ -285,33 +286,38 @@ class GetSONY:
         return {h4_tag: p_tag}
 
 class GetSONYjp:
-    def __init__(self, toExcel=True):
+    def __init__(self, toExcel=True , translateToEn=True):
         self.waitTime = 10
         self.toExcel = toExcel
+        self.translateToEn = translateToEn
         pass
 
     def getModels(self, toExcel:bool = True) -> dict:
         self.toExcel=toExcel
         # 메인 페이지에서 시리즈를 추출
         setUrlSeries = self.__getSpecSeries__()
-        print(setUrlSeries)
+        # print(setUrlSeries)
         # ==========================================================================
         # backUp(setUrlSeries, "setUrlSeries")
         # with open(f"setUrlSeries.pickle", "rb") as file:
         #     setUrlSeries = pickle.load(file)
         # ==========================================================================
 
-        ## 웹페이지의 모든 모델 url을 추출
+        # 웹페이지의 모든 모델 url을 추출
         dictModels = {}
         for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpec__(url=url)
             dictModels.update(modelspec)
-            # backUp(dictModels, "dictModels_b")
         print("Number of all Series:", len(dictModels))
-        print(dictModels)
+        # print(dictModels)
         backUp(dictModels, "dictModels")
-    # ======export====================================================================
+
+        # with open(f"dictModels.pickle", "rb") as file:
+        #     dictModels = pickle.load(file)
+        if self.translateToEn == True:
+            dictModels = self.__translateDict__(dictModels)
+        # ======export====================================================================
         if self.toExcel == True:
             fileName = f"sonyJp_LineUp_{date.today().strftime('%Y-%m-%d')}"
             dictToexcel(dictModels, fileName=fileName,sheetName="Jp")  # 엑셀 파일로 저장
@@ -460,6 +466,18 @@ class GetSONYjp:
             # Handle other cases if needed
             pass
         return dictNewModels
+
+    def __translateDict__(self, dictData):
+        dictNewData = {}
+        for k, v in dictData.items():
+            k = translate_text(k, target_lang='en')
+            if isinstance(v, dict):
+                v = self.translateDict(v)
+            else:
+                v = translate_text(v, target_lang='en')
+            dictNewData[k] = v
+        return dictNewData
+
 
     # def __splitModels__(self, dictModels):
     #     dictNewModels = {}
