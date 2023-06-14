@@ -441,8 +441,8 @@ class GetSONYjp:
 
                 return dictSpec
             except Exception as e:
-                print(f"An error occurred: {str(e)}")
-                print(f"{tryCnt}/{TotalCnt} try to get spec")
+                #print(f"An error occurred: {str(e)}")
+                print(f"{tryCnt+1}/{TotalCnt} try to get spec from {url})
                 pass
 
     def __splitModels__(self, dictModels):
