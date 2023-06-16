@@ -1,4 +1,4 @@
-
+import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
 from tqdm import tqdm
@@ -21,12 +21,12 @@ class GetPanajp:
     def getModels(self, toExcel:bool = True) -> dict:
         self.toExcel=toExcel
         # 메인 페이지에서 시리즈를 추출
-        # setUrlSeries = self.__getSpecSeries__()
-        # print(setUrlSeries)
+        setUrlSeries = self.__getSpecSeries__()
+        print(setUrlSeries)
         # # ==========================================================================
         # # backUp(setUrlSeries, "setUrlSeries")
-        with open(f"setUrlSeries.pickle", "rb") as file:
-            setUrlSeries = pickle.load(file)
+        # with open(f"setUrlSeries.pickle", "rb") as file:
+        #     setUrlSeries = pickle.load(file)
         # ==========================================================================
 
         ## 웹페이지의 모든 모델 url을 추출
@@ -34,18 +34,16 @@ class GetPanajp:
         for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpecGlobal__(url=url)
-            dictModels[model]=modelspec
+            dictModels[model] = modelspec
 
-            print(dictModels.keys())
-            print({model:modelspec})
+            # print({model:modelspec})
             # print(dictModels)
             # backUp(dictModels, "dictModels_b")
         print("Number of all Series:", len(dictModels))
         # print(dictModels)
-        backUp(dictModels, "dictModels")
-
-        with open(f"dictModels.pickle", "rb") as file:
-            dictModels = pickle.load(file)
+        # backUp(dictModels, "dictModels")
+        # with open(f"dictModels.pickle", "rb") as file:
+        #     dictModels = pickle.load(file)
     # ======export====================================================================
         if self.toExcel == True:
             fileName = f"{self.maker}Jp_LineUp_{date.today().strftime('%Y-%m-%d')}"
@@ -93,9 +91,8 @@ class GetPanajp:
                 title_text = title.text.strip()
                 results[title_text] = prefix + link_url
         return results
-
     def __getSpecGlobal__(self, url: str) -> dict:
-        print("get", url)
+        # print("get", url)
         cntTryTotal = 20
         for cntTry in range(cntTryTotal):
             try:
@@ -136,7 +133,7 @@ class GetPanajp:
 
         # 딕셔너리 초기화
         result_dict = {}
-        hierarchy = self.__extractHierarchy__(soup, [['speclist__item lv1'], ['speclist__item lv2'], ['speclist__item lv3'],['speclist__item lv3']])
+        hierarchy = self.__extractHierarchy__(soup, [['speclist__item lv1'], ['speclist__item lv2'], ['speclist__item lv3'],['speclist__item lv4']])
         return hierarchy
         # 각 <li class="speclist__item lv2"> 객체에서 정보 추출
         # for item in items:
@@ -150,27 +147,71 @@ class GetPanajp:
         #
         # return result_dict
 
-
-    # print(hierarchy)
     def __extractHierarchy__(self, element, classNames=['speclist__item lv1'], cnt=0):
         hierarchy = {}
-        lv1_elements = element.find_all('li', class_=classNames[cnt])
+        lv1_elements = element.find_all('li', class_=classNames[cnt])  # 최상위
         cnt += 1
         for lv1_element in lv1_elements:
             key_element = lv1_element.find('div', class_='speclist__item__ttl')
             if key_element is not None:
                 key = key_element.get_text(strip=True)
                 try:
-                    siblings = lv1_element.find_next_siblings(['ul', 'li'], class_=['speclist__item', classNames[cnt]])
-                    value = [sibling.get_text(strip=True) for sibling in siblings]
-                except Exception as e:
-                    siblings = lv1_element.find_next_siblings('ul', class_='speclist')
-                    value = self.__extractHierarchy__(siblings, classNames=classNames, cnt=cnt)
-                    print(e)
-                hierarchy[key] = value
+                    lv2_element = lv1_element.find('ul', class_='speclist__item')
+                    hierarchy[key] = self.__extractHierarchy__(lv2_element, classNames=classNames, cnt=cnt)
+                except:
+                    data_element = lv1_element.find('div', class_='speclist__item__data')
+                    hierarchy[key] = data_element.get_text(strip=True)
 
+            siblings = lv1_element.find_next_siblings(['ul', 'li'], class_=['speclist__item', classNames[cnt]])
+            for sibling in siblings:
+                sibling_key_element = sibling.find('div', class_='speclist__item__ttl')
+                if sibling_key_element is not None:
+                    sibling_key = sibling_key_element.get_text(strip=True)
+                    try:
+                        sibling_lv2_element = sibling.find('ul', class_='speclist__item')
+                        hierarchy[sibling_key] = self.__extractHierarchy__(sibling_lv2_element, classNames=classNames,
+                                                                           cnt=cnt)
+                    except:
+                        sibling_data_element = sibling.find('div', class_='speclist__item__data')
+                        hierarchy[sibling_key] = sibling_data_element.get_text(strip=True)
+        # print(hierarchy)
         return hierarchy
+
+                #
+                # except Exception as e:
+                #     hierarchy[key] = sibling.get_text(strip=True)
+                #     print(hierarchy[key])
+
+                    # siblings = lv1_element.find_next_siblings('ul', class_='speclist')
+                    # value = self.__extractHierarchy__(siblings, classNames=classNames, cnt=cnt)
+                    # print(e)
+                # hierarchy[key] = value
+
+        # return hierarchy
     #
+
+
+
+    # def __extractHierarchy__(self, element, classNames=['speclist__item lv1'], cnt=0):
+    #     hierarchy = {}
+    #     lv1_elements = element.find_all('li', class_=classNames[cnt]) # 최상위
+    #     cnt += 1
+    #     for lv1_element in lv1_elements:
+    #         key_element = lv1_element.find('div', class_='speclist__item__ttl')
+    #         if key_element is not None:
+    #             key = key_element.get_text(strip=True)
+    #             print("key", key)
+    #             try:
+    #                 siblings = lv1_element.find_next_siblings(['ul', 'li'], class_=['speclist__item', classNames[cnt]])
+    #                 value = [sibling.get_text(strip=True) for sibling in siblings]
+    #             except Exception as e:
+    #                 siblings = lv1_element.find_next_siblings('ul', class_='speclist')
+    #                 value = self.__extractHierarchy__(siblings, classNames=classNames, cnt=cnt)
+    #                 print(e)
+    #             hierarchy[key] = value
+    #
+    #     return hierarchy
+    # #
     #
     # def __extractProductInfo__(self, text):
     #     if "【" in text:

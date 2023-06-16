@@ -286,7 +286,7 @@ class GetSONY:
         return {h4_tag: p_tag}
 
 class GetSONYjp:
-    def __init__(self, toExcel=True , translateToEn=True):
+    def __init__(self, toExcel=True , translateToEn=False):
         self.waitTime = 10
         self.toExcel = toExcel
         self.translateToEn = translateToEn
@@ -442,7 +442,7 @@ class GetSONYjp:
                 return dictSpec
             except Exception as e:
                 #print(f"An error occurred: {str(e)}")
-                print(f"{tryCnt+1}/{TotalCnt} try to get spec from {url})
+                print(f"{tryCnt+1}/{TotalCnt} try to get spec from {url}")
                 pass
 
     def __splitModels__(self, dictModels):
@@ -472,7 +472,7 @@ class GetSONYjp:
         for k, v in dictData.items():
             k = translate_text(k, target_lang='en')
             if isinstance(v, dict):
-                v = self.＿translateDict＿(v)
+                v = self.__translateDict__(v)
             else:
                 v = translate_text(v, target_lang='en')
             dictNewData[k] = v
