@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
@@ -360,18 +362,134 @@ class GetSONYjp:
         print(f"number of total Series: {len(dictSeries)}")
         return dictSeries
 
-    def __getSpec__(self, url:str="https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
+    # def __getSpec__(self, url:str="https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
+    #
+    #     dictSpec = OrderedDict()
+    #     dictNote = {}
+    #     TotalCnt = 5
+    #     for tryCnt in range(TotalCnt):
+    #         try:
+    #             response = requests.get(url)
+    #             html = response.text
+    #             soup = BeautifulSoup(html, 'html.parser')
+    #             table = soup.find('tbody', class_='SpecificationsTableSingle__Tbody')
+    #
+    #             if table:
+    #                 rows = table.find_all('tr')
+    #                 key = None
+    #                 for row in rows:
+    #                     subhead_element = row.find('th', class_='SpecificationsTable__TableSubhead')
+    #                     value_element = row.find('td', class_='SpecificationsTable__TableValue -isSelected')
+    #                     if subhead_element:
+    #                         key = subhead_element.get_text(strip=True)
+    #                         key = self.__extractFoot__(key)
+    #                     if value_element and key:
+    #                         value = value_element.get_text(strip=True)
+    #                         value = self.__extractFoot__(value)
+    #                         dictSpec[key] = self.__extractProductInfo__(value)
+    #             else:
+    #                 step: int = 200
+    #                 time.sleep(5)
+    #                 wd = WebDriver.getChrome()
+    #                 wd.get(url=url)
+    #                 time.sleep(5)
+    #                 print("sdsd")
+    #
+    #                 scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
+    #                 scrollDistance = 0  # 현재까지 스크롤한 거리
+    #
+    #                 try:
+    #                     while scrollDistance < scrollDistanceTotal:
+    #                         html = wd.page_source
+    #                         soup = BeautifulSoup(html, 'html.parser')
+    #                         table = soup.find('div', class_='s5-specTable')
+    #
+    #                         # if table is not None:  # 테이블이 있는 경우에만 데이터 추출
+    #                         for row in table.find_all('tr'):
+    #                             cells = row.find_all('td')
+    #                             if len(cells) >= 1:
+    #                                 key = row.get_text(strip=True)
+    #                                 value = cells[0].get_text(strip=True)
+    #                                 key = key.replace(value, "")
+    #
+    #                                 key = self.__extractFoot__(key)
+    #                                 value = self.__extractFoot__(value)
+    #                                 value = self.__extractProductInfo__(value)
+    #                                 dictSpec[key] = value
+    #
+    #                         # ## 노트 추출
+    #                         # notes = soup.select('.s5-specTableNote li')
+    #                         # for note in notes:
+    #                         #     bullet = note.select_one('.s5-specTableNote__bullet').text.strip()
+    #                         #     text = note.select_one('.s5-specTableNote__text').text.strip()
+    #                         #     dictNote[bullet] = " @" + text
+    #                         # 한 step씩 스크롤 내리기
+    #                         wd.execute_script(f"window.scrollBy(0, {step});")
+    #                         time.sleep(1)  # 스크롤이 내려가는 동안 대기
+    #                         scrollDistance += step
+    #                     wd.quit()
+    #                 except Exception as e:
+    #                     # print("An error occurred:", e)
+    #                     # 웹페이지가 동적이 아닌 경우
+    #                     wd.quit()
 
+    def __getSpec__(self, url: str = "https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
         dictSpec = OrderedDict()
         dictNote = {}
         TotalCnt = 5
+
+        #=============================
         for tryCnt in range(TotalCnt):
             try:
+                step: int = 200
+                time.sleep(5)
+                wd = WebDriver.getChrome()
+                wd.get(url=url)
+                time.sleep(5)
+                print("Trying with Selenium...")
+
+                scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
+                scrollDistance = 0  # 현재까지 스크롤한 거리
+
+                while scrollDistance < scrollDistanceTotal:
+                    html = wd.page_source
+                    soup = BeautifulSoup(html, 'html.parser')
+                    table = soup.find('div', class_='s5-specTable')
+
+                    # if table is not None:  # 테이블이 있는 경우에만 데이터 추출
+                    for row in table.find_all('tr'):
+                        cells = row.find_all('td')
+                        if len(cells) >= 1:
+                            key = row.get_text(strip=True)
+                            value = cells[0].get_text(strip=True)
+                            key = key.replace(value, "")
+
+                            key = self.__extractFoot__(key)
+                            value = self.__extractFoot__(value)
+                            value = self.__extractProductInfo__(value)
+                            dictSpec[key] = value
+
+                    # ## 노트 추출
+                    # notes = soup.select('.s5-specTableNote li')
+                    # for note in notes:
+                    #     bullet = note.select_one('.s5-specTableNote__bullet').text.strip()
+                    #     text = note.select_one('.s5-specTableNote__text').text.strip()
+                    #     dictNote[bullet] = " @" + text
+                    # 한 step씩 스크롤 내리기
+                    wd.execute_script(f"window.scrollBy(0, {step});")
+                    time.sleep(1)  # 스크롤이 내려가는 동안 대기
+                    scrollDistance += step
+                wd.quit()
+                break  # 셀레니움으로 성공적으로 스크래핑했을 경우 반복문 탈출
+            except Exception as e:
+                wd.quit()
+                print(f"Failed to scrape using Selenium. Trying with BS4...\nError: {str(e)}")
+
                 response = requests.get(url)
                 html = response.text
                 soup = BeautifulSoup(html, 'html.parser')
                 table = soup.find('tbody', class_='SpecificationsTableSingle__Tbody')
-
+                print("html")
                 if table:
                     rows = table.find_all('tr')
                     key = None
@@ -385,65 +503,23 @@ class GetSONYjp:
                             value = value_element.get_text(strip=True)
                             value = self.__extractFoot__(value)
                             dictSpec[key] = self.__extractProductInfo__(value)
+                    break  # BS4로 성공적으로 스크래핑했을 경우 반복문 탈출
                 else:
-                    step: int = 200
-                    wd = WebDriver.getChrome()
-                    wd.get(url=url)
-                    time.sleep(1)
+                    raise Exception("Table not found")
 
-                    scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
-                    scrollDistance = 0  # 현재까지 스크롤한 거리
-                    try:
-                        while scrollDistance < scrollDistanceTotal:
-                            html = wd.page_source
-                            soup = BeautifulSoup(html, 'html.parser')
-                            table = soup.find('div', class_='s5-specTable')
-
-                            # if table is not None:  # 테이블이 있는 경우에만 데이터 추출
-                            for row in table.find_all('tr'):
-                                cells = row.find_all('td')
-                                if len(cells) >= 1:
-                                    key = row.get_text(strip=True)
-                                    value = cells[0].get_text(strip=True)
-                                    key = key.replace(value, "")
-
-                                    key = self.__extractFoot__(key)
-                                    value = self.__extractFoot__(value)
-                                    value = self.__extractProductInfo__(value)
-                                    dictSpec[key] = value
-
-                            # ## 노트 추출
-                            # notes = soup.select('.s5-specTableNote li')
-                            # for note in notes:
-                            #     bullet = note.select_one('.s5-specTableNote__bullet').text.strip()
-                            #     text = note.select_one('.s5-specTableNote__text').text.strip()
-                            #     dictNote[bullet] = " @" + text
-                            # 한 step씩 스크롤 내리기
-                            wd.execute_script(f"window.scrollBy(0, {step});")
-                            time.sleep(1)  # 스크롤이 내려가는 동안 대기
-                            scrollDistance += step
-                        wd.quit()
-                    except Exception as e:
-                        # print("An error occurred:", e)
-                        # 웹페이지가 동적이 아닌 경우
-                        wd.quit()
-
-                # ## 풋노트 끌어오기
-                # for kNote in dictNote.keys():
-                #     for k, v in dictSpec.items():
-                #         if kNote in k:
-                #             dictSpec[k] = k.replace(kNote, dictNote.get(kNote))
-                #         if kNote in v:
-                #             dictSpec[k] = v.replace(kNote, dictNote.get(kNote))
-                dictSpec['url'] = url
-                dictSpec = self.__splitModels__(dictSpec)
-                for k in dictSpec.keys(): dictSpec[k].update(self.__extractInfo__(k))
-
-                return dictSpec
-            except Exception as e:
-                #print(f"An error occurred: {str(e)}")
-                print(f"{tryCnt+1}/{TotalCnt} try to get spec from {url}")
-                pass
+        # ## 풋노트 끌어오기
+        # for kNote in dictNote.keys():
+        #     for k, v in dictSpec.items():
+        #         if kNote in k:
+        #             dictSpec[k] = k.replace(kNote, dictNote.get(kNote))
+        #         if kNote in v:
+        #             dictSpec[k] = v.replace(kNote, dictNote.get(kNote))
+        dictSpec['url'] = url
+        dictSpec = self.__splitModels__(dictSpec)
+        for k in dictSpec.keys():
+            dictSpec[k].update(self.__extractInfo__(k))
+        print(dictSpec)
+        return dictSpec
 
     def __splitModels__(self, dictModels):
         dictNewModels = {}

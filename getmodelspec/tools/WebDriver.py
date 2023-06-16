@@ -3,6 +3,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
 
 import time
 class WebDriver:
@@ -18,15 +21,18 @@ class WebDriver:
         반환값:
             - driver (WebDriver): Chrome 웹 드라이버 객체
         """
-        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-        chrome_options = webdriver.ChromeOptions()
+        chrome_options = Options()
+        options = Options()
+        options.add_argument(
+            "--user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'")# 에이전트 우회
+        # chrome_options.page_load_strategy = 'none'
         chrome_options.add_argument('--headless')  # 헤드리스 모드로 실행
         chrome_options.add_argument('--no-sandbox')  # 헤드리스 크롬 브라우저를 "사용자 네임스페이스" 옵션 없이 실행하도록 설정
         chrome_options.add_argument('--disable-dev-shm-usage')  # 헤드리스
-        chrome_options.add_argument('user-agent={0}'.format(user_agent))  # 에이전트 우회
         # chrome_options.add_argument('lang=ko_kr')  # 브라우저 언어
-        service = ChromeService(executable_path='chromedriver')
-        driver = webdriver.Chrome(service=service , options=chrome_options)
+        service = Service('chromedriver')  # 크롬 드라이버 경로 설정
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        # print("get crome")
         return driver
 
     @staticmethod
@@ -87,6 +93,7 @@ class WebDriver:
         while True:
             scroll_distance = get_scroll_distance(driver)
             total_scroll_distance += scroll_distance
+            # print("total distance: ", total_scroll_distance)
 
             # 새로운 스크롤 위치와 이전 스크롤 위치가 같다면 스크롤이 더 이상 되지 않았으므로 종료합니다.
             if scroll_distance == 0 or scroll_distance == prev_scroll_distance:
@@ -104,7 +111,7 @@ class WebDriver:
 
 def get_scroll_distance(driver):
     # 현재 페이지의 스크롤 위치를 가져옵니다.
-    current_scroll_position = driver.execute_script("return window.pageYOffset")
+    current_scroll_position = driver.execute_script("return window.scrollY || window.pageYOffset")
     # 스크롤 이벤트를 발생시킵니다.
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
     time.sleep(1)
