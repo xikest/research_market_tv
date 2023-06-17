@@ -60,7 +60,7 @@ class GetPanajp:
         wd = WebDriver.getChrome()
         wd.get(url=url)
         time.sleep(1)
-
+        print("start to get urls ")
         scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
         scrollDistance = 0  # 현재까지 스크롤한 거리
 
@@ -77,6 +77,9 @@ class GetPanajp:
 
         print(f"number of total Series: {len(dictSeries)}")
         print(dictSeries)
+        return dictSeries
+
+
     def __getSpecSeriesExtact__(self, html) -> dict:
         soup = BeautifulSoup(html, 'html.parser')
         results = {}
@@ -91,6 +94,8 @@ class GetPanajp:
                 title_text = title.text.strip()
                 results[title_text] = prefix + link_url
         return results
+
+
     def __getSpecGlobal__(self, url: str) -> dict:
         # print("get", url)
         cntTryTotal = 20
@@ -100,8 +105,8 @@ class GetPanajp:
                 wd = WebDriver.getChrome()
                 wd.get(url=url)
                 model = getNamefromURL(url)
-                dir_model = f"{self.dir_3rd}/{model}"
-                makeDir(dir_model)
+                # dir_model = f"{self.dir_3rd}/{model}"
+                # makeDir(dir_model)
                 # wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
 
                 # Selenium을 사용하여 페이지 소스 가져오기
