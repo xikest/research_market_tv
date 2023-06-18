@@ -63,31 +63,35 @@ class GetSONY:
         dictModels = {}
         score = Score()
         for key, urlModel in tqdm(dictUrlSeries.items()):
-            try:
-                dictInfo = self.__getModelInfo__(urlModel)
-                time.sleep(1)
-                dictModels[key] = dictInfo
-                model = dictInfo.get('model')
+            for i in range(5):
+                try:
+                    dictInfo = self.__getModelInfo__(urlModel)
+                    time.sleep(1)
+                    dictModels[key] = dictInfo
+                    model = dictInfo.get('model')
 
-                if self.fastMode == False:
-                    if self.srcfromGlobal == True:
-                        dictSpec = self.__getSpecGlobal__(url=urlModel)
-                        dictModels[key].update(dictSpec)
-                    else:
-                        print("global")
-                        dictSpec = self.__getSpec__(maker="sony", model=model)
-                        dictModels[key].update(dictSpec)
+                    if self.fastMode == False:
+                        if self.srcfromGlobal == True:
+                            dictSpec = self.__getSpecGlobal__(url=urlModel)
+                            dictModels[key].update(dictSpec)
+                        else:
+                            print("global")
+                            dictSpec = self.__getSpec__(maker="sony", model=model)
+                            dictModels[key].update(dictSpec)
 
-                time.sleep(1)
-                series = model.split("-")[1][2:]
-                dictScore = score.getRthinsScore(maker="sony", series=series)
-                if self.trackingLog == True:
-                    print(series,"score:", dictScore)
-                dictModels[key].update(dictScore)
-            except Exception as e:
-                print(f"fail to get info from {key}")
-                print(e)
-                pass
+                    time.sleep(1)
+                    series = model.split("-")[1][2:]
+                    dictScore = score.getRthinsScore(maker="sony", series=series)
+                    if self.trackingLog == True:
+                        print(series,"score:", dictScore)
+                    dictModels[key].update(dictScore)
+                    break
+                except Exception as e:
+                    print(f"fail to get info from {key}")
+                    print(f"try to get info from {key}_{i+1}/5")
+                    if self.trackingLog == True:
+                        print(e)
+                    pass
 
     # ======export====================================================================
         if self.toExcel == True:

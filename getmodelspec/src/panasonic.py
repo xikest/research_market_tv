@@ -101,10 +101,10 @@ class GetPanajp:
         # print("get", url)
         cntTryTotal = 20
         for cntTry in range(cntTryTotal):
+            model = getNamefromURL(url)
             try:
                 wd = WebDriver.getChrome()
                 wd.get(url=url)
-                model = getNamefromURL(url)
                 # dir_model = f"{self.dir_3rd}/{model}"
                 # makeDir(dir_model)
                 # wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
