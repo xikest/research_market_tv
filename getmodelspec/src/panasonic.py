@@ -34,6 +34,7 @@ class GetPanajp:
         for model, url in tqdm(setUrlSeries.items()):
             print(model,":", url)
             modelspec = self.__getSpecGlobal__(url=url)
+            modelspec["url"] = url
             dictModels[model] = modelspec
 
             # print({model:modelspec})
@@ -101,7 +102,6 @@ class GetPanajp:
         cntTryTotal = 20
         for cntTry in range(cntTryTotal):
             try:
-                dictSpec = {}
                 wd = WebDriver.getChrome()
                 wd.get(url=url)
                 model = getNamefromURL(url)
@@ -110,14 +110,13 @@ class GetPanajp:
                 # wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
 
                 # Selenium을 사용하여 페이지 소스 가져오기
-                dictSpec = OrderedDict()
                 page_source = wd.page_source
 
                 # BeautifulSoup를 사용하여 페이지 소스 파싱
                 soup = BeautifulSoup(page_source, 'html.parser')
 
                 dictSpec = self.__extractDataFromPage__(soup)
-                print("ok")
+                # print("ok")
                 # classNames = ["speclist__item lv2", "speclist__item lv1"]
                 #
                 # for className in classNames:

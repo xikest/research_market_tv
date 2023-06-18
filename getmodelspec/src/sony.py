@@ -21,21 +21,26 @@ from getmodelspec.tools.webdriver import WebDriver
 
 
 class GetSONY:
-    def __init__(self, fastMode=True, srcfromGlobal=True, toExcel=True):
+    def __init__(self, fastMode=True, srcfromGlobal=True, toExcel=True,trackingLog=False):
         self.waitTime = 10
         self.fastMode = fastMode
         self.srcfromGlobal = srcfromGlobal
         self.toExcel = toExcel
         self.dir_3rd = "sony/log/models"
-        makeDir(self.dir_3rd)
+        self.trackingLog=trackingLog
+        if self.trackingLog == True:
+            makeDir(self.dir_3rd)
         pass
 
     def getModels(self, toExcel:bool = True) -> dict:
         # 메인 페이지에서 시리즈를 추출
+        print("collecting...")
         setUrlSeries = self.__getUrlSeries__()
-        print(setUrlSeries)
+        if self.trackingLog == True:
+            print(setUrlSeries)
         # ==========================================================================
-        # backUp(setUrlSeries, "setUrlSeries")
+        if self.trackingLog == True:
+            backUp(setUrlSeries, "setUrlSeries")
         # with open(f"setUrlSeries.pickle", "rb") as file:
         #     setUrlSeries = pickle.load(file)
         # # ==========================================================================
@@ -49,7 +54,8 @@ class GetSONY:
         print("Number of all Series:", len(dictUrlSeries))
 
         # # # ==========================================================================
-        # backUp(dictUrlSeries, "dictUrlSeries")
+        if self.trackingLog == True:
+            backUp(dictUrlSeries, "dictUrlSeries")
         # with open(f"dictUrlSeries.pickle", "rb") as file:
         #     dictUrlSeries = pickle.load(file)
         # ==========================================================================
@@ -75,7 +81,8 @@ class GetSONY:
                 time.sleep(1)
                 series = model.split("-")[1][2:]
                 dictScore = score.getRthinsScore(maker="sony", series=series)
-                print(series,"score:", dictScore)
+                if self.trackingLog == True:
+                    print(series,"score:", dictScore)
                 dictModels[key].update(dictScore)
             except Exception as e:
                 print(f"fail to get info from {key}")
@@ -107,19 +114,20 @@ class GetSONY:
         scrollDistance = 0  # 현재까지 스크롤한 거리
 
         while scrollDistance < scrollDistanceTotal:
-            html = wd.page_source
-            soup = BeautifulSoup(html, 'html.parser')
+            for i in range(2):  #반복해서 데이터 누락 방지
+                html = wd.page_source
+                soup = BeautifulSoup(html, 'html.parser')
 
-            elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
-            for element in elements:
-                urlSeries = prefix + element['href']
-                # label = element.text
-                # print(f"{label} {urlSeries}")
-                setUrlSeries.add(urlSeries.strip())
+                elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
+                for element in elements:
+                    urlSeries = prefix + element['href']
+                    # label = element.text
+                    # print(f"{label} {urlSeries}")
+                    setUrlSeries.add(urlSeries.strip())
 
             # 한 step씩 스크롤 내리기
             wd.execute_script(f"window.scrollBy(0, {step});")
-            time.sleep(1)  # 스크롤이 내려가는 동안 대기
+            time.sleep(2)  # 스크롤이 내려가는 동안 대기
             scrollDistance += step
 
         wd.quit()
@@ -133,33 +141,34 @@ class GetSONY:
         for cntTry in range(cntTryTotal):
             try:
                 dictUrlModels = {}
-                if modeStatic == True:
-                    response = requests.get(url)
-                    # print("connect to", url)
-                    # time.sleep(1)
-                    page_content = response.text
+                for i in range(3):   # 반복해서 데이터 누락 방지
+                    if modeStatic == True:
+                        response = requests.get(url)
+                        # print("connect to", url)
+                        # time.sleep(1)
+                        page_content = response.text
 
-                    soup = BeautifulSoup(page_content, 'html.parser')
-                    elements = soup.find_all('a', class_='custom-variant-selector__item')
-                else:
-                    wd = WebDriver.getChrome()
-                    wd.get(url=url)
-                    # print("connect to", url)
-                    waitingPage(self.waitTime)
-                    page_source = wd.page_source
-                    soup = BeautifulSoup(page_source, 'html.parser')
-                    elements = soup.find_all('a', class_='custom-variant-selector__item')
+                        soup = BeautifulSoup(page_content, 'html.parser')
+                        elements = soup.find_all('a', class_='custom-variant-selector__item')
+                    else:
+                        wd = WebDriver.getChrome()
+                        wd.get(url=url)
+                        # print("connect to", url)
+                        waitingPage(self.waitTime)
+                        page_source = wd.page_source
+                        soup = BeautifulSoup(page_source, 'html.parser')
+                        elements = soup.find_all('a', class_='custom-variant-selector__item')
 
-                for element in elements:
-                    try:
-                        element_url = prefix + element['href']
-                        label = getNamefromURL(element_url)
-                        # print(f"{label} {element_url}")
+                    for element in elements:
+                        try:
+                            element_url = prefix + element['href']
+                            label = getNamefromURL(element_url)
+                            # print(f"{label} {element_url}")
 
-                        dictUrlModels[label] = element_url.strip()
-                    except Exception as e:
-                        print(f"getSeries error ({e})")
-                        pass
+                            dictUrlModels[label] = element_url.strip()
+                        except Exception as e:
+                            print(f"getSeries error ({e})")
+                            pass
 
                     # waitingPage(self.waitTime)
                 print(f"Number of SONY {getNamefromURL(url)[4:]} series:", len(dictUrlModels))
@@ -170,7 +179,8 @@ class GetSONY:
     ###====================================================================================##
     def __getModelInfo__(self,url: str) -> dict:
         response = requests.get(url)
-        print("connect to", url)
+        if self.trackingLog == True:
+            print("connect to", url)
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
         dictInfo = {}
@@ -199,33 +209,37 @@ class GetSONY:
                 model = getNamefromURL(url)
                 dir_model = f"{self.dir_3rd}/{model}"
                 makeDir(dir_model)
-
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
+                if self.trackingLog == True:
+                    wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_0_model_{get_today()}.png")  # 스크린 샷
 
                 elementSpec = wd.find_element(By.ID, "PDPSpecificationsLink")
                 wd = WebDriver.move_element_to_center(wd, elementSpec)
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_1_move_to_spec_{get_today()}.png")  # 스크린 샷
+                if self.trackingLog == True:
+                    wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_1_move_to_spec_{get_today()}.png")  # 스크린 샷
 
                 waitingPage(self.waitTime)  # 페이지 로딩 대기 -
                 elementClickSpec = wd.find_element(By.ID, 'PDPSpecificationsLink')
                 elementClickSpec.click()
                 waitingPage(self.waitTime)  # 페이지 로딩 대기 -
-                wd.save_screenshot(
-                    f"./{dir_model}/{getNamefromURL(url)}_2_after_click_specification_{get_today()}.png")  # 스크린 샷
+                if self.trackingLog == True:
+                    wd.save_screenshot(
+                        f"./{dir_model}/{getNamefromURL(url)}_2_after_click_specification_{get_today()}.png")  # 스크린 샷
 
                 try:
                     element_seeMore = wd.find_element(By.XPATH,
                                                       '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
                     wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    wd.save_screenshot(
-                        f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
+                    if self.trackingLog == True:
+                        wd.save_screenshot(
+                            f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
                     element_seeMore.click()
                 except:
                     element_seeMore = wd.find_element(By.XPATH,
                                                       '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[2]/button')
                     wd = WebDriver.move_element_to_center(wd, element_seeMore)
-                    wd.save_screenshot(
-                        f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
+                    if self.trackingLog == True:
+                        wd.save_screenshot(
+                            f"./{dir_model}/{getNamefromURL(url)}_3_after_click_see_more_{get_today()}.png")  # 스크린 샷
                     element_seeMore.click()
 
                 # 스펙 팝업 창의 스크롤 선택 후 클릭: 팝업 창으로 이동
@@ -239,7 +253,8 @@ class GetSONY:
                         soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
                         dictSpec.update(self.__soupToDict__(soup))
                     ActionChains(wd).key_down(Keys.PAGE_DOWN).perform()
-                wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_4_end_{get_today()}.png")  # 스크린 샷
+                if self.trackingLog == True:
+                    wd.save_screenshot(f"./{dir_model}/{getNamefromURL(url)}_4_end_{get_today()}.png")  # 스크린 샷
 
                 wd.quit()
                 print(f"{model}\n", dictSpec)

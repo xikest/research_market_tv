@@ -15,7 +15,7 @@ class Score():
         pass
 
     def getRthinsScore(self, prefix:str="https://www.rtings.com/tv/reviews/sony/",
-                           series:str="x85k", maker=None) -> dict:
+                           series:str="x85k", maker=None, trackingLog=False) -> dict:
 
         # Chrome WebDriver 생성
         wd = WebDriver.getChrome()
@@ -28,7 +28,8 @@ class Score():
 
         url = prefix + series
         url = url.lower()
-        print(f"TV score info: {url}")
+        if trackingLog == True:
+            print(f"TV score info: {url}")
         # 웹 페이지 로드
         wd.get(url)
         time.sleep(1)
