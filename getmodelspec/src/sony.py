@@ -109,34 +109,42 @@ class GetSONY:
         prefix:str = "https://electronics.sony.com/"
         step: int = 200
         setUrlSeries=set()
+        for i in range(5):
+            try:
+                wd = WebDriver.getChrome()
+                wd.get(url=url)
+                time.sleep(1)
 
-        wd = WebDriver.getChrome()
-        wd.get(url=url)
-        time.sleep(1)
+                scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
+                scrollDistance = 0  # 현재까지 스크롤한 거리
 
-        scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
-        scrollDistance = 0  # 현재까지 스크롤한 거리
+                while scrollDistance < scrollDistanceTotal:
+                    for i in range(2):  #반복해서 데이터 누락 방지
+                        html = wd.page_source
+                        soup = BeautifulSoup(html, 'html.parser')
 
-        while scrollDistance < scrollDistanceTotal:
-            for i in range(2):  #반복해서 데이터 누락 방지
-                html = wd.page_source
-                soup = BeautifulSoup(html, 'html.parser')
+                        elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
+                        for element in elements:
+                            urlSeries = prefix + element['href']
+                            # label = element.text
+                            # print(f"{label} {urlSeries}")
+                            setUrlSeries.add(urlSeries.strip())
 
-                elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
-                for element in elements:
-                    urlSeries = prefix + element['href']
-                    # label = element.text
-                    # print(f"{label} {urlSeries}")
-                    setUrlSeries.add(urlSeries.strip())
-
-            # 한 step씩 스크롤 내리기
-            wd.execute_script(f"window.scrollBy(0, {step});")
-            time.sleep(2)  # 스크롤이 내려가는 동안 대기
-            scrollDistance += step
+                    # 한 step씩 스크롤 내리기
+                    wd.execute_script(f"window.scrollBy(0, {step});")
+                    time.sleep(2)  # 스크롤이 내려가는 동안 대기
+                    scrollDistance += step
+                break
+            except Exception as e:
+                wd.quit()
+                print(f"try collecting {i}/5")
+                if self.trackingLog == True:
+                    pass
 
         wd.quit()
         print(f"number of total Series: {len(setUrlSeries)}")
         return setUrlSeries
+
 
     def __getModels__(self, url: str,
                       prefix="https://electronics.sony.com/",
