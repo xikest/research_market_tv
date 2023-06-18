@@ -77,7 +77,7 @@ class GetPanajp:
         wd.quit()
 
         print(f"number of total Series: {len(dictSeries)}")
-        print(dictSeries)
+        # print(dictSeries)
         return dictSeries
 
 
@@ -100,6 +100,7 @@ class GetPanajp:
     def __getSpecGlobal__(self, url: str) -> dict:
         # print("get", url)
         cntTryTotal = 20
+        wd = None
         for cntTry in range(cntTryTotal):
             model = getNamefromURL(url)
             try:
@@ -128,7 +129,8 @@ class GetPanajp:
                 print(e)
                 with open("official spec error_log.txt", "a") as file:
                     traceback.print_exc(file=file)  # Traceback 정보를 파일에 저장
-                wd.quit()
+                if wd != None:
+                    wd.quit()
                 pass
 
     def __extractDataFromPage__(self, soup):
