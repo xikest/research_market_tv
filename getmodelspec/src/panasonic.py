@@ -21,6 +21,7 @@ class GetPanajp:
     def getModels(self, toExcel:bool = True) -> dict:
         self.toExcel=toExcel
         # 메인 페이지에서 시리즈를 추출
+        print("panasonic")
         setUrlSeries = self.__getSpecSeries__()
         print(setUrlSeries)
         # # ==========================================================================
@@ -61,7 +62,6 @@ class GetPanajp:
         wd = WebDriver.getChrome()
         wd.get(url=url)
         time.sleep(1)
-        print("start to get urls ")
         scrollDistanceTotal = WebDriver.getScrollDistanceTotal(wd)
         scrollDistance = 0  # 현재까지 스크롤한 거리
 
