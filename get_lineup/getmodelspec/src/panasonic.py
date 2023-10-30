@@ -1,14 +1,11 @@
-import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
 from tqdm import tqdm
 import traceback
 from collections import OrderedDict
 
-from getmodelspec.src.tv_spepcifications import Specifications
-from getmodelspec.src.tv_score import Score
-from getmodelspec.tools.functions import *
-from getmodelspec.tools.webdriver import WebDriver
+from get_lineup.getmodelspec.tools.functions import *
+from get_lineup.getmodelspec.tools import WebDriver
 
 class GetPanajp:
     def __init__(self,  toExcel=True):

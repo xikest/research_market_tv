@@ -1,5 +1,5 @@
-from getmodelspec.src.sony import GetSONY,  GetSONYjp
-from getmodelspec.src.panasonic import GetPanajp
+from get_lineup.getmodelspec.src.sony import GetSONY,  GetSONYjp
+from get_lineup.getmodelspec.src.panasonic import GetPanajp
 class LineUp:
 
     def __init__(self):

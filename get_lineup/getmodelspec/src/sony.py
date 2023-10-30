@@ -1,6 +1,3 @@
-import time
-
-import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import date
 import requests
@@ -13,10 +10,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-from getmodelspec.src.tv_spepcifications import Specifications
-from getmodelspec.src.tv_score import Score
-from getmodelspec.tools.functions import *
-from getmodelspec.tools.webdriver import WebDriver
+from get_lineup.getmodelspec.src.tv_spepcifications import Specifications
+from get_lineup.getmodelspec.src.tv_score import Score
+from get_lineup.getmodelspec.tools.functions import *
+from get_lineup.getmodelspec.tools import WebDriver
 
 
 
