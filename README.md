@@ -2,10 +2,9 @@
 ## 노트북 파일
 이 프로젝트는 다음과 같은 노트북 파일을 제공합니다:
 각 노트북 파일을 열어 자세한 사용법을 확인하세요
-- [제품 라인업 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_lineup.ipynb)
-- [제품 스코어 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_score.ipynb)
-- [제품 사양 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/quick_guide_specifications.ipynb)
-
+- [제품 라인업 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/get_lineup/quick_guide_lineup.ipynb)
+- [제품 스코어 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/get_lineup/quick_guide_score.ipynb)
+- [제품 사양 가져오기에 대한 Quick Guide](https://githubtocolab.com/xikest/Research-on-the-TV-market/blob/main/get_lineup/quick_guide_specifications.ipynb)
 ## 설명
 이 프로젝트는 Selenium 라이브러리를 사용하여 웹사이트에서 제품 정보를 수집합니다. 
 디렉토리 생성, 페이지 로딩 대기, 데이터 백업 등과 같은 작업을 위한 여러 유틸리티 함수를 포함하고 있습니다. 
