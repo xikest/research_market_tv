@@ -4,7 +4,7 @@ from getmodelspec import LineUp
 from getmodelspec import dictToexcel
 from datetime import date
 
-sys.path.insert(0, '/chromedriver_win32/chromedriver')  # 크롬 드라이버 지정
+sys.path.insert(0, '/usr/bin/chromedriver')  # 크롬 드라이버 지정
 
 lineUp = LineUp()
 dictModels = lineUp.getSony(src='global')
