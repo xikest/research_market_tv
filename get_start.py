@@ -1,7 +1,5 @@
 import  sys
-
-from getmodelspec import LineUp
-from getmodelspec import dictToexcel
+from getmodelspec.lineup import LineUp
 from datetime import date
 
 sys.path.insert(0, '/usr/bin/chromedriver')  # 크롬 드라이버 지정
