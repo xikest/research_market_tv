@@ -42,10 +42,8 @@ class FileManager:
 
     @staticmethod
     def dict_to_excel(dict_data, file_name="dictToExcel", sheet_name="sheet1", orient_idx=True):
-        if orient_idx:
-            orient = 'index'
-        else:
-            orient = 'columns'
+        orient = 'columns'
+        if orient_idx: orient = 'index'
 
         df = pd.DataFrame.from_dict(dict_data, orient=orient).reset_index().rename(columns={'index': 'model'})
 

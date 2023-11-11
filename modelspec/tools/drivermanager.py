@@ -17,26 +17,20 @@ class WebDriver:
 
         pass
     def get_chrome(self):
-        """
-        설명:
-            헤드리스 모드로 실행되는 Chrome 웹 드라이버 객체를 반환합니다.
-        반환값:
-            - driver (WebDriver): Chrome 웹 드라이버 객체
-        """
+
         chrome_options = Options()
         chrome_options.add_argument(
             "--user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'")# 에이전트 우회
         # chrome_options.page_load_strategy = 'none'
         if self.headless:
             chrome_options.add_argument('--headless=new')  # 헤드리스 모드로 실행
-            chrome_options.add_argument('disable-gpu')  # 헤드리스 모드로 실행
+            # chrome_options.add_argument('disable-gpu')  # 헤드리스 모드로 실행
         chrome_options.add_argument('--no-sandbox')  # 헤드리스 크롬 브라우저를 "사용자 네임스페이스" 옵션 없이 실행하도록 설정
         chrome_options.add_argument('--disable-dev-shm-usage')
 
         # chrome_options.add_argument('lang=ko_kr')  # 브라우저 언어
         service = Service(executable_path = self.executable_path)  # 크롬 드라이버 경로 설정
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
-        # print("get crome")
         return self.driver
 
     def move_element_to_center(self, element):

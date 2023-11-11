@@ -7,39 +7,26 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from modelspec.tools.drivermanager import WebDriver
-from modelspec.tv_score import TVscore
 from modelspec.tools.functions import FileManager
 
 class SonyModelScraper:
-    def __init__(self, webdriver_path: str, write_log=True, headless=True):
+    def __init__(self, webdriver_path: str, enable_headless=True):
         self.wait_time = 10
-        self.web_driver = WebDriver(executable_path=webdriver_path, headless=headless)
+        self.web_driver = WebDriver(executable_path=webdriver_path, headless=enable_headless)
         self.file_manager = FileManager
         self.log_dir = "logs/sony/models"
-        self.tracking_log = write_log
+        self.tracking_log = enable_headless
 
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
 
     def get_models_info(self) -> dict:
         set_url_series = self._get_url_series()
-        # if self.tracking_log:
-        #     print(set_url_series)
-
-        set_url_series = self.file_manager.load_file("setUrlSeries") if self.tracking_log else set_url_series
-
         dict_url_series = {}
         for url in set_url_series:
             url_models = self._get_models(url=url)
             dict_url_series.update(url_models)
-
         print("Number of all Series:", len(dict_url_series))
-
-        if self.tracking_log:
-            self.file_manager.save_file(dict_url_series, "dictUrlSeries")
-
-        dict_url_series = self.file_manager.load_file("dictUrlSeries") if self.tracking_log else dict_url_series
-
         dict_models = {}
         for key, url_model in tqdm(dict_url_series.items()):
             try:
@@ -48,18 +35,11 @@ class SonyModelScraper:
                 dict_models[key] = dict_info
                 dict_spec = self._get_global_spec(url=url_model)
                 dict_models[key].update(dict_spec)
-
                 time.sleep(1)
             except Exception as e:
                 print(f"Failed to get info from {key}")
-                print(f"Trying to get info from {key}")
-                if self.tracking_log:
-                    print(e)
+                print(e)
                 pass
-
-        file_name = f"sony_model_info_web_{date.today().strftime('%Y-%m-%d')}"
-        self.file_manager.dict_to_excel(dict_models, file_name=file_name, sheet_name="Global")
-
         return dict_models
 
     def _get_url_series(self) -> set:
@@ -71,7 +51,7 @@ class SonyModelScraper:
         step = 200
         url_series = set()
         try_total = 5
-
+        print("The website scan starts")
         for _ in range(try_total):
             driver = self.web_driver.get_chrome()
             try:
@@ -99,7 +79,7 @@ class SonyModelScraper:
                 driver.quit()
                 print(f"Try collecting {_ + 1}/{try_total}")
                 print(e)
-
+        print("The website scan has been completed.")
         print(f"Number of total Series: {len(url_series)}")
         return url_series
 
@@ -134,7 +114,7 @@ class SonyModelScraper:
                             pass
 
                 print(f"Number of SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
-                print(dict_url_models)
+                for k,v in dict_url_models: print(f"{k}: {v}")
 
                 return dict_url_models
             except Exception as e:
