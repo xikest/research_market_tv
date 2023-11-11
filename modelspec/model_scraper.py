@@ -30,11 +30,11 @@ class ModelScraper:
         for key, url_model in tqdm(dict_url_series.items()):
             try:
                 dict_info = self._get_model_info(url_model)
-                time.sleep(1)
+                #time.sleep(1)
                 dict_models[key] = dict_info
                 dict_spec = self._get_global_spec(url=url_model)
                 dict_models[key].update(dict_spec)
-                time.sleep(1)
+                #time.sleep(1)
             except Exception as e:
                 print(f"Failed to get info from {key}")
                 # print(e)
@@ -56,7 +56,6 @@ class ModelScraper:
             try:
                 driver.get(url=url)
                 time.sleep(1)
-
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
 
@@ -70,7 +69,8 @@ class ModelScraper:
                             url_series.add(prefix + element['href'].strip())
 
                         driver.execute_script(f"window.scrollBy(0, {step});")
-                        time.sleep(2)
+                        time.sleep(1)
+                        #2
                         scroll_distance += step
                 driver.quit()
                 break
@@ -97,7 +97,8 @@ class ModelScraper:
                     else:
                         driver = self.web_driver.get_chrome()
                         driver.get(url=url)
-                        time.sleep(5)
+                        time.sleep(1)
+                        #5
                         page_content = driver.page_source
 
                     soup = BeautifulSoup(page_content, 'html.parser')
@@ -143,7 +144,7 @@ class ModelScraper:
         """
         Extract global specifications from a given model URL.
         """
-        try_total = 20
+        try_total = 10
         model = None
         driver = None
 
@@ -161,17 +162,20 @@ class ModelScraper:
                 if self.tracking_log:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_0_model_{stamp_today}.png")
 
-                time.sleep(5)
+                time.sleep(1)
+                #5
                 element_spec = driver.find_element(By.ID, "PDPSpecificationsLink")
                 self.web_driver.move_element_to_center(element_spec)
 
                 if self.tracking_log:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_1_move_to_spec_{stamp_today}.png")
 
-                time.sleep(5)
+                time.sleep(1)
+                #5
                 element_click_spec = driver.find_element(By.ID, 'PDPSpecificationsLink')
                 element_click_spec.click()
-                time.sleep(5)
+                time.sleep(1)
+                #5
 
                 if self.tracking_log:
                     driver.save_screenshot(
@@ -199,7 +203,8 @@ class ModelScraper:
 
                     element_see_more.click()
 
-                time.sleep(self.wait_time)
+                time.sleep(1)
+                #10
                 driver.find_element(By.ID, "ngb-nav-0-panel").click()
 
                 for _ in range(15):
