@@ -4,10 +4,9 @@ from datetime import date
 
 
 webdriver_path = "./chromedriver/chromedriver.exe"
-browser_path ="./chrome-linux64/chrome"
 enable_headless = False
 
-sms = ModelScraper(webdriver_path = webdriver_path, browser_path=browser_path, enable_headless=enable_headless)
+sms = ModelScraper(webdriver_path = webdriver_path, enable_headless=enable_headless)
 dict_models = sms.get_models_info()
 
 file_name = f"sony_model_info_web_{date.today().strftime('%Y-%m-%d')}"

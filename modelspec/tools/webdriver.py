@@ -1,6 +1,5 @@
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -10,9 +9,8 @@ from typing import Optional
 
 
 class WebDriver:
-    def __init__(self, executable_path ="./chromedriver.exe", headless=False, browser_path=None):
+    def __init__(self, executable_path ="./chromedriver.exe", headless=False):
         self.executable_path = executable_path
-        self.browser_path = browser_path
         self.headless= headless
         self.driver = None
 
@@ -20,8 +18,6 @@ class WebDriver:
     def get_chrome(self):
 
         chrome_options = Options()
-        if self.browser_path is not None:
-            chrome_options.binary_location = self.browser_path
         chrome_options.add_argument(
             "--user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'")# 에이전트 우회
         # chrome_options.page_load_strategy = 'none'
