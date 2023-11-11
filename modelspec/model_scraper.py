@@ -216,7 +216,7 @@ class ModelScraper:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_4_end_{stamp_today}.png")
 
                 driver.quit()
-                print("Received information from {url}")
+                print(f"Received information from {url}")
                 return dict_spec
 
             except Exception as e:
