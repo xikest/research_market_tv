@@ -4,8 +4,7 @@
 pip install --upgrade pip
 
 # Install required Python packages
-pip install -U openpyxl requests selenium beautifulsoup4 tqdm numpy pandas
-
+pip install -U openpyxl requests selenium beautifulsoup4 tqdm numpy pandas SQLAlchemy fastapi
 # Update apt-get
 apt-get update
 
