@@ -9,9 +9,9 @@ from modelspec.tools.webdriver import WebDriver
 from modelspec.tools.filemanager import FileManager
 
 class ModelScraper:
-    def __init__(self, webdriver_path: str, enable_headless=True):
+    def __init__(self, webdriver_path: str, enable_headless=True, browser_path=None):
         self.wait_time = 10
-        self.web_driver = WebDriver(executable_path=webdriver_path, headless=enable_headless)
+        self.web_driver = WebDriver(executable_path=webdriver_path, headless=enable_headless, browser_path=browser_path)
         self.file_manager = FileManager
         self.log_dir = "logs/sony/models"
         self.tracking_log = enable_headless

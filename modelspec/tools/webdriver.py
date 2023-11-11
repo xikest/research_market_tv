@@ -10,7 +10,7 @@ from typing import Optional
 
 
 class WebDriver:
-    def __init__(self, executable_path ="./chromedriver.exe", browser_path=None, headless=False):
+    def __init__(self, executable_path ="./chromedriver.exe", headless=False, browser_path=None):
         self.executable_path = executable_path
         self.browser_path = browser_path
         self.headless= headless
