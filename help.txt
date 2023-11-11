@@ -1,48 +1,9 @@
+## 설치 하기
 chmod +x install_env.sh
 ./install_env.sh
 
-
-
+## 실행하기
 nohup python3 -u get_start.py > get_model.log 2>&1 
 
-
-## 패키지 설치
-pip install --upgrade pip
-pip install -U openpyxl requests selenium beautifulsoup4 tqdm numpy pandas
-
-## 크롬과 드라이버 설치: 상호 버전 일치 필요
-- 크롬 드라이버 사이트: https://chromedriver.chromium.org/downloads
-
-### 크롬 설치
-apt-get update
-
-wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chrome-linux64.zip
-unzip chrome-linux64.zip
-rm chrome-linux64.zip
-mv chrome-linux64 chrome
-
-wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip
-unzip chromedriver-linux64.zip
-rm chrome-linux64.zip
-mv chromedriver-linux64 chromedriver
-
-
-#### 최신 버전 설치 할 때
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install ./google-chrome-stable_current_amd64.deb
-google-chrome --version  ## 버전 확인 후 드라이버와 일치 필요
-
-### 크롬 드라이버 설치
-wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.123/linux64/chromedriver-linux64.zip
-unzip chromedriver-linux64.zip  # 압축 풀기
-
-mkdir chromedriver
-mv chromedriver-linux64/chromedriver ./chromedriver/chromedriver # 파일 이동
-rm -r chromedriver-linux64
-
-
-## 패키지 목록 저장
-pip freeze > requirements_bot.txt
-
-## 패키지 목록에서 설치
-pip install -r requirements_bot.txt
+#실행 중인 쉘 확인 아래는 bot 키워드
+ps -ef|grep bot
