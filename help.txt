@@ -1,7 +1,17 @@
 
+## 패키지 설치
+pip install --upgrade pip
+pip install openpyxl requests selenium beautifulsoup4 tqdm numpy pandas
+
+## 크롬과 드라이버 설치: 상호 버전 일치 필요
+- 크롬 드라이버 사이트: https://chromedriver.chromium.org/downloads
 
 ### 크롬 설치
 apt-get update
+wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chrome-linux64.zip # 크롬 다운로드
+unzip chrome-linux64.zip  # 압축 풀기
+sudo apt install ./chrome-linux64
+google-chrome --version
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb
 google-chrome --version  ## 버전 확인 후 드라이버와 일치 필요
