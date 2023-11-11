@@ -3,7 +3,7 @@ chmod +x install_env.sh
 
 
 
-
+nohup python3 -u get_start.py > get_model.log 2>&1 
 
 
 ## 패키지 설치
