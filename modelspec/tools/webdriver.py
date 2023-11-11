@@ -10,7 +10,7 @@ from typing import Optional
 
 
 class WebDriver:
-    def __init__(self, executable_path ="./chromedriver.exe", headless=True):
+    def __init__(self, executable_path ="./chromedriver.exe", headless=False):
         self.executable_path = executable_path
         self.headless= headless
         self.driver = None
@@ -23,8 +23,8 @@ class WebDriver:
             "--user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'")# 에이전트 우회
         # chrome_options.page_load_strategy = 'none'
         if self.headless:
-            chrome_options.add_argument('--headless=new')  # 헤드리스 모드로 실행
-            # chrome_options.add_argument('disable-gpu')  # 헤드리스 모드로 실행
+            chrome_options.add_argument('--headless=chrome')  # 헤드리스 모드로 실행
+        # --headless = chrome
         chrome_options.add_argument('--no-sandbox')  # 헤드리스 크롬 브라우저를 "사용자 네임스페이스" 옵션 없이 실행하도록 설정
         chrome_options.add_argument('--disable-dev-shm-usage')
 

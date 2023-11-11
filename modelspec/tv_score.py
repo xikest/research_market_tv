@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from modelspec.tools.drivermanager import WebDriver
+from modelspec.tools.webdriver import WebDriver
 import time
 
 class TVscore():

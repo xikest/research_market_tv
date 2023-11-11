@@ -1,15 +1,14 @@
 from bs4 import BeautifulSoup
-from datetime import date
 import requests
 import time
 from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from modelspec.tools.drivermanager import WebDriver
-from modelspec.tools.functions import FileManager
+from modelspec.tools.webdriver import WebDriver
+from modelspec.tools.filemanager import FileManager
 
-class SonyModelScraper:
+class ModelScraper:
     def __init__(self, webdriver_path: str, enable_headless=True):
         self.wait_time = 10
         self.web_driver = WebDriver(executable_path=webdriver_path, headless=enable_headless)
@@ -38,7 +37,7 @@ class SonyModelScraper:
                 time.sleep(1)
             except Exception as e:
                 print(f"Failed to get info from {key}")
-                print(e)
+                # print(e)
                 pass
         return dict_models
 
@@ -78,7 +77,7 @@ class SonyModelScraper:
             except Exception as e:
                 driver.quit()
                 print(f"Try collecting {_ + 1}/{try_total}")
-                print(e)
+                # print(e)
         print("The website scan has been completed.")
         print(f"Number of total Series: {len(url_series)}")
         return url_series
@@ -114,12 +113,12 @@ class SonyModelScraper:
                             pass
 
                 print(f"Number of SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
-                for k,v in dict_url_models: print(f"{k}: {v}")
+                for key, value in dict_url_models.items(): print(f'{key}: {value}')
 
                 return dict_url_models
             except Exception as e:
                 print(f"_get_models try: {cnt_try + 1}/{try_total}")
-                print(e)
+                # print(e)
 
     def _get_model_info(self, url: str) -> dict:
         """
@@ -222,7 +221,7 @@ class SonyModelScraper:
 
             except Exception as e:
                 print(f"An error occurred on page 3rd : {model} try {cnt_try + 1}/{try_total}")
-                print(e)
+                # print(e)
                 driver.quit()
                 pass
 
