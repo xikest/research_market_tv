@@ -96,7 +96,6 @@ class ModelScraperjp:
                     # if table is not None:  # 테이블이 있는 경우에만 데이터 추출
                     for row in table.find_all('tr'):
                         cells = row.find_all('td')
-                        print(cells)
                         if len(cells) >= 1:
                             key = row.get_text(strip=True)
                             value = cells[0].get_text(strip=True)
@@ -127,7 +126,6 @@ class ModelScraperjp:
                 html = response.text
                 soup = BeautifulSoup(html, 'html.parser')
                 table = soup.find('tbody', class_='SpecificationsTableSingle__Tbody')
-                print("html")
                 if table:
                     rows = table.find_all('tr')
                     key = None
@@ -157,7 +155,7 @@ class ModelScraperjp:
         spec_dict = self._split_models(spec_dict)
         for k in spec_dict.keys():
             spec_dict[k].update(self._extract_info(k))
-        print(spec_dict)
+        # print(spec_dict)
         return spec_dict
 
     def _split_models(self, dictModels):

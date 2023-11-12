@@ -59,7 +59,11 @@ class Rtings():
 
 
 
-    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) -> dict|pd.DataFrame:
+    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True):
+        """
+        return dict or DataFrame
+
+        """
 
         # Selenium을 사용하여 웹 드라이버 시작
         driver = self.web_driver.get_chrome()
