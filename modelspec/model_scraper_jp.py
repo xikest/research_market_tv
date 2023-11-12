@@ -28,7 +28,7 @@ class ModelScraperjp:
         url_series_dict = self._get_spec_series()
         models_dict = {}
         for model, url in tqdm(url_series_dict.items()):
-            print(model,":", url)
+            print(f"{model}: {url}")
             modelspec = self._get_spec(url=url)
             models_dict.update(modelspec)
         print("Number of all Series:", len(models_dict))
