@@ -17,7 +17,7 @@ class ModelScraperjp:
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path,
                                     headless=enable_headless)
         self.file_manager = FileManager
-        self.log_dir = "logs/sony/models"
+        self.log_dir = "logs/sonyjp/models"
         self.tracking_log = enable_headless
 
         if self.tracking_log:
@@ -26,7 +26,6 @@ class ModelScraperjp:
     def get_models_info(self) -> dict:
 
         url_series_dict = self._get_spec_series()
-
         models_dict = {}
         for model, url in tqdm(url_series_dict.items()):
             print(model,":", url)
@@ -44,32 +43,34 @@ class ModelScraperjp:
         """
         step: int = 200
         series_dict = {}
-
-        driver = self.web_driver.get_chrome()
-        driver.get(url=url)
-        time.sleep(1)
-        scroll_distance_total = self.web_driver.get_scroll_distance_total()
-        scroll_distance = 0
-        while scroll_distance < scroll_distance_total:
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            button_containers = soup.find_all('div', class_='GalleryListItem__ButtonContainer')
-            for container in button_containers:
-                link = container.find('a')['href']
-                model = link.split("products/")[-1].split(".")[0].replace('/',"")
-                link = "https://www.sony.jp/bravia/products/" + model + "/spec.html"
-                series_dict[model]=link
-
-
-            # 한 step씩 스크롤 내리기
-            driver.execute_script(f"window.scrollBy(0, {step});")
-            time.sleep(1)  # 스크롤이 내려가는 동안 대기
-            scroll_distance += step
-
-        driver.quit()
+        trytotal = 3
+        for trycnt in range(trytotal):
+            driver = self.web_driver.get_chrome()
+            driver.get(url=url)
+            time.sleep(1)
+            scroll_distance_total = self.web_driver.get_scroll_distance_total()
+            scroll_distance = 0
+            while scroll_distance < scroll_distance_total:
+                html = driver.page_source
+                soup = BeautifulSoup(html, 'html.parser')
+                try:
+                    button_containers = soup.find_all('div', class_='GalleryListItem__ButtonContainer')
+                    for container in button_containers:
+                        link = container.find('a')['href']
+                        model = link.split("products/")[-1].split(".")[0].replace('/',"")
+                        link = "https://www.sony.jp/bravia/products/" + model + "/spec.html"
+                        series_dict[model]=link
+                    # 한 step씩 스크롤 내리기
+                    driver.execute_script(f"window.scrollBy(0, {step});")
+                    time.sleep(1)  # 스크롤이 내려가는 동안 대기
+                    scroll_distance += step
+                except:
+                    print(f"get_spec_series error, re-try {trycnt}/{trytotal}")
+                    driver.quit()
+            driver.quit()
+            break
         print(f"number of total Series: {len(series_dict)}")
         return series_dict
-
 
     def _get_spec(self, url: str = "https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:
         spec_dict = OrderedDict()
