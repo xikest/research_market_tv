@@ -5,8 +5,7 @@ from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from modelspec.tools import WebDriver
-from modelspec.tools import FileManager
+from .tools import WebDriver, FileManager
 
 class ModelScraper:
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):
@@ -20,14 +19,14 @@ class ModelScraper:
             FileManager.make_dir(self.log_dir)
 
     def get_models_info(self) -> dict:
-        set_url_series = self._get_url_series()
-        dict_url_series = {}
-        for url in set_url_series:
+        url_series_set = self._get_url_series()
+        url_series_dict = {}
+        for url in url_series_set:
             url_models = self._get_models(url=url)
-            dict_url_series.update(url_models)
-        print("Number of all Series:", len(dict_url_series))
+            url_series_dict.update(url_models)
+        print("Number of all Series:", len(url_series_dict))
         dict_models = {}
-        for key, url_model in tqdm(dict_url_series.items()):
+        for key, url_model in tqdm(url_series_dict.items()):
             try:
                 dict_info = self._get_model_info(url_model)
                 #time.sleep(1)
