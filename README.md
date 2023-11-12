@@ -2,6 +2,7 @@
 
 ## 설명
 이 프로젝트는 Selenium 라이브러리를 사용하여 웹사이트에서 제품 정보를 수집합니다.  
+[Demo notebook](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/notebook/quick_guide_get_models.ipynb)
 
 ## 주의사항
 Selenium을 사용하여 웹 스크래핑을 수행하므로 Chrome 웹 드라이버가 필요합니다.   
