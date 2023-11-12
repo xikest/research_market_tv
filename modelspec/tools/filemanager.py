@@ -60,4 +60,3 @@ class FileManager:
 
         wb.save(f"{file_name}.xlsx")
         print(f"데이터가 {file_name}.xlsx 파일의 {sheet_name} 시트에 저장되었습니다.")
-        return dict_data
