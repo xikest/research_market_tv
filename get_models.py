@@ -1,19 +1,14 @@
 from modelspec import ModelScraper, ModelScraperjp
 from modelspec.tools import FileManager
 from datetime import date
-import platform
 
 
-os_name = platform.system()
-if os_name == "Linux":
-    webdriver_path = "./workspace/research-market-tv/chromedriver/chromedriver"
-    browser_path = "/workspace/research-market-tv/chrome/chrome"
+webdriver_path = "/workspace/research-market-tv/chromedriver/chromedriver"
+browser_path = "/workspace/research-market-tv/chrome/chrome"
 
-elif os_name == "Windows":
-    webdriver_path = "./chromedriver/chromedriver.exe"
-    browser_path = "./chrome/chrome.exe"
-else:
-    print("알 수 없는 운영체제")
+# webdriver_path = "./chromedriver/chromedriver.exe"
+# browser_path = "./chrome/chrome.exe"
+
 
 enable_headless = True
 
