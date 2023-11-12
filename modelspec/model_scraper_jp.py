@@ -182,29 +182,6 @@ class ModelScraperjp:
         return dictNewModels
 
 
-
-    # def __splitModels__(self, dictModels):
-    #     dictNewModels = {}
-    #     dictNewModel = {}
-    #
-    #     dictModelsSplited = dictModels.get('型')
-    #     if isinstance(dictModelsSplited, dict):
-    #         for model in dictModelsSplited.keys():
-    #             for k, v in dictModels.items():
-    #                 try:
-    #                     # print(k, v.get(model))
-    #                     dictNewModel[k] = v.get(model)
-    #                 except:
-    #                     dictNewModel[k] = v
-    #             dictNewModels[model] = dictNewModel
-    #     else:
-    #         # 수정 해야 함 딕셔너리가 아닐 경우?
-    #         url = dictModels.get('url')
-    #         model = url.split("/products/")[1].split("/")[0]
-    #         dictNewModels[model] = dictModels
-    #     return dictNewModels
-
-
     def _extract_product_info(self, text):
         if "【" in text:
             listText = text.split("【")
