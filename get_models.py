@@ -4,7 +4,7 @@ from datetime import date
 # webdriver_path = "./chromedriver/chromedriver.exe"
 # browser_path = "./chrome/chrome.exe"
 
-webdriver_path = "/workspace/research-market-tv/chromedriver/chromedriver"
+webdriver_path = "./workspace/research-market-tv/chromedriver/chromedriver"
 browser_path = "/workspace/research-market-tv/chrome/chrome"
 enable_headless = True
 
