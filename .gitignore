@@ -1,0 +1,15 @@
+
+chrome/ABOUT
+*.manifest
+chrome/chrome.dll
+*.exe
+*.pak
+*.dll
+*.log
+chrome/First Run
+*.dat
+*.json
+*.nexe
+*.pb
+*.bin
+*.chromedriver
