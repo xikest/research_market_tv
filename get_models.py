@@ -1,14 +1,21 @@
 from modelspec import ModelScraper, ModelScraperjp
 from modelspec.tools import FileManager
 from datetime import date
+import platform
 
-# webdriver_path = "./chromedriver/chromedriver.exe"
-# browser_path = "./chrome/chrome.exe"
 
-webdriver_path = "./workspace/research-market-tv/chromedriver/chromedriver"
-browser_path = "/workspace/research-market-tv/chrome/chrome"
+os_name = platform.system()
+if os_name == "Linux":
+    webdriver_path = "./workspace/research-market-tv/chromedriver/chromedriver"
+    browser_path = "/workspace/research-market-tv/chrome/chrome"
+
+elif os_name == "Windows":
+    webdriver_path = "./chromedriver/chromedriver.exe"
+    browser_path = "./chrome/chrome.exe"
+else:
+    print("알 수 없는 운영체제")
+
 enable_headless = True
-
 
 smsj = ModelScraperjp(webdriver_path = webdriver_path, browser_path=browser_path, enable_headless=enable_headless)
 dict_models = smsj.get_models_info()
