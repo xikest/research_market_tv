@@ -1,9 +1,10 @@
 이 프로젝트는 웹사이트에서 제품 모델 사양을 가져오는 기능을 제공합니다.
 
 ## 설명
-이 프로젝트는 Selenium 라이브러리를 사용하여 웹사이트에서 제품 정보를 수집합니다.  
-[model spec information notebook](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/notebook/quick_guide_get_models.ipynb)
-[sentiment gpt analysis notebook](https://colab.research.google.com/github/research-market-tv/blob/main/notebook/quick_guide_sentgpt.ipynb)
+이 프로젝트는 웹사이트에서 제품 정보를 수집하고 분석 합니다.
+> **Demo Note book**  
+> [model spec information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/notebook/quick_guide_get_models.ipynb)  
+> [sentiment gpt analysis](https://colab.research.google.com/github/research-market-tv/blob/main/notebook/quick_guide_sentgpt.ipynb)
 ## 주의사항
 Selenium을 사용하여 웹 스크래핑을 수행하므로 Chrome 웹 드라이버가 필요합니다.   
 Chrome 웹 드라이버를 설치하고 경로를 올바르게 설정해야 합니다.
