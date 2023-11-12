@@ -9,8 +9,11 @@ class Rtings():
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path, headless=enable_headless)
         self.wait_time = 1
 
-    def get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) -> dict|pd.DataFrame:
-
+    def get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
+        """
+        return type
+        -> dict|pd.DataFrame
+        """
 
         driver = self.web_driver.get_chrome()
         maker = url.split("/")[-2]
