@@ -113,58 +113,60 @@ class WebDriver:
         # print(f"scroll_distance: {scroll_distance}")
         return scroll_distance
 
-        @staticmethod
-        def install_chrome_and_driver():
-            current_os = platform.system()
-            if current_os == "Linux":
-                chrome_dict= DriverSetting._install_chrome_and_driver_linux()
-            elif current_os == "Windows":
-                print("windows")
-                chrome_dict= DriverSetting._install_chrome_and_driver_win()
-            else:
-                print("지원하지 않는 운영체제입니다.")
+    @staticmethod
+    def install_chrome_and_driver():
+        current_os = platform.system()
+        chrome_dict = None
+        if current_os == "Linux":
+            chrome_dict= WebDriver._install_chrome_and_driver_linux()
+        elif current_os == "Windows":
+            print("windows")
+            chrome_dict= WebDriver._install_chrome_and_driver_win()
+        else:
+            print("지원하지 않는 운영체제입니다.")
+        return chrome_dict
 
-        @staticmethod
-        def _install_chrome_and_driver_linux() -> dict:
-            # 쉘 스크립트 내용
-            shell_script_content = """
-            #!/bin/bash
-    
-            # Download and setup Chrome
-            wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chrome-linux64.zip
-            unzip chrome-linux64.zip
-            rm chrome-linux64.zip
-            mv chrome-linux64 chrome
-            rm chrome-linux64
-    
-            # Download and setup ChromeDriver
-            wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip
-            unzip chromedriver-linux64.zip
-            rm chromedriver-linux64.zip
-            mv chromedriver-linux64 chromedriver
-            rm chromedriver-linux64
-    
-            # Return Chrome installation path and ChromeDriver path
-            echo $(pwd)/chrome
-            echo $(pwd)/chromedriver
-            """
+    @staticmethod
+    def _install_chrome_and_driver_linux() -> dict:
+        # 쉘 스크립트 내용
+        shell_script_content = """
+        #!/bin/bash
 
-            script_file_path = "set_chrome.sh"
-            with open(script_file_path, "w") as script_file:
-                script_file.write(shell_script_content)
+        # Download and setup Chrome
+        wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chrome-linux64.zip
+        unzip chrome-linux64.zip
+        rm chrome-linux64.zip
+        mv chrome-linux64 chrome
+        rm chrome-linux64
 
-            # 쉘 스크립트 실행
-            result = subprocess.run(["bash", script_file_path], capture_output=True, text=True)
+        # Download and setup ChromeDriver
+        wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip
+        unzip chromedriver-linux64.zip
+        rm chromedriver-linux64.zip
+        mv chromedriver-linux64 chromedriver
+        rm chromedriver-linux64
 
-            # 쉘 스크립트 파일 삭제 (선택 사항)
-            os.remove(script_file_path)
+        # Return Chrome installation path and ChromeDriver path
+        echo $(pwd)/chrome
+        echo $(pwd)/chromedriver
+        """
 
-            current_dir = os.path.abspath(os.getcwd())
-            return {"chrome_path": os.path.join(current_dir, "chrome"),
-                    "driver_path": os.path.join(current_dir, "chromedriver")}
+        script_file_path = "set_chrome.sh"
+        with open(script_file_path, "w") as script_file:
+            script_file.write(shell_script_content)
 
-        @staticmethod
-        def _install_chrome_and_driver_win() -> dict:
+        # 쉘 스크립트 실행
+        result = subprocess.run(["bash", script_file_path], capture_output=True, text=True)
+
+        # 쉘 스크립트 파일 삭제 (선택 사항)
+        os.remove(script_file_path)
+
+        current_dir = os.path.abspath(os.getcwd())
+        return {"chrome_path": os.path.join(current_dir, "chrome"),
+                "driver_path": os.path.join(current_dir, "chromedriver")}
+
+    @staticmethod
+    def _install_chrome_and_driver_win() -> dict:
             # Windows에서 사용되는 배치 파일 내용
             batch_script_content = """
             @echo off
