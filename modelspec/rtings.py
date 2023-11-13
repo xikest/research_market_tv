@@ -86,23 +86,24 @@ class Rtings():
                 time.sleep(1)
             except:
                 break
-
-        ## get Comments
         try:
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'html.parser')
-            quote_contents = soup.find_all('div', class_='quote-content')
+            comment_contents = soup.find_all('div', class_='comment_list-item-content e-discussion_content is-newest')
             comments_list = []
-            for idx, quote_content in enumerate(quote_contents):
-                comments = quote_content.find_all('p')
-                combined_text = ' '.join([comment.get_text(strip=True) for comment in comments])
-                comments_list.append({'idx':idx, "url":url, 'maker': maker, 'product': product, 'sentences': combined_text})
-                # print("comments:", combined_text)
-
+            for idx, comment_content in enumerate(comment_contents):
+                quote_controls = comment_content.find('div', class_='quote-controls')
+                if quote_controls:
+                    quote_controls.decompose()
+                quote_content = comment_content.find('div', class_='quote-content')
+                if quote_content:
+                    quote_content.decompose()
+                comment_text = comment_content.get_text(strip=True, separator='\n')
+                if comment_text and comment_text.lower() != "comment deleted":
+                    comments_list.append(
+                        {'idx': idx, "url": url, 'maker': maker, 'product': product, 'sentences': comment_text})
             comments_df = pd.DataFrame(comments_list).set_index("idx")
             comments_dict = comments_df.to_dict()
-            # print(df.head(3))
-            # print(comments_dict)
         finally:
             driver.quit()
 

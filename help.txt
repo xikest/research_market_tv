@@ -2,6 +2,8 @@
 chmod +x install_env.sh
 ./install_env.sh
 
+chmod +x install_env.sh ; ./install_env.sh
+
 ## 실행하기
 nohup python3 -u get_models.py > get_models.log 2>&1
 
