@@ -1,7 +1,7 @@
-from modelspec.amazon import Amazon
+from market_research.scraper_market.amazon import Amazon
 
-webdriver_path = "../chromedriver/chromedriver.exe"
-browser_path = "../chrome/chrome.exe"
+webdriver_path = "chromedriver/chromedriver.exe"
+browser_path = "chrome/chrome.exe"
 
 # webdriver_path = "./workspace/research-market-tv/chromedriver/chromedriver"
 # browser_path = "/workspace/research-market-tv/chrome/chrome"

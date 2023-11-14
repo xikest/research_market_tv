@@ -1,10 +1,8 @@
 import time
-from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 from market_research.tools import WebDriver
-from urllib.parse import urljoin, urlparse, parse_qs
 
 
 class Amazon():
@@ -17,25 +15,31 @@ class Amazon():
                         maker=None, product=None) -> list:
 
         allcomments_list = []
-
+        page = 0
+        last_comment=None
         while True:
+            page +=1
             driver = self.web_driver.get_chrome()
-            url = url.lower()
-            print(f"connecting to {url}")
-            driver.get(url)
+            page_url =  f"{url}&pageNumber={page}".lower()
+            print(f"connecting to {page_url}")
+            driver.get(page_url)
             time.sleep(self.wait_time)
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'html.parser')
-            # next_page = self._is_next_page(soup)
             allcomments_list.extend(self._get_comments(soup=soup, url=url, maker=maker, product=product))
             driver.quit()
-
+            print(f"ppp: {allcomments_list[-1]['Comments']}")
             try:
-                next_page_link = driver.find_element(By.CLASS_NAME, 'a-last')
-                next_page_link.click()
-                time.sleep(self.wait_time)
-                print("Next page 링크를 클릭했습니다.")
+                if last_comment is not None:
+                    print(f"last_comment1: {last_comment}")
+                    print(f"last_comment2: {allcomments_list[-1]['Comments']}")
+                    print(last_comment == allcomments_list[-1]['Comments'])
+                    if last_comment == allcomments_list[-1]['Comments']:
+                        break
+                    else:
+                        last_comment = allcomments_list[-1]['Comments']
             except Exception as e:
+                print("error")
                 print(e)
                 break  # 만약 다음 페이지가 없으면 반복문을 종료합니다.
 
@@ -58,20 +62,3 @@ class Amazon():
         return comments_list
 
 
-    def _is_next_page(self, soup) -> str:
-        next_page_link = soup.find('li', class_='a-last').find('a')
-        next_page_link = "https://amazon.com"+next_page_link['href'].lower()
-        return next_page_link
-    #
-    # def is_different_url(self, url1, url2):
-    #     # URL을 정규화하여 비교하는 함수
-    #     parsed_url1 = urlparse(url1)
-    #     parsed_url2 = urlparse(url2)
-    #
-    #     # 하나라도 다른 조건이 있다면 True 반환
-    #     return (
-    #             parsed_url1.scheme != parsed_url2.scheme or
-    #             parsed_url1.netloc != parsed_url2.netloc or
-    #             parsed_url1.path != parsed_url2.path or
-    #             parse_qs(parsed_url1.query) != parse_qs(parsed_url2.query)
-    #     )

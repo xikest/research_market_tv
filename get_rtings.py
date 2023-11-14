@@ -1,4 +1,4 @@
-from modelspec import Rtings
+from market_research import Rtings
 import pandas as pd
 from datetime import date
 from pathlib import Path
