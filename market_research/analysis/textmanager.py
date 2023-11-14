@@ -60,8 +60,13 @@ class TextAnalysis:
             plt.title("Top 10 Words Frequency")
             plt.xticks(rotation=45)
             sns.despine()
+            if save_path:
+                plt.savefig(save_path)
+
             plt.show()
-        except:
+
+        except Exception as e:
+            print(e)
             print("data not prepared")
 
     def plot_wordcloud(self):
@@ -73,5 +78,7 @@ class TextAnalysis:
             plt.imshow(wordcloud, interpolation='bilinear')
             plt.axis("off")
             plt.show()
-        except:
+
+        except Exception as e:
+            print(e)
             print("data not prepared")
