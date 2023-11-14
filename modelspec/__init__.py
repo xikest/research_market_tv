@@ -1,3 +1,4 @@
-from modelspec.model_scraper import ModelScraper as ModelScraper
-from modelspec.model_scraper_jp import ModelScraperjp as ModelScraperjp
+from modelspec.model_scraper_s import ModelScraper_s as ModelScraper_s
+from modelspec.model_scraper_sjp import ModelScraper_sjp as ModelScraper_sjp
+from modelspec.model_scraper_pjp import ModelScraper_pjp as ModelScraper_pjp
 from modelspec.rtings import Rtings as Rtings

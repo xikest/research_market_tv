@@ -1,8 +1,4 @@
 import time
-from tqdm import tqdm
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 from .tools import WebDriver, FileManager
 
 from bs4 import BeautifulSoup
@@ -10,21 +6,16 @@ import requests
 from tqdm import tqdm
 from collections import OrderedDict
 
-class ModelScraperjp:
+class ModelScraper_sjp:
 
     def __init__(self, webdriver_path: str, browser_path: str = None, enable_headless=True):
         self.wait_time = 10
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path,
                                     headless=enable_headless)
         self.file_manager = FileManager
-        self.log_dir = "logs/sonyjp/models"
         self.tracking_log = enable_headless
-
-        if self.tracking_log:
-            FileManager.make_dir(self.log_dir)
-
     def get_models_info(self) -> dict:
-
+        print("sony_jp")
         url_series_dict = self._get_spec_series()
         models_dict = {}
         for model, url in tqdm(url_series_dict.items()):

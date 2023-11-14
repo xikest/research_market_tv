@@ -28,9 +28,10 @@ webdriver_path: `./chromedriver/chromedriver.exe`
 browser_path = `./chrome/chrome.exe`
 ```
 
-아래 스크립트로 `Chrome 브라우저와 드라이버 및 필수 패키지`를 설치 할 수도 있습니다.
-```bash
-install_env.sh
+아래 코드로 `Chrome 브라우저와 드라이버 및 필수 패키지`를 설치 할 수도 있습니다.
+```python
+from modelspec.tools import WebDriver
+chrome_path_dict = WebDriver.install_chrome_and_driver()
 ```
 
 ## 사용법

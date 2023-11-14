@@ -62,7 +62,7 @@ class Rtings():
 
 
 
-    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True):
+    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 15):
         """
         return dict or DataFrame
 
@@ -99,9 +99,12 @@ class Rtings():
                 if quote_content:
                     quote_content.decompose()
                 comment_text = comment_content.get_text(strip=True, separator='\n')
-                if comment_text and comment_text.lower() != "comment deleted":
+                comment_text = re.sub(r'https?://\S+', '', comment_text)
+
+                # min_sentence_length 길이 이상의 문장만 분석
+                if len(comment_text.split()) >= min_sentence_length:
                     comments_list.append(
-                        {'idx': idx, "url": url, 'maker': maker, 'product': product, 'sentences': comment_text})
+                        {'idx': idx, 'maker': maker, 'product': product, 'sentences': comment_text})
             comments_df = pd.DataFrame(comments_list).set_index("idx")
             comments_dict = comments_df.to_dict()
         finally:

@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from .tools import WebDriver, FileManager
 
-class ModelScraper:
+class ModelScraper_s:
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):
         self.wait_time = 10
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path, headless=enable_headless)
@@ -19,6 +19,7 @@ class ModelScraper:
             FileManager.make_dir(self.log_dir)
 
     def get_models_info(self) -> dict:
+        print("sony")
         url_series_set = self._get_url_series()
         url_series_dict = {}
         for url in url_series_set:
