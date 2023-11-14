@@ -5,7 +5,7 @@
 > **Demo Note book**  
 > [model spec information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_get_models.ipynb)  
 > [model scores & comments](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_get_rtings.ipynb)  
-> [sentiment gpt analysis](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_sentgpt.ipynb)
+> [text analysis](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_textanalysis.ipynb)
 
 
 ## 주의사항
