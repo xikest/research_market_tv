@@ -1,7 +1,6 @@
 import subprocess
 import os
 import platform
-
 class Installer:
     @staticmethod
     def install_chrome_and_driver():
@@ -93,41 +92,3 @@ class Installer:
         current_dir = os.path.abspath(os.getcwd())
         return {"chrome_path": os.path.join(current_dir, "chrome"),
                 "driver_path": os.path.join(current_dir, "chromedriver")}
-
-    @staticmethod
-    def install_pakage():
-        current_os = platform.system()
-        chrome_dict = None
-        if current_os == "Linux":
-            Installer._install_pakage_linux()
-        elif current_os == "Windows":
-            print("windows")
-
-        else:
-            print("지원하지 않는 운영체제입니다.")
-        return chrome_dict
-
-    @staticmethod
-    def _install_pakage_linux() -> None:
-        # 쉘 스크립트 내용
-        shell_script_content = """
-        #!/bin/bash
-
-        !pip install -U numpy pandas openpyxl tqdm
-        !pip install -U requests selenium beautifulsoup4 
-        !pip install -U wordcloud nltk 
-        !pip install -U openai 
-        !pip install -U matplotlib seaborn
-        """
-
-        script_file_path = "set_package.sh"
-        with open(script_file_path, "w") as script_file:
-            script_file.write(shell_script_content)
-
-        # 쉘 스크립트 실행
-        subprocess.run(["bash", script_file_path], capture_output=True, text=True)
-
-        # 쉘 스크립트 파일 삭제 (선택 사항)
-        os.remove(script_file_path)
-
-        return None
