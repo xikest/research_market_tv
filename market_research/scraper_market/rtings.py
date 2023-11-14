@@ -2,7 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import pandas as pd
-
+import re
 from ..tools import WebDriver
 class Rtings():
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):

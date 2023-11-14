@@ -14,6 +14,7 @@ class TextAnalysis:
         self.comments:[str,]
         self.nouns:[str,]
         self.df_word_freq:pd.DataFrame
+        self._set_datapack()
 
     def get_comments(self, comments:str)-> None:
         self.comments = comments
