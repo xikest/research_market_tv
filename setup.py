@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='getmodelspec',
-    version='1.33',
+    version='1.34',
     author='xikest',
     description='research TV market',
     packages=find_packages(),
