@@ -5,7 +5,7 @@ from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from .tools import WebDriver, FileManager
+from market_research.tools import WebDriver, FileManager
 
 class ModelScraper_s:
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):

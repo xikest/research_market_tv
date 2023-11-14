@@ -1,8 +1,7 @@
 import time
-from .tools import WebDriver, FileManager
+from market_research.tools import WebDriver
 from bs4 import BeautifulSoup
 from tqdm import tqdm
-import traceback
 from collections import OrderedDict
 
 class ModelScraper_pjp:

@@ -1,5 +1,5 @@
 import time
-from .tools import WebDriver, FileManager
+from market_research.tools import WebDriver, FileManager
 
 from bs4 import BeautifulSoup
 import requests

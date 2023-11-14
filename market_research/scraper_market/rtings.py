@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import pandas as pd
 
-from .tools import WebDriver
+from modelspec.tools import WebDriver
 class Rtings():
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path, headless=enable_headless)

@@ -1,4 +1,3 @@
-from modelspec.model_scraper_sjp import ModelScraperjp
 from modelspec.tools import FileManager
 from datetime import date
 

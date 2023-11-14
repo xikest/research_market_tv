@@ -3,17 +3,17 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
-from .tools import WebDriver
+from market_research.tools import WebDriver
 from urllib.parse import urljoin, urlparse, parse_qs
 
 
-class Amazon():
+class Bestbuy():
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True):
         self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path, headless=enable_headless)
         self.wait_time = 1
 
 
-    def get_allcomments(self,url:str="https://www.amazon.com/Sony-QD-OLED-7-1-4ch-Theater-Speaker/product-reviews/B0CBDJKR1V/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews",
+    def get_allcomments(self,url:str="https://www.bestbuy.com/site/reviews/sony-65-class-bravia-xr-a95l-oled-4k-uhd-smart-google-tv/6553383?variant=A",
                         maker=None, product=None) -> list:
 
         allcomments_list = []
@@ -31,7 +31,7 @@ class Amazon():
             driver.quit()
 
             try:
-                next_page_link = driver.find_element(By.CLASS_NAME, 'a-last')
+                next_page_link =driver.find_element(By.CSS_SELECTOR, 'a[data-track="Page next"]')
                 next_page_link.click()
                 time.sleep(self.wait_time)
                 print("Next page 링크를 클릭했습니다.")
@@ -49,19 +49,26 @@ class Amazon():
 
 
     def _get_comments(self, soup, url=None, maker=None, product=None) -> list:
-        quote_contents = soup.find_all('div', class_='a-row a-spacing-small review-data')
+        quote_contents = soup.find_all('div', class_='ugc-review-body')
         comments_list = []
         for quote_content in quote_contents:
-            comments = quote_content.span.get_text(strip=True)
+            print("quote_content")
+            print(quote_content)
+            comments = quote_content.get_text(strip=True)
             comments_list.append({"url":url, 'Maker': maker, 'Product': product, 'Comments': comments})
             # print("comments:", comments)
         return comments_list
 
 
     def _is_next_page(self, soup) -> str:
-        next_page_link = soup.find('li', class_='a-last').find('a')
-        next_page_link = "https://amazon.com"+next_page_link['href'].lower()
-        return next_page_link
+
+
+        next_page_url = soup.find('a', {'data-track': 'Page next'})['href']
+
+        print(f"Next Page URL: {next_page_url}")
+
+        # next_page_link = "https://amazon.com"+next_page_link['href'].lower()
+        # return next_page_link
     #
     # def is_different_url(self, url1, url2):
     #     # URL을 정규화하여 비교하는 함수

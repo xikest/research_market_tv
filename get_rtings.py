@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import date
 from pathlib import Path
 
-
 webdriver_path = "./chromedriver/chromedriver.exe"
 browser_path = "./chrome/chrome.exe"
 
