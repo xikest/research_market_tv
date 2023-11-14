@@ -3,7 +3,8 @@
 ## 설명
 이 프로젝트는 웹사이트에서 제품 정보를 수집하고 분석 합니다.
 > **Demo Note book**  
-> [model spec information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_models.ipynb)  
+> [market model information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_models.ipynb)  
+> [market comments](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_comments.ipynb)
 > [model scores & comments](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_rtings.ipynb)  
 > [text analysis](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_textanalysis.ipynb)
 
