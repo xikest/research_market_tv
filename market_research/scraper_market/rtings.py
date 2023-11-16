@@ -133,44 +133,68 @@ class Rtings():
         # product_category = test_group.find('a', class_='e-anchor').get_text(strip=True)
         # print(f"product_category: {product_category}")
         # 딕셔너리 초기화
-        results = []
-        # test_group e-simple_grid-item-2-pad를 찾아서 반복
-        test_groups = soup.find_all('div', class_='test_group e-simple_grid-item-2-pad')
+        results_list = []
+        category = ""
 
+        test_groups = soup.find_all('div', class_='test_group e-simple_grid-item-2-pad')
         for test_group in test_groups:
             # test_group-category 텍스트 찾기
-            category = test_group.find('div', class_='test_group-category').get_text(strip=True)
-            # print(f"category: {category}")
-
-
+            # category = test_group.find('div', class_='test_group-category').get_text(strip=True)
+            header_element = test_group.find('div', class_='test_group-header')
+            category_element = header_element.find('div', class_='test_group-category')
+            if category_element:
+                category = category_element.get_text(strip=True)
+                category_element.extract()
+            # span 태그 내의 텍스트 추출 및 '_'로 구분
+            scores_headder = '(><)_'.join(header_element.stripped_strings)
             # test_value is-number 찾기
             test_values = test_group.find_all('div', class_='test_value is-number')
-
             # 리스트 초기화
-            data_list = []
-
             for test_value in test_values:
                 # test_value-label과 test_result_value 찾기
                 label = test_value.find('span', class_='test_value-label').get_text(strip=True)
                 result_value = test_value.find('span',
-                                               class_='test_result_value e-test_result review-value-score').get_text(
-                    strip=True)
-
+                                               class_='test_result_value e-test_result review-value-score').get_text(strip=True)
                 # 딕셔너리에 추가
-                data_list.append({label: result_value})
-
+                results_list.append([maker, product, category, scores_headder, label, result_value])
             # 리스트를 데이터프레임으로 변환
-            data_df = pd.DataFrame(data_list).reset_index()
-            data_df["category"] = category
-            stacked_df = data_df.set_index('category').set_index('index', append=True).stack()
+
+
+        results_df = pd.DataFrame(results_list,
+                                  columns=["maker", "product", "category", "scores_header", "label", "result_value"])
+        # scores_header_list 생성 및 수정
+        scores_header_list = results_df.scores_header.map(lambda x: x.split("_"))
+
+        scores_header_list_s = []
+        for scores_header in scores_header_list:
+           if len(scores_header) <2:
+               scores_header_list_s.append(["(><)", scores_header[0]])
+           else:
+               scores_header_list_s.append([scores_header[0], scores_header[1]])
+
+        print(scores_header_list_s)
+
+           # scores_header_df 생성
+        scores_header_df = pd.DataFrame(scores_header_list_s, columns=["score", "header"])
+        scores_header_df["score"] = scores_header_df["score"].map(lambda x:x.replace("(><)", ""))
+        # results_df와 scores_header_df 병합
+        results_df = pd.concat([scores_header_df, results_df], axis=1).drop(["scores_header"], axis=1)
+        results_df = results_df[["maker", "product", "category", "header", "score", "label", "result_value"]]
+        # 결과 확인
+
+        print(results_df.head())
+
+        return results_df
+            # data_df["category"] = category
+            # stacked_df = data_df.set_index('category').set_index('index', append=True).stack()
             # data_df = data_df.set_index(["category", "index"])
 
 
-            results.append(stacked_df)
-
-        # 데이터프레임으로 변환
-        df = pd.concat(results).reset_index().drop('index', axis=1)
-        df.columns = ['category', 'label','value']
-        df["maker"] = maker
-        df["product"] = product
-        return df
+        #
+        #
+        # # 데이터프레임으로 변환
+        # df = pd.concat(results).reset_index().drop('index', axis=1)
+        # df.columns = ['category', 'label','value']
+        # df["maker"] = maker
+        # df["product"] = product
+        # return df

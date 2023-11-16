@@ -122,7 +122,9 @@ class ModelScraper_s:
                             pass
 
                 print(f"Number of SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
-                for key, value in dict_url_models.items(): print(f'{key}: {value}')
+                for key, value in dict_url_models.items():
+                    if self.tracking_log:
+                        print(f'{key}: {value}')
 
                 return dict_url_models
             except Exception as e:
@@ -229,7 +231,8 @@ class ModelScraper_s:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_4_end_{stamp_today}.png")
 
                 driver.quit()
-                print(f"Received information from {url}")
+                if self.tracking_log:
+                    print(f"Received information from {url}")
                 return dict_spec
 
             except Exception as e:
@@ -305,7 +308,9 @@ class DataCleanup_s:
                            "input", "output", "caption", "headphone", "radio", "text", "internet", "dsee", "speaker",
                            "design", "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
                            "wallmount", "mic", "network", "android", "ios", "miracast",
-                           "operating", "store", "clock", "rs-232c"]
+                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp","wide",
+                           "built","tuners","demo", "presence", "switch","reader","face","surround","phase",
+                           "batteries", "info", "Parental"]
         return stop_words_list
 
     def _preprocess_df(self):

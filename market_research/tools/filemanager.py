@@ -62,9 +62,9 @@ class FileManager:
         print(f"데이터가 {file_name}.xlsx 파일의 {sheet_name} 시트에 저장되었습니다.")
 
     @staticmethod
-    def df_to_excel(df_data, file_name="dfToExcel", sheet_name="sheet1"):
+    def df_to_excel(df_data, file_name="dfToExcel", sheet_name="sheet1", mode='w'):
         # Create Excel writer
-        with pd.ExcelWriter(file_name, engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(file_name, engine='openpyxl', mode=mode) as writer:
             # Write each DataFrame to a different sheet
             df_data.to_excel(writer, sheet_name=sheet_name, index=False)
 
