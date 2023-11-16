@@ -357,7 +357,7 @@ class DataCleanup_s:
             return self.df
 
 
-class Plotting:
+class Plotting_s:
 
     def __init__(self, df):
         self.df = df
