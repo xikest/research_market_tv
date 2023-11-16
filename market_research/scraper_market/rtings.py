@@ -19,7 +19,7 @@ class Rtings():
         maker = url.split("/")[-2]
         model = url.split("/")[-1]
         url = url.lower()
-        print(f"connecting to {url}")
+        print(f"connecting to {url} for score")
         # 웹 페이지 로드
         driver.get(url)
         time.sleep(self.wait_time)
@@ -62,7 +62,7 @@ class Rtings():
 
 
 
-    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 15):
+    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 0):
         """
         return dict or DataFrame
 
@@ -74,7 +74,7 @@ class Rtings():
         product = url.split("/")[-1]
         url = url.lower()
         # url = url +"#page-comments"
-        print(f"connecting to {url}")
+        print(f"connecting to {url} for comments")
         driver.get(url)
         time.sleep(self.wait_time)
         ## Load More 버튼 열기
@@ -121,7 +121,7 @@ class Rtings():
         maker = url.split("/")[-2]
         product = url.split("/")[-1]
         url = url.lower()
-        print(f"connecting to {url}")
+        print(f"connecting to {url} for detail")
         driver.get(url)
         time.sleep(self.wait_time)
         page_source = driver.page_source
@@ -172,7 +172,7 @@ class Rtings():
            else:
                scores_header_list_s.append([scores_header[0], scores_header[1]])
 
-        print(scores_header_list_s)
+        # print(scores_header_list_s)
 
            # scores_header_df 생성
         scores_header_df = pd.DataFrame(scores_header_list_s, columns=["score", "header"])
@@ -182,7 +182,7 @@ class Rtings():
         results_df = results_df[["maker", "product", "category", "header", "score", "label", "result_value"]]
         # 결과 확인
 
-        print(results_df.head())
+        # print(results_df.head())
 
         return results_df
             # data_df["category"] = category
@@ -198,3 +198,4 @@ class Rtings():
         # df["maker"] = maker
         # df["product"] = product
         # return df
+
