@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm
 from collections import OrderedDict
-
+import pandas as pd
 class ModelScraper_sjp:
 
     def __init__(self, webdriver_path: str, browser_path: str = None, enable_headless=True):
@@ -14,7 +14,7 @@ class ModelScraper_sjp:
                                     headless=enable_headless)
         self.file_manager = FileManager
         self.tracking_log = enable_headless
-    def get_models_info(self) -> dict:
+    def get_models_info(self, foramt_output="df"):
         print("sony_jp")
         url_series_dict = self._get_spec_series()
         models_dict = {}
@@ -24,7 +24,10 @@ class ModelScraper_sjp:
             models_dict.update(modelspec)
         print("Number of all Series:", len(models_dict))
 
-        return models_dict
+        if foramt_output == "df":
+            return pd.DataFrame.from_dict(models_dict).T
+        else:
+            return models_dict
 
 
     ###=====================get info main page====================================##

@@ -11,6 +11,11 @@ browser_path = "./chrome/chrome.exe"
 enable_headless = True
 
 
+
+
+
+
+
 ## 불러온 데이터 경로
 file_name="rtings_url.xlsx"
 folder_path = Path("input_data/rtings")
@@ -41,3 +46,12 @@ for url in urls:
     file_path = folder_path / file_name
     score_df= rtings.get_score(url,format_df=True)
     score_df.to_excel(f"{file_path}", index=False, sheet_name='score')
+
+    # 저장할 데이터 경로
+    file_name = f"{maker}_{model}_rtings_measurement_{date.today().strftime('%Y-%m-%d')}.xlsx"
+    folder_path = Path("results/rtings/measurement")
+    folder_path.mkdir(parents=True, exist_ok=True)
+    file_path = folder_path / file_name
+    measurement_df= rtings.get_measurement_reuslts(url)
+    measurement_df.to_excel(f"{file_path}", index=False, sheet_name='measurement')
+

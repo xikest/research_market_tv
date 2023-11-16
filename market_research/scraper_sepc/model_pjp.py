@@ -3,7 +3,7 @@ from market_research.tools import WebDriver
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from collections import OrderedDict
-
+import pandas as pd
 class ModelScraper_pjp:
 
     def __init__(self, webdriver_path: str, browser_path: str = None, enable_headless=True):
@@ -13,7 +13,7 @@ class ModelScraper_pjp:
         self.tracking_log = enable_headless
 
 
-    def get_models_info(self) -> dict:
+    def get_models_info(self, foramt_output="df"):
         print("panasonic")
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
@@ -24,7 +24,11 @@ class ModelScraper_pjp:
             modelspec["url"] = url
             dictModels[model] = modelspec
         print("Number of all Series:", len(dictModels))
-        return dictModels
+
+        if foramt_output == "df":
+            return pd.DataFrame.from_dict(dictModels).T
+        else:
+            return dictModels
 
     ###=====================get info main page====================================##
     def _get_spec_series(self, url: str = "https://www.panasonic.com/uk/consumer/televisions/4K-OLED-TV.html") -> dict:

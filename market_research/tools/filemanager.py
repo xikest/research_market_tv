@@ -60,3 +60,40 @@ class FileManager:
 
         wb.save(f"{file_name}.xlsx")
         print(f"데이터가 {file_name}.xlsx 파일의 {sheet_name} 시트에 저장되었습니다.")
+
+    @staticmethod
+    def df_to_excel(df_data, file_name="dfToExcel", sheet_name="sheet1"):
+        # Create Excel writer
+        with pd.ExcelWriter(file_name, engine='xlsxwriter') as writer:
+            # Write each DataFrame to a different sheet
+            df_data.to_excel(writer, sheet_name=sheet_name, index=False)
+
+
+
+class DataComparator:
+    @staticmethod
+    def is_equal_each_columns(ds1: pd.Series, ds2: pd.Series):
+        """
+        # 예시 데이터
+        data1 = {'A': 1, 'B': 2, 'C': 3}
+        data2 = {'A': 1, 'B': 5, 'C': 3}
+
+        # Pandas Series 생성
+        series1 = pd.Series(data1)
+        series2 = pd.Series(data2)
+
+        # DataComparator 인스턴스 생성
+        comparator = DataComparator()
+
+        # 메서드 호출
+        comparator.is_equal_each_columns(series1, series2)
+        """
+        # 값이 같은지 여부 확인
+        are_equal = ds1.equals(ds2)
+        # 값이 다른 항목 확인
+        diff_positions = (ds1 != ds2)
+        # 차이가 있는 항목 출력
+        diff_items = ds1.index[diff_positions].tolist()
+        print(f"두 행 간의 값이 같은지 여부: {are_equal}")
+        print(f"차이가 있는 항목: {diff_items}")
+

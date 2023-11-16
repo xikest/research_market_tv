@@ -114,3 +114,63 @@ class Rtings():
             return comments_df
         else:
             return comments_dict
+
+    def get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
+
+        driver = self.web_driver.get_chrome()
+        maker = url.split("/")[-2]
+        product = url.split("/")[-1]
+        url = url.lower()
+        print(f"connecting to {url}")
+        driver.get(url)
+        time.sleep(self.wait_time)
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+
+        # 딕셔너리 초기화
+
+        # # product_page-category 텍스트 찾기
+        # product_category = test_group.find('a', class_='e-anchor').get_text(strip=True)
+        # print(f"product_category: {product_category}")
+        # 딕셔너리 초기화
+        results = []
+        # test_group e-simple_grid-item-2-pad를 찾아서 반복
+        test_groups = soup.find_all('div', class_='test_group e-simple_grid-item-2-pad')
+
+        for test_group in test_groups:
+            # test_group-category 텍스트 찾기
+            category = test_group.find('div', class_='test_group-category').get_text(strip=True)
+            # print(f"category: {category}")
+
+
+            # test_value is-number 찾기
+            test_values = test_group.find_all('div', class_='test_value is-number')
+
+            # 리스트 초기화
+            data_list = []
+
+            for test_value in test_values:
+                # test_value-label과 test_result_value 찾기
+                label = test_value.find('span', class_='test_value-label').get_text(strip=True)
+                result_value = test_value.find('span',
+                                               class_='test_result_value e-test_result review-value-score').get_text(
+                    strip=True)
+
+                # 딕셔너리에 추가
+                data_list.append({label: result_value})
+
+            # 리스트를 데이터프레임으로 변환
+            data_df = pd.DataFrame(data_list).reset_index()
+            data_df["category"] = category
+            stacked_df = data_df.set_index('category').set_index('index', append=True).stack()
+            # data_df = data_df.set_index(["category", "index"])
+
+
+            results.append(stacked_df)
+
+        # 데이터프레임으로 변환
+        df = pd.concat(results).reset_index().drop('index', axis=1)
+        df.columns = ['category', 'label','value']
+        df["maker"] = maker
+        df["product"] = product
+        return df
