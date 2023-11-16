@@ -392,7 +392,7 @@ class Plotting_s:
         plt.show()
 
 
-    def heatmap(self, df:pd.DataFrame, save_plot_name=None, title="SONY Spec" ,cmap="Blues",figsize=(12, 12), cbar=False):
+    def heatmap(self, df:pd.DataFrame, save_plot_name=None, title="SONY Spec" ,cmap="Blues",figsize=(12, 12), cbar=False, start_min:str="-",):
         """
         # YlGnBu
         # GnBu
@@ -409,6 +409,11 @@ class Plotting_s:
         color_list = []
         for i, column in enumerate(df):
             color_list.extend(df.iloc[:, i])
+        
+        if start_min in color_list:
+            idx_s = color_list.index(start_min)
+            color_list.insert(0, color_list.pop(idx_s))
+
         color_dict = {k: v for v, k in enumerate(pd.Series(color_list, name="color").drop_duplicates().to_list())}
         data_df = df.apply(lambda x:x.replace(color_dict))
 
