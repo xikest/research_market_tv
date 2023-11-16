@@ -10,6 +10,8 @@ from market_research.tools import WebDriver, FileManager
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+
 class ModelScraper_s:
     def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True, verbose=False):
         self.wait_time = 1
@@ -306,11 +308,14 @@ class DataCleanup_s:
                            "system", "channel", "storage", "cable",
                            "style", "protection", "hdmi", "energy", "sound", "camera", "subwoofer", "satellite",
                            "input", "output", "caption", "headphone", "radio", "text", "internet", "dsee", "speaker",
-                           "design", "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
+                           "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
                            "wallmount", "mic", "network", "android", "ios", "miracast",
-                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp","wide",
-                           "built","tuners","demo", "presence", "switch","reader","face","surround","phase",
-                           "batteries", "info", "Parental"]
+                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp", "wide",
+                           "built", "tuners", "demo", "presence", "switch", "reader", "face", "surround", "phase",
+                           "batteries", "info", "Parental", "setup", "aspect", "dashboard", "formats", "accessibility",
+                           "ci+",
+                           "bass", "master", "shut", "sorplas", "volume", "wireless", "china",
+                           "hole", "program", "manual", "latency"]
         return stop_words_list
 
     def _preprocess_df(self):
@@ -359,7 +364,10 @@ class DataCleanup_s:
 
     def get_df_cleaned(self):
         if self.df is not None:
-            return self.df
+            df = self.df.set_index(["year", "display type", "series"]).drop(
+                ["model", "size", "grade"], axis=1)
+            df = df.fillna("-")
+            return df
 
 
 class Plotting_s:
@@ -380,5 +388,37 @@ class Plotting_s:
 
         if save_plot_name is None:
             save_plot_name = f"barplot_{col_plot}_to_{col_group_str}.png"
+        plt.savefig(save_plot_name, bbox_inches='tight')  # bbox_inches='tight'를 추가하여 레이블이 잘림 방지
+        plt.show()
+
+
+    def heatmap(self, df:pd.DataFrame, save_plot_name=None, title="SONY Spec" ,cmap="Blues",figsize=(12, 12), cbar=False):
+        """
+        # YlGnBu
+        # GnBu
+        # Oranges
+        # viridis
+        # plasma
+        # cividis
+        # inferno
+        # magma
+        # coolwarm
+        # Blues
+ =
+        """
+        color_list = []
+        for i, column in enumerate(df):
+            color_list.extend(df.iloc[:, i])
+        color_dict = {k: v for v, k in enumerate(pd.Series(color_list, name="color").drop_duplicates().to_list())}
+        data_df = df.apply(lambda x:x.replace(color_dict))
+
+        scaler = MinMaxScaler()
+        data_df[data_df.columns] = scaler.fit_transform(data_df[data_df.columns])
+
+        plt.figure(figsize=figsize)
+        sns.heatmap(data_df.T, cmap=cmap, cbar=cbar)
+        plt.title(title)
+        if save_plot_name is None:
+            save_plot_name = f"heatmap_for_{title}.png"
         plt.savefig(save_plot_name, bbox_inches='tight')  # bbox_inches='tight'를 추가하여 레이블이 잘림 방지
         plt.show()
