@@ -178,7 +178,7 @@ class Rtings():
         scores_header_df = pd.DataFrame(scores_header_list_s, columns=["score", "header"])
         scores_header_df["score"] = scores_header_df["score"].map(lambda x:x.replace("(><)", ""))
         # results_df와 scores_header_df 병합
-        results_df = pd.concat([scores_header_df, results_df], axis=1).drop(["scores_header"], axis=1)
+        results_df = pd.concat([results_df, scores_header_df], axis=1)
         results_df = results_df[["maker", "product", "category", "header", "score", "label", "result_value"]]
         # 결과 확인
 
