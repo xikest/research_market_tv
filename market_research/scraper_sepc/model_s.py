@@ -412,7 +412,7 @@ class Plotting_s:
 
         for i, start_order in  enumerate(start_order_list):
             if start_order in color_list:
-                reorder = color_list.index(start_oerder)
+                reorder = color_list.index(start_order)
                 color_list.insert(i, color_list.pop(reorder))
         
         color_dict = {k: v for v, k in enumerate(pd.Series(color_list, name="color").drop_duplicates().to_list())}
