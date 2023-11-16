@@ -1,11 +1,11 @@
 이 프로젝트는 웹사이트에서 제품 모델 사양을 가져오는 기능과 분석 기능을 제공합니다.
 
-## 설명
+## 실행 데모
 이 프로젝트는 웹사이트에서 제품 정보를 수집하고 분석 합니다.
+사용법은 아래의 note를 참고 하세요.
 > **Demo Note book**  
-> [market model information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_models.ipynb)  
-> [market comments](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_comments.ipynb)  
-> [model scores & comments](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_rtings.ipynb)  
+> [market model information](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_models.ipynb)
+> [model scores & measurement](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_market_rtings.ipynb)  
 > [text analysis](https://colab.research.google.com/github/xikest/research-market-tv/blob/main/quick_guide_textanalysis.ipynb)
 
 
@@ -24,9 +24,7 @@ pip install getmodelspec
 
 ```python
 from market_research.tools.installer import Installer
-
 Installer.install_chrome_and_driver()
-Installer.install_pakage()
 ```
 Chrome 브라우저 버전과 운영체제에 맞는 [ChromeDriver](https://chromedriver.chromium.org/downloads) 실행 파일을 다운로드합니다.  
 Chrome 브라우저와 드라이버의 위치를 지정 합니다.  
@@ -36,32 +34,6 @@ Chrome 브라우저의 위치는 선택 입니다.
 ```
 webdriver_path: `./chromedriver/chromedriver.exe`
 browser_path = `./chrome/chrome.exe`
-```
-
-아래 코드로 `Chrome 브라우저와 드라이버 및 필수 패키지`를 설치 할 수도 있습니다.
-```python
-from modelspec.tools import WebDriver
-chrome_path_dict = WebDriver.install_chrome_and_driver()
-```
-
-## 사용법
-
-기본은 headless로 동작합니다. `enable_headless`를 통해 `mode`를 변경할 수 있습니다.
-
-```python
-from modelspec import ModelScraper
-from modelspec import FileManager
-from datetime import date
-
-webdriver_path = "./chromedriver/chromedriver.exe"
-browser_path = "./chrome/chrome.exe"
-enable_headless = True
-
-sms = ModelScraper(webdriver_path = webdriver_path, browser_path=browser_path, enable_headless=enable_headless)
-dict_models = sms.get_models_info()
-
-file_name = f"sony_model_info_web_{date.today().strftime('%Y-%m-%d')}"
-FileManager.dict_to_excel(dict_models, file_name=file_name, sheet_name="global")
 ```
 
 
