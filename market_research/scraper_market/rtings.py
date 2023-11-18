@@ -1,5 +1,6 @@
 import time
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
@@ -185,17 +186,26 @@ class Rtings():
         # print(results_df.head())
 
         return results_df
-            # data_df["category"] = category
-            # stacked_df = data_df.set_index('category').set_index('index', append=True).stack()
-            # data_df = data_df.set_index(["category", "index"])
 
+    def search_and_extract_url(self, search_query:str):
+        driver = self.web_driver.get_chrome()
+        try:
+            driver.get("https://www.rtings.com")
+            search_input = driver.find_element("class name", "searchbar-input")
+            search_input.send_keys(search_query)
+            search_input.send_keys(Keys.RETURN)
+            time.sleep(1)
+            current_url = driver.current_url
+            page_source = driver.page_source
+            pattern = re.compile(r'https://www\.rtings\.com/tv/reviews/[^"]+')
+            extracted_urls = pattern.findall(page_source)
 
-        #
-        #
-        # # 데이터프레임으로 변환
-        # df = pd.concat(results).reset_index().drop('index', axis=1)
-        # df.columns = ['category', 'label','value']
-        # df["maker"] = maker
-        # df["product"] = product
-        # return df
-
+            # 추출된 URL을 /로 분할하고, 검색 결과와 비교하여 일치하는 경우 반환
+            for url in extracted_urls:
+                split_url = url.split('/')
+                if len(split_url) == 7:
+                    return url
+        finally:
+            # 브라우저 종료
+            driver.quit()
+        return None

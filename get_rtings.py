@@ -1,6 +1,7 @@
 
 from datetime import date
 from pathlib import Path
+import pandas as pd
 
 
 from market_research import Rtings
@@ -65,21 +66,27 @@ if not output_folder.exists():
 urls= ["https://www.rtings.com/tv/reviews/sony/a95l-oled",
        "https://www.rtings.com/tv/reviews/lg/g3-oled"]
 
+score_df = pd.DataFrame()
+measurement_df = pd.DataFrame()
+comments_df = pd.DataFrame()
 for url in urls:
     maker = url.split("/")[-2]
     model = url.split("/")[-1]
 
     # 저장할 데이터 경로
-    file_name = f"{maker}_{model}_rtings{date.today().strftime('%Y-%m-%d')}.xlsx"
+    file_name = f"rtings{date.today().strftime('%Y-%m-%d')}.xlsx"
     output_file_name = output_folder / file_name
     rtings = Rtings(webdriver_path=webdriver_path, browser_path=browser_path, enable_headless=enable_headless)
 
-    comments_df = rtings.get_commetns(url, format_df=True)
-    FileManager.df_to_excel(comments_df, file_name=output_file_name, sheet_name="comments", mode='w')
-
-    score_df = rtings.get_score(url, format_df=True)
-    FileManager.df_to_excel(score_df, file_name=output_file_name, sheet_name="scores", mode='a')
+    df = rtings.get_score(url, format_df=True)
+    score_df = pd.concat([score_df, df], axis=0)
+    FileManager.df_to_excel(score_df, file_name=output_file_name, sheet_name="scores", mode='w')
 
     # 저장할 데이터 경로
-    measurement_df = rtings.get_measurement_reuslts(url)
+    df = rtings.get_measurement_reuslts(url)
+    measurement_df = pd.concat([measurement_df, df], axis=0)
     FileManager.df_to_excel(measurement_df, file_name=output_file_name, sheet_name="measurement", mode='a')
+
+    comments_df = rtings.get_commetns(url, format_df=True)
+    comments_df = pd.concat([comments_df, df], axis=0)
+    FileManager.df_to_excel(comments_df, file_name=output_file_name, sheet_name="comments", mode='a')

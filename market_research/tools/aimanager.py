@@ -1,3 +1,4 @@
+import pandas as pd
 from openai import OpenAI
 
 class AIManager:
@@ -18,4 +19,9 @@ class AIManager:
         response = self.client.images.generate(model="dall-e-3", prompt=user_input,n=1, size="1024x1024", quality="standard")
         image_url = response.data[0].url
         return image_url
+
+
+    def dataframe_to_text(self,df:pd.DataFrame):
+        text = df.to_markdown()
+        return text
 
