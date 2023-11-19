@@ -50,8 +50,10 @@ class Rtings(SCAPER):
                 FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='a')
                 FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
-        except:
+        except Exception as e:
             print(f"fail {url}")
+            print(e)
+            pass
         return {"scores":score_df,
                 "measurement":measurement_df,
                 "comments":comments_df}
