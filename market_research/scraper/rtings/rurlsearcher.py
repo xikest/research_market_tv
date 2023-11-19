@@ -14,7 +14,7 @@ class Rurlsearcher(SCAPER):
         self.wait_time=2
 
     def get_urls_web(self, keywords:list[str,] = None)->list:
-        return [self._search_and_extract_url(search_query=keyword) for keyword in tqdm(keywords)]
+        return list((self._search_and_extract_url(search_query=keyword) for keyword in tqdm(keywords)))
 
     def get_urls_inputpath(self, intput_folder_path:str)->list:
         self.set_data_path(intput_folder_path=intput_folder_path)
