@@ -172,9 +172,11 @@ class Rtings(SCAPER):
         driver.get(url)
         time.sleep(self.wait_time)
         page_source = driver.page_source
+        driver.quit()
+        
         soup = BeautifulSoup(page_source, 'html.parser')
-
-        # 딕셔너리 초기화
+        
+    
 
         # # product_page-category 텍스트 찾기
         # product_category = test_group.find('a', class_='e-anchor').get_text(strip=True)
