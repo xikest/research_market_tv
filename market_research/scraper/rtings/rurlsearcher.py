@@ -12,6 +12,38 @@ class Rurlsearcher(SCAPER):
     def __init__(self, enable_headless=True):
         super().__init__(enable_headless=enable_headless)
         self.wait_time=2
+        self.model_dictionary = {"sony":{
+                                        "oled": [
+                                            'XR-77A95L', 'XR-65A75L', 'XR-65A95K', 'XR-65A90J', 'XR-65A80CL',
+                                            'XR-77A80CL', 'XR-77A80K', 'XR-65A80CK', 'XR-42A90K', 'XR-55A80CL',
+                                            'XR-83A80CL', 'XR-55A80CK', 'XR-65A80K', 'XR-83A90J', 'XR-48A90K',
+                                            'XR-77A80L', 'XR-55A95K', 'XR-77A80CK', 'XR-55A80L', 'XR-55A80K',
+                                            'XR-55A95L', 'XR-65A95L', 'XR-55A75L', 'XR-65A80L', 'XR-83A80L',
+                                            'XR-55A90J'
+                                        ],
+                                        "mini_led": [
+                                            'XR-65X93CL', 'XR-75X93CL', 'XR-75X93L', 'XR-85X93L', 'XR-85X95L',
+                                            'XR-65X93L'
+                                        ],
+                                        "lcd": [
+                                            'XR-85X95K', 'KD-75X77L', 'XR-85X90CL', 'KD-75X80CK', 'XR-55X90CL',
+                                            'KD-55X85K', 'KD-55X77CL', 'XR-75Z9K', 'KD-32W830K', 'KD-85X80K',
+                                            'KD-75X85K', 'XR-85X90K', 'XR-75X95K', 'XR-55X90CK', 'KD-43X80K',
+                                            'XR-65X90CK', 'KD-43X85K', 'XR-55X90L', 'KD-65X77L', 'KD-85X77L',
+                                            'XR-65X90L', 'XR-65X90CL', 'KD-55X80CK', 'XR-75X90CK', 'XR-85Z9K',
+                                            'KD-43X77L', 'KD-85X77CL', 'KD-85X85K', 'KD-50X77L', 'XR-75X90L',
+                                            'XR-85X90CK', 'KD-65X77CL', 'XR-65X95K', 'KD-50X80K', 'KD-50X85K',
+                                            'XR-55X90K', 'XR-85X90L', 'XR-75X90K', 'KD-85X80CK', 'KD-55X77L',
+                                            'KD-75X77CL', 'KD-55X80K', 'XR-98X90L', 'KD-65X80CK', 'KD-65X80K',
+                                            'XR-65X90K', 'KD-75X80K', 'KD-65X85K', 'XR-75X90CL'
+                                        ]
+                                    }
+        }
+
+    def get_model_dictionary(self, maker:str="sony", key_mode=False):
+        if key_mode:
+            return self.model_dictionary.keys()
+        return self.model_dictionary.get(maker.lower())
 
     def get_urls_web(self, keywords:list[str,] = None)->list:
         return [self._search_and_extract_url(search_query=keyword) for keyword in tqdm(keywords)]
