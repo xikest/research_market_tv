@@ -46,9 +46,10 @@ class Rurlsearcher(SCAPER):
         return self.model_dictionary.get(maker.lower())
 
     def get_urls_web(self, keywords:list[str,] = None)->list:
-        urls= [self._search_and_extract_url(search_query=keyword) for keyword in tqdm(keywords)]
-        urls = set(urls)
-        return list(urls)
+        urls_set = set()  
+        for keyword in tqdm(keywords):
+            urls_set.add(self._search_and_extract_url(search_query=keyword))
+        return list(urls_set)
 
     def get_urls_inputpath(self, intput_folder_path:str)->list:
         self.set_data_path(intput_folder_path=intput_folder_path)
