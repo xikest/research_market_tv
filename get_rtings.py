@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 
-from market_research import Rtings
+from market_research.scraper.rtings import Rtings
 from market_research.tools import FileManager
 webdriver_path = "./chromedriver/chromedriver.exe"
 browser_path = "./chrome/chrome.exe"
