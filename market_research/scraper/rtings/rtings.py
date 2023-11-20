@@ -26,9 +26,9 @@ class Rtings(SCAPER):
         self.verbose = verbose
         self.wait_time = wait_time
     def get_data(self, urls:list[str,], export_excel=True):
-        score_df= pd.DataFrame()
+        # score_df= pd.DataFrame()
         measurement_df = pd.DataFrame()
-        comments_df = pd.DataFrame()
+        # comments_df = pd.DataFrame()
         url = None
         try:
             for url in tqdm(urls):
@@ -48,15 +48,18 @@ class Rtings(SCAPER):
                 # comments_df = pd.concat([comments_df, df], axis=0)
 
             if export_excel:
-                FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
+                # FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='a')
                 # FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
         except Exception as e:
             print(f"fail {url}")
             print(e)
-        return {"scores":score_df,
+        return {
+            # "scores":score_df,
                 "measurement":measurement_df,
-                "comments":comments_df}
+                # "comments":comments_df
+        }
+        
 
     def get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
         """
