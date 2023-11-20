@@ -54,7 +54,6 @@ class Rtings(SCAPER):
         except Exception as e:
             print(f"fail {url}")
             print(e)
-            pass
         return {"scores":score_df,
                 "measurement":measurement_df,
                 "comments":comments_df}
@@ -139,20 +138,25 @@ class Rtings(SCAPER):
             soup = BeautifulSoup(page_source, 'html.parser')
             comment_contents = soup.find_all('div', class_='comment_list-item-content e-discussion_content is-newest')
             comments_list = []
+            
             for idx, comment_content in enumerate(comment_contents):
-                quote_controls = comment_content.find('div', class_='quote-controls')
-                if quote_controls:
-                    quote_controls.decompose()
-                quote_content = comment_content.find('div', class_='quote-content')
-                if quote_content:
-                    quote_content.decompose()
-                comment_text = comment_content.get_text(strip=True, separator='\n')
-                comment_text = re.sub(r'https?://\S+', '', comment_text)
-
-                # min_sentence_length 길이 이상의 문장만 분석
-                if len(comment_text.split()) >= min_sentence_length:
-                    comments_list.append(
-                        {'idx': idx, 'maker': maker, 'product': product, 'sentences': comment_text})
+                try:
+                    quote_controls = comment_content.find('div', class_='quote-controls')
+                    if quote_controls:
+                        quote_controls.decompose()
+                    quote_content = comment_content.find('div', class_='quote-content')
+                    if quote_content:
+                        quote_content.decompose()
+                    comment_text = comment_content.get_text(strip=True, separator='\n')
+                    comment_text = re.sub(r'https?://\S+', '', comment_text)
+    
+                    # min_sentence_length 길이 이상의 문장만 분석
+                    if len(comment_text.split()) >= min_sentence_length:
+                        comments_list.append(
+                            {'idx': idx, 'maker': maker, 'product': product, 'sentences': comment_text})
+                except Exception as e:
+                    print(f"comment fail {e}")
+                    pass
             comments_df = pd.DataFrame(comments_list).set_index("idx")
             comments_dict = comments_df.to_dict()
         finally:
