@@ -37,8 +37,8 @@ class Rtings(SCAPER):
                 if self.verbose:
                     print(f"connecting to {url}")
 
-                # df = self.get_score(url, format_df=True)
-                # score_df = pd.concat([score_df, df], axis=0)
+                df = self.get_score(url, format_df=True)
+                score_df = pd.concat([score_df, df], axis=0)
 
                 # 저장할 데이터 경로
                 df = self.get_measurement_reuslts(url)
@@ -48,14 +48,14 @@ class Rtings(SCAPER):
                 # comments_df = pd.concat([comments_df, df], axis=0)
 
             if export_excel:
-                # FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
+                FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='w')
                 # FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
         except Exception as e:
             print(f"fail {url}")
             print(e)
         return {
-            # "scores":score_df,
+            "scores":score_df,
                 "measurement":measurement_df,
                 # "comments":comments_df
         }
