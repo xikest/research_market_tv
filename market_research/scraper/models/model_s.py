@@ -6,22 +6,29 @@ from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from market_research.tools import WebDriver, FileManager
+from market_research.tools import FileManager
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
+from market_research.scraper._scaper_scheme import SCAPER
 
-class ModelScraper_s:
-    def __init__(self, webdriver_path: str, browser_path: str=None, enable_headless=True, verbose=False):
-        self.wait_time = 1
-        self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path, headless=enable_headless)
+class ModelScraper_s(SCAPER):
+    def __init__(self, enable_headless=True,
+                 export_prefix="model_sony_gobal",
+                 intput_folder_path="input",
+                 output_folder_path="results", verbose: bool = False, wait_time=2):
+        super().__init__(enable_headless=enable_headless,
+                         export_prefix=export_prefix,
+                         intput_folder_path=intput_folder_path,
+                         output_folder_path=output_folder_path)
+
+        self.tracking_log = verbose
+        self.wait_time = wait_time
         self.file_manager = FileManager
         self.log_dir = "logs/sony/models"
-        self.tracking_log = verbose
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
-
 
     def get_models_info(self, foramt_output:str='df'):
         print("sony")
@@ -285,7 +292,6 @@ class ModelScraper_s:
             p_tag = ""
 
         return {h4_tag: p_tag}
-
 class DataCleanup_s:
     """
     cleanup = DataCleanup(df)
@@ -294,7 +300,7 @@ class DataCleanup_s:
     """
 
     def __init__(self, df, stop_words=None):
-        self.df = df
+        self.df = df.copy()
         self.df_prices = None
         if stop_words is None:
             stop_words = self._call_stop_words()
@@ -313,12 +319,13 @@ class DataCleanup_s:
                            "input", "output", "caption", "headphone", "radio", "text", "internet", "dsee", "speaker",
                            "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
                            "wallmount", "mic", "network", "android", "ios", "miracast",
-                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp", "wide",
+                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp",
                            "built", "tuners", "demo", "presence", "switch", "reader", "face", "surround", "phase",
                            "batteries", "info", "Parental", "setup", "aspect", "dashboard", "formats", "accessibility",
                            "ci+",
                            "bass", "master", "shut", "sorplas", "volume", "wireless", "china",
-                           "hole", "program", "manual", "latency"]
+                           "hole", "program", "manual", "latency",
+                           "inversion","twin","multi-view","h x v","bravia","motion", "netflix","calman","rate"]
         return stop_words_list
 
     def _preprocess_df(self):
@@ -340,9 +347,10 @@ class DataCleanup_s:
                      .map(lambda x: x.split(" ") if isinstance(x, str) & len(x) > 0 else np.nan).dropna()
                      .map(lambda x: [x[0], x[0]] if len(x) < 2 else x))  # idx 정보 보관 및 스플릿
 
-        list_prices = [[idx, prices[0], prices[1], float(prices[1].replace(',', '').replace('$', '')) - float(
-            prices[0].replace(',', '').replace('$', ''))]
-                       for idx, prices in zip(ds_prices.index, ds_prices.price)]
+        list_prices = [[idx, prices[0],
+                        prices[1],
+                        (1 - float(prices[0].replace(',', '').replace('$', '')) / float(prices[1].replace(',', '').replace('$', '')))*100 ]
+                                              for idx, prices in zip(ds_prices.index, ds_prices.price)]
         df_prices = pd.DataFrame(list_prices, columns=["idx", "price_now", "price_release", "price_discount"])
         df_prices = df_prices.set_index("idx")
         self.df = pd.merge(df_prices, self.df, left_index=True, right_index=True).drop(["price"], axis=1)
@@ -369,9 +377,22 @@ class DataCleanup_s:
         if self.df is not None:
             df = self.df.set_index(["year", "display type", "series"]).drop(
                 ["model", "size", "grade"], axis=1)
-            df = df.fillna("-")
+            # df = df.fillna("-")
             return df
 
+
+    def get_data_for_heatmap(self,  col_drop:list[str,]=["backlight dimming type","backlight type"]):
+        # col_oled = []
+        # df_models_summary = self.get_df_cleaned()
+        # col_oled.extend([column for column in df_models_summary.T.columns if 'oled' in column[1]])
+        # oled_df = df_models_summary.T[col_oled]
+        data_df = self.get_df_cleaned()
+        data_df = data_df.T.drop(col_drop, axis=1).drop_duplicates()
+        data_df = data_df.replace({"-":0})
+        data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
+        data_df = data_df.fillna(0)
+        data_df = data_df.sort_values(by=["contrast enhancement","clarity enhancement","color enhancement"]).sort_index(ascending=True).T
+        return data_df
 
 class Plotting_s:
 
@@ -379,14 +400,14 @@ class Plotting_s:
         self.df = df
 
     def group_plot_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price_discount",
-                       ylabel_mark: str = "$", save_plot_name=None):
+                       ylabel_mark: str = "%", save_plot_name=None):
         col_group_str = '&'.join(col_group)
         grouped_data = self.df.groupby(col_group)[col_plot].mean().sort_values(ascending=False)
 
-        plt.figure(figsize=(10, 6))  # 적절한 크기로 조정
+        plt.figure(figsize=(10, 6))
 
         grouped_data.plot(kind="bar")
-        plt.ylabel(ylabel_mark)
+        plt.ylabel(f"{col_plot}({ylabel_mark})")
         sns.despine()
 
         if save_plot_name is None:
@@ -395,7 +416,7 @@ class Plotting_s:
         plt.show()
 
 
-    def heatmap(self, df:pd.DataFrame, save_plot_name=None, title="SONY Spec" ,cmap="Blues",figsize=(12, 12), cbar=False, start_order_list:list=["-"]):
+    def heatmap(self, data_df:pd.DataFrame, save_plot_name=None, title="SONY Spec" ,cmap="Blues",figsize=(8, 8), cbar=True, novalue_mark = "-"):
         """
         # YlGnBu
         # GnBu
@@ -409,23 +430,13 @@ class Plotting_s:
         # Blues
  =
         """
-        color_list = []
-        for i, column in enumerate(df):
-            color_list.extend(df.iloc[:, i])
 
-        for i, start_order in  enumerate(start_order_list):
-            if start_order in color_list:
-                reorder = color_list.index(start_order)
-                color_list.insert(i, color_list.pop(reorder))
-        
-        color_dict = {k: v for v, k in enumerate(pd.Series(color_list, name="color").drop_duplicates().to_list())}
-        data_df = df.apply(lambda x:x.replace(color_dict))
+        data_df= data_df.replace({"-":0})
+        data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
 
-        scaler = MinMaxScaler()
-        data_df[data_df.columns] = scaler.fit_transform(data_df[data_df.columns])
 
         plt.figure(figsize=figsize)
-        sns.heatmap(data_df.T, cmap=cmap, cbar=cbar)
+        sns.heatmap(data_df, cmap=cmap, cbar=cbar)
         plt.title(title)
         if save_plot_name is None:
             save_plot_name = f"heatmap_for_{title}.png"

@@ -4,6 +4,8 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from typing import Optional, Union
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 
 class Rvisualizer:
@@ -55,11 +57,6 @@ class Rvisualizer:
         for target, value in value_dict.items():
             self.df.loc[:, "result_value"] = self.df.result_value.map(lambda x: x.replace(target, value))
 
-
-
-
-
-
         trim_marks = ["cd/m²", ",", "%", "°", "K", "ms", "Hz", "dB", ": 1"]
         for trim_mark in trim_marks:
             try:
@@ -87,7 +84,6 @@ class Rvisualizer:
     def _set_data_detail(self, column: str = None):
         self._target_column = column
         data_df = self.df[self.df["header"] == column]
-        # data_df.loc[:, "result_value"] = data_df["result_value"].str.strip().astype(float)
         data_df = data_df.sort_values(["maker", "product", "label"], ascending=False)
         data_df = data_df.pivot(index=["maker", "product"], columns="label", values='result_value')
         data_df.columns = data_df.columns.map(lambda x: str(x))
@@ -114,9 +110,9 @@ class Rvisualizer:
         df_peak = df_peak.rename(columns={"label": "APL"})
         return df_peak
 
-    def plotsns_facet_bar(self, column: str, col_wrap=4, height=4, facet_yticks: Optional[Union[dict, list]] = None,
+    def plotsns_facet_bar(self, column: str, col_wrap=3, height=4, facet_yticks: Optional[Union[dict, list]] = None,
                           facet_ylims: Optional[Union[dict, list]] = None, show_annot=True,
-                          swap_mode: bool = False):
+                          swap_mode: bool = False, save_plot_name:str=None):
 
         df = self._get_data(column)
         mode_dict = self._plot_mode(column, swap_mode)
@@ -147,7 +143,7 @@ class Rvisualizer:
                 for ax in g.axes.flat:
                     ax.set(ylim=facet_ylims)
 
-        g.set_xticklabels(rotation=45, horizontalalignment='right')
+        g.set_xticklabels(rotation=90, horizontalalignment='right')
 
         suffix = self.title_units_dict.get(col_y)
         if suffix is not None:
@@ -162,15 +158,18 @@ class Rvisualizer:
             for ax in g.axes.flat:
                 for p in ax.patches:
                     height_val = p.get_height()
-                    annot_text = f'{height_val:.0f}' if height_val.is_integer() else f'{height_val:.2f}'
+                    annot_text = f'{height_val:.0f}' if height_val.is_integer() else f'{height_val}'
                     if height_val >= 10000:
                         annot_text = f'{height_val / 1000:.1f}K'
                     ax.annotate(annot_text, (p.get_x() + p.get_width() / 2., height_val), ha='center', va='center',
-                                xytext=(0, 1), textcoords='offset points')
+                                xytext=(0, 1), textcoords='offset points', fontsize=8)
                 ax.yaxis.set_ticks([])
-
         sns.despine()
         plt.tight_layout()
+
+        # if save_plot_name is None:
+        #     save_plot_name = f"plot_for_{sup_title}.png"
+        # plt.savefig(save_plot_name, bbox_inches='tight')
         plt.show()
 
     def plot_lines(self, column, swap_mode=True, ylims: list = None,
@@ -227,7 +226,7 @@ class Rvisualizer:
 
 
 
-    def heatmap_scores(self, cmap="cividis", cbar=True, annot=True):
+    def heatmap_scores(self, cmap="cividis", cbar=True, annot=True, save_plot_name:str=None):
         col_socres = ["maker", "product", "category", "header", "score"]
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         data_df["score"] = data_df["score"].map(lambda x: float(x))
@@ -237,6 +236,60 @@ class Rvisualizer:
         data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
         plt.figure(figsize=(8, 10))
         sns.heatmap(data_df, annot=annot, cmap=cmap, cbar=cbar, vmin=0, vmax=10, yticklabels=data_df.index)
-        plt.title("Rtings Score heatmap")
+        title = "Rtings Score heatmap"
+        plt.title(title)
+        # if save_plot_name is None:
+        #     save_plot_name = f"plot_for_{title}.png"
+        # plt.savefig(save_plot_name, bbox_inches='tight')
+        plt.show()
+
+
+    def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
+        sns.set(style="whitegrid")
+        ddf = self.df.copy()
+        ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
+        ddf['maker_product'] = ddf['maker'] + '_' + ddf['product']
+        ddf = ddf.drop(["category", "header", "label", "score", "maker", "product"], axis=1)[
+            ddf.category.isin(["Picture Quality"])]
+
+        ddf_pivot = ddf.pivot_table(index=['maker_product'], columns=['category_header_label'],
+                                    values=['result_value'],
+                                    aggfunc={'result_value': 'first'})
+        scaler = StandardScaler()
+        X_numeric_scaled = scaler.fit_transform(ddf_pivot)
+
+        pca = PCA(n_components=2)
+        pca.fit_transform(X_numeric_scaled)
+
+        label_pc1 = f"PC1: {pca.explained_variance_[0]:.2f}%"
+        label_pc2 = f"PC2: {pca.explained_variance_[1]:.2f}%"
+
+        pca_result_df = (
+            pd.DataFrame(np.round(pca.components_.T * np.sqrt(pca.explained_variance_), 4),
+                         columns=[label_pc1, label_pc2], index=ddf_pivot.columns)
+            .reset_index()
+            .assign(category=lambda x: x["category_header_label"].str.split("_").str[0],
+                    header=lambda x: x["category_header_label"].str.split("_").str[1],
+                    label=lambda x: x["category_header_label"].str.split("_").str[2])
+            .drop("category_header_label", axis=1)
+        )
+
+        pca_result_by_header_df = pca_result_df.groupby(["header"])[[label_pc1, label_pc2]].mean().reset_index()
+        pca_result_by_header_df = pca_result_by_header_df.sort_values(by=label_pc1, ascending=False)
+        pca_result_long_df = pd.melt(pca_result_by_header_df, id_vars=["header"], var_name="Principal Component",
+                                     value_name="loading")
+
+        # 그래프 생성
+        plt.figure(figsize = figsize)
+        sns.barplot(x="loading", y="header", hue="Principal Component", data=pca_result_long_df, palette=palette)
+        plt.xlim(-1, 1)
+        plt.title(label=title, y=1.1)
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=False, ncol=3)
+
+        plt.tight_layout()
+        sns.despine()
+        # if save_plot_name is None:
+        #     save_plot_name = f"plot_pca_for_{title}.png"
+        # plt.savefig(save_plot_name, bbox_inches='tight')
         plt.show()
 

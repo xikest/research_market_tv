@@ -1,14 +1,9 @@
 import time
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
 from tqdm import tqdm
-import seaborn as sns
-import plotly.express as px
-import matplotlib.pyplot as plt
-from typing import Optional, Union
 from market_research.tools import FileManager
 from market_research.scraper._scaper_scheme import SCAPER
 
@@ -26,9 +21,9 @@ class Rtings(SCAPER):
         self.verbose = verbose
         self.wait_time = wait_time
     def get_data(self, urls:list[str,], export_excel=True):
-        # score_df= pd.DataFrame()
+        score_df= pd.DataFrame()
         measurement_df = pd.DataFrame()
-        # comments_df = pd.DataFrame()
+        comments_df = pd.DataFrame()
         url = None
         try:
             for url in tqdm(urls):
@@ -37,23 +32,24 @@ class Rtings(SCAPER):
                 if self.verbose:
                     print(f"connecting to {url}")
 
-                df = self.get_score(url, format_df=True)
+                df = self._get_score(url, format_df=True)
                 score_df = pd.concat([score_df, df], axis=0)
 
                 # 저장할 데이터 경로
-                df = self.get_measurement_reuslts(url)
+                df = self._get_measurement_reuslts(url)
                 measurement_df = pd.concat([measurement_df, df], axis=0)
 
-                # df = self.get_commetns(url, format_df=True)
-                # comments_df = pd.concat([comments_df, df], axis=0)
+                df = self._get_commetns(url, format_df=True)
+                comments_df = pd.concat([comments_df, df], axis=0)
 
             if export_excel:
                 FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='w')
-                # FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
+                FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
         except Exception as e:
-            print(f"fail {url}")
-            print(e)
+            if self.verbose:
+                print(f"fail {url}")
+                print(e)
         return {
             "scores":score_df,
                 "measurement":measurement_df,
@@ -61,7 +57,7 @@ class Rtings(SCAPER):
         }
         
 
-    def get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
+    def _get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
         """
         return type
         -> dict|pd.DataFrame
@@ -99,21 +95,20 @@ class Rtings(SCAPER):
                         rows.append({'Maker': maker, 'Model': model, 'Score Type': score_type, 'Score': score})
             scores_df = pd.DataFrame(rows)
             scores_dict = scores_df.to_dict()
-            # print("df")
-            # print(dict_data)
             if format_df:
                 return scores_df
             else:
                 return scores_dict
 
         except Exception as e:
-            print(f"get specification error: {e}")
+            if self.verbose:
+                print(f"get specification error: {e}")
             # WebDriver 종료
             driver.quit()
 
 
 
-    def get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 0):
+    def _get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 0):
         """
         return dict or DataFrame
 
@@ -128,22 +123,22 @@ class Rtings(SCAPER):
         driver.get(url)
         time.sleep(self.wait_time)
         ## Load More 버튼 열기
-        while True:
-            try:
-                button_div = driver.find_element(By.CLASS_NAME, "comment_list-footer")
-                button = button_div.find_element(By.CLASS_NAME, "e-button")
-                button.click()
-                time.sleep(1)
-            except:
-                break
         try:
-            page_source = driver.page_source
-            soup = BeautifulSoup(page_source, 'html.parser')
-            comment_contents = soup.find_all('div', class_='comment_list-item-content e-discussion_content is-newest')
-            comments_list = []
-            
-            for idx, comment_content in enumerate(comment_contents):
+            while True:
                 try:
+                    button_div = driver.find_element(By.CLASS_NAME, "comment_list-footer")
+                    button = button_div.find_element(By.CLASS_NAME, "e-button")
+                    button.click()
+                    time.sleep(1)
+                except:
+                    break
+            try:
+                page_source = driver.page_source
+                soup = BeautifulSoup(page_source, 'html.parser')
+                comment_contents = soup.find_all('div', class_='comment_list-item-content e-discussion_content is-newest')
+                comments_list = []
+
+                for idx, comment_content in enumerate(comment_contents):
                     quote_controls = comment_content.find('div', class_='quote-controls')
                     if quote_controls:
                         quote_controls.decompose()
@@ -152,25 +147,27 @@ class Rtings(SCAPER):
                         quote_content.decompose()
                     comment_text = comment_content.get_text(strip=True, separator='\n')
                     comment_text = re.sub(r'https?://\S+', '', comment_text)
-    
+
                     # min_sentence_length 길이 이상의 문장만 분석
                     if len(comment_text.split()) >= min_sentence_length:
                         comments_list.append(
                             {'idx': idx, 'maker': maker, 'product': product, 'sentences': comment_text})
-                except Exception as e:
-                    print(f"comment fail {e}")
-                    pass
-            comments_df = pd.DataFrame(comments_list).set_index("idx")
+                comments_df = pd.DataFrame(comments_list).set_index("idx")
+                comments_dict = comments_df.to_dict()
+            finally:
+                driver.quit()
+        except:
+            if self.verbose:
+                print("no comment")
+            comments_df = pd.DataFrame([{'idx': "Na", 'maker': "Na", 'Na': "Na", 'sentences': "Na"}]).set_index("idx")
             comments_dict = comments_df.to_dict()
-        finally:
-            driver.quit()
 
         if format_df:
             return comments_df
         else:
             return comments_dict
 
-    def get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
+    def _get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
 
         driver = self.web_driver.get_chrome()
         maker = url.split("/")[-2]

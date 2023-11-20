@@ -25,18 +25,17 @@ class Rurlsearcher(SCAPER):
                                             'XR-65X93CL', 'XR-75X93CL', 'XR-75X93L', 'XR-85X93L', 'XR-85X95L',
                                             'XR-65X93L'
                                         ],
-                                        "lcd": [
-                                            'XR-85X95K', 'KD-75X77L', 'XR-85X90CL', 'KD-75X80CK', 'XR-55X90CL',
-                                            'KD-55X85K', 'KD-55X77CL', 'XR-75Z9K', 'KD-32W830K', 'KD-85X80K',
-                                            'KD-75X85K', 'XR-85X90K', 'XR-75X95K', 'XR-55X90CK', 'KD-43X80K',
-                                            'XR-65X90CK', 'KD-43X85K', 'XR-55X90L', 'KD-65X77L', 'KD-85X77L',
-                                            'XR-65X90L', 'XR-65X90CL', 'KD-55X80CK', 'XR-75X90CK', 'XR-85Z9K',
-                                            'KD-43X77L', 'KD-85X77CL', 'KD-85X85K', 'KD-50X77L', 'XR-75X90L',
-                                            'XR-85X90CK', 'KD-65X77CL', 'XR-65X95K', 'KD-50X80K', 'KD-50X85K',
-                                            'XR-55X90K', 'XR-85X90L', 'XR-75X90K', 'KD-85X80CK', 'KD-55X77L',
-                                            'KD-75X77CL', 'KD-55X80K', 'XR-98X90L', 'KD-65X80CK', 'KD-65X80K',
-                                            'XR-65X90K', 'KD-75X80K', 'KD-65X85K', 'XR-75X90CL'
-                                        ]
+                                        "lcd":['XR-55X90CK', 'XR-65X90CK', 'XR-75X90CK', 'XR-85X90CK',
+                                               'KD-55X80CK', 'KD-65X80CK', 'KD-75X80CK', 'KD-85X80CK',
+                                               'KD-43X85K', 'KD-50X85K', 'KD-55X85K', 'KD-65X85K', 'KD-75X85K',
+                                               'KD-85X85K', 'XR-55X90CL', 'XR-65X90CL', 'XR-75X90CL',
+                                               'XR-85X90CL', 'XR-65X95K', 'XR-75X95K', 'XR-85X95K', 'XR-55X90K',
+                                               'XR-65X90K', 'XR-75X90K', 'XR-85X90K', 'XR-55X90L', 'XR-65X90L',
+                                               'XR-75X90L', 'XR-85X90L', 'XR-98X90L', 'KD-43X80K', 'KD-50X80K',
+                                               'KD-55X80K', 'KD-65X80K', 'KD-75X80K', 'KD-85X80K', 'XR-75Z9K',
+                                               'XR-85Z9K', 'KD-32W830K', 'KD-55X77CL', 'KD-65X77CL', 'KD-75X77CL',
+                                               'KD-85X77CL', 'KD-43X77L', 'KD-50X77L', 'KD-55X77L', 'KD-65X77L',
+                                               'KD-75X77L', 'KD-85X77L']
                                     }
         }
 
@@ -86,3 +85,4 @@ class Rurlsearcher(SCAPER):
             # 브라우저 종료
             driver.quit()
         return None
+
