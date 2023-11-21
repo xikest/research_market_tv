@@ -11,4 +11,3 @@ class Visualizer:
             self.output_folder = Path(output_folder_path)
             if not self.output_folder.exists():
                 self.output_folder.mkdir(parents=True, exist_ok=True)
-                print("folder 생성")
