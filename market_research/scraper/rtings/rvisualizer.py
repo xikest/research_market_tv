@@ -153,9 +153,9 @@ class Rvisualizer(Visualizer):
 
         suffix = self.title_units_dict.get(col_y)
         if suffix is not None:
-            sup_title = f"{col_y} ({suffix})"
+            sup_title = f"{col_y} ({suffix}) by {col_x}"
         else:
-            sup_title = col_y
+            sup_title = f"{col_y} by {col_x}"
 
         g.fig.suptitle(sup_title, y=1.05)
         g.fig.subplots_adjust(top=1)
@@ -189,11 +189,11 @@ class Rvisualizer(Visualizer):
         col_color = mode_dict.get("col_facet")
 
         suffix = self.title_units_dict.get(col_y)
+        
         if suffix is not None:
-            sup_title = f"{col_y} ({suffix})"
+            sup_title = f"{col_y} ({suffix}) by {col_x}"
         else:
-            sup_title = col_y
-
+            sup_title = f"{col_y} by {col_x}"
 
         if col_color is not None:
             fig = px.line(df, x=col_x, y=col_y, color=col_color, title=sup_title, line_shape='linear',
