@@ -1,19 +1,25 @@
 import time
-from market_research.tools import WebDriver, FileManager
-
+from market_research.tools import FileManager
 from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
-class ModelScraper_sjp:
+from market_research.scraper._scaper_scheme import SCAPER
+class ModelScraper_sjp(SCAPER):
 
-    def __init__(self, webdriver_path: str, browser_path: str = None, enable_headless=True):
-        self.wait_time = 10
-        self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path,
-                                    headless=enable_headless)
+    def __init__(self, enable_headless=True,
+                 export_prefix="model_sony_jp", intput_folder_path="input", output_folder_path="results",
+                 verbose: bool = False, wait_time=1):
+        super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,
+                         intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
+
+        self.tracking_log = verbose
+        self.wait_time = wait_time
         self.file_manager = FileManager
         self.tracking_log = enable_headless
+
+
     def get_models_info(self, foramt_output="df"):
         print("sony_jp")
         url_series_dict = self._get_spec_series()
@@ -25,7 +31,9 @@ class ModelScraper_sjp:
         print("Number of all Series:", len(models_dict))
 
         if foramt_output == "df":
-            return pd.DataFrame.from_dict(models_dict).T
+            df_models = pd.DataFrame.from_dict(models_dict).T
+            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
+            return df_models
         else:
             return models_dict
 

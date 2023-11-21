@@ -61,8 +61,6 @@ class Rvisualizer:
         for trim_mark in trim_marks:
             try:
                 self.df.loc[:, "result_value"] = self._retrim(self.df["result_value"], trim_mark)
-
-
             except:
                 pass
 
@@ -143,7 +141,15 @@ class Rvisualizer:
                 for ax in g.axes.flat:
                     ax.set(ylim=facet_ylims)
 
-        g.set_xticklabels(rotation=90, horizontalalignment='right')
+        # g.set_xticklabels(rotation=90, horizontalalignment='right')
+        for ax in g.axes.flat:
+            for label in ax.get_xticklabels():
+                if len(label.get_text()) > 4:
+                    label.set_rotation(90)
+                    label.set_horizontalalignment('right')
+                else:
+                    label.set_rotation(0)
+
 
         suffix = self.title_units_dict.get(col_y)
         if suffix is not None:
@@ -167,13 +173,13 @@ class Rvisualizer:
         sns.despine()
         plt.tight_layout()
 
-        # if save_plot_name is None:
-        #     save_plot_name = f"plot_for_{sup_title}.png"
-        # plt.savefig(save_plot_name, bbox_inches='tight')
+        if save_plot_name is None:
+            save_plot_name = f"plot_for_{sup_title}.png"
+        plt.savefig(save_plot_name, bbox_inches='tight')
         plt.show()
 
     def plot_lines(self, column, swap_mode=True, ylims: list = None,
-                   yticks: list = None):
+                   yticks: list = None, save_plot_name:str=None):
 
         df = self._get_data(column)
         mode_dict = self._plot_mode(column, swap_mode)
@@ -203,6 +209,10 @@ class Rvisualizer:
         if ylims is not None:
             fig.update_yaxes(range=ylims)
 
+        if save_plot_name is None:
+            save_plot_name = f"plot_pca_for_{sup_title}.png"
+            # Save the plot as an image
+        fig.write_image(save_plot_name)
         fig.show()
 
 
@@ -238,9 +248,9 @@ class Rvisualizer:
         sns.heatmap(data_df, annot=annot, cmap=cmap, cbar=cbar, vmin=0, vmax=10, yticklabels=data_df.index)
         title = "Rtings Score heatmap"
         plt.title(title)
-        # if save_plot_name is None:
-        #     save_plot_name = f"plot_for_{title}.png"
-        # plt.savefig(save_plot_name, bbox_inches='tight')
+        if save_plot_name is None:
+            save_plot_name = f"plot_for_{title}.png"
+        plt.savefig(save_plot_name, bbox_inches='tight')
         plt.show()
 
 
@@ -288,8 +298,8 @@ class Rvisualizer:
 
         plt.tight_layout()
         sns.despine()
-        # if save_plot_name is None:
-        #     save_plot_name = f"plot_pca_for_{title}.png"
-        # plt.savefig(save_plot_name, bbox_inches='tight')
+        if save_plot_name is None:
+            save_plot_name = f"plot_pca_for_{title}.png"
+        plt.savefig(save_plot_name, bbox_inches='tight')
         plt.show()
 

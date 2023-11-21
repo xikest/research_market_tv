@@ -11,7 +11,7 @@ class Rtings(SCAPER):
     def __init__(self, enable_headless = True,
                          export_prefix= "rtings",
                          intput_folder_path = "input",
-                         output_folder_path = "results", verbose:bool=False, wait_time=2):
+                         output_folder_path = "results", verbose:bool=False, wait_time=1):
 
         super().__init__(enable_headless = enable_headless,
                          export_prefix= export_prefix,

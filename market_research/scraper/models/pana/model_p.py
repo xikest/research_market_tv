@@ -1,16 +1,19 @@
 import time
-from market_research.tools import WebDriver
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
-class ModelScraper_pjp:
+from market_research.scraper._scaper_scheme import SCAPER
+from market_research.tools import FileManager
+class ModelScraper_pjp(SCAPER):
 
-    def __init__(self, webdriver_path: str, browser_path: str = None, enable_headless=True):
-        self.wait_time = 1
-        self.web_driver = WebDriver(executable_path=webdriver_path, browser_path=browser_path,
-                                    headless=enable_headless)
-        self.tracking_log = enable_headless
+    def __init__(self, enable_headless=True,
+                 export_prefix="model_pana_global", intput_folder_path="input", output_folder_path="results",
+                 verbose: bool = False, wait_time=1):
+        super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,
+                         intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
+        self.tracking_log = verbose
+        self.wait_time = wait_time
 
 
     def get_models_info(self, foramt_output="df"):
@@ -26,7 +29,9 @@ class ModelScraper_pjp:
         print("Number of all Series:", len(dictModels))
 
         if foramt_output == "df":
-            return pd.DataFrame.from_dict(dictModels).T
+            df_models = pd.DataFrame.from_dict(dictModels).T
+            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
+            return df_models
         else:
             return dictModels
 

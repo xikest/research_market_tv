@@ -17,6 +17,7 @@ class SCAPER:
         self.webdriver_path:str
         self.intput_folder:Path
         self.output_folder:Path
+        self.output_xlsx_name = None
 
         self._set_scraper_path()
         self.set_data_path(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
@@ -44,6 +45,6 @@ class SCAPER:
             if not self.output_folder.exists():
                 self.output_folder.mkdir(parents=True, exist_ok=True)
             if export_prefix is not None:
-                self.output_file_name = self.output_folder /  f"{export_prefix}{date.today().strftime('%Y-%m-%d')}.xlsx"
+                self.output_xlsx_name = self.output_folder /  f"{export_prefix}{date.today().strftime('%Y-%m-%d')}.xlsx"
             else:
-                self.output_file_name = self.output_folder / f"{date.today().strftime('%Y-%m-%d')}.xlsx"
+                self.output_xlsx_name = self.output_folder / f"{date.today().strftime('%Y-%m-%d')}.xlsx"

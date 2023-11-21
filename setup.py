@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='getmodelspec',
-    version='1.362',
+    name='mkt-retv',
+    version='1.363',
     author='xikest',
-    description='research TV market',
+    description='market research, TV ',
     packages=find_packages(),
     python_requires='>=3.7',
     install_requires=[
