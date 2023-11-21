@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='mktretv',
-    version='1.364',
+    name='mkt-retv',
+    version='1.365',
     author='xikest',
-    description='market research, TV ',
+    description='market research TV ',
     packages=find_packages(),
     python_requires='>=3.7',
     install_requires=[
