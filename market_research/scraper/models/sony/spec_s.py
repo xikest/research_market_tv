@@ -24,14 +24,12 @@ class ModelScraper_s(SCAPER):
             FileManager.make_dir(self.log_dir)
 
     def get_models_info(self, foramt_output:str='df', fastmode:bool=False):
-        print("sony")
         url_series_set = self._get_url_series()
         url_series_dict = {}
         for url in url_series_set:
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
-
-        print("Total Model:", len(url_series_dict))
+        print("number of total model:", len(url_series_dict))
 
         if fastmode:
             return url_series_dict
@@ -64,7 +62,6 @@ class ModelScraper_s(SCAPER):
         step = 200
         url_series = set()
         try_total = 5
-        print("The website scan starts")
         for _ in range(try_total):
             driver = self.web_driver.get_chrome()
             try:
@@ -90,7 +87,7 @@ class ModelScraper_s(SCAPER):
                 print(f"Try collecting {_ + 1}/{try_total}")
                 # print(e)
         print("The website scan has been completed.")
-        print(f"total Series: {len(url_series)}ea")
+        print(f"number of total series: {len(url_series)}")
         return url_series
 
     def _get_models(self, url: str, prefix="https://electronics.sony.com/", static_mode=True) -> dict:
@@ -121,7 +118,8 @@ class ModelScraper_s(SCAPER):
                         except Exception as e:
                             print(f"Getting series error ({e})")
                             pass
-                print(f"SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}ea")
+                if self.tracking_log:
+                    print(f"SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
                 for key, value in dict_url_models.items():
                     if self.tracking_log:
                         print(f'{key}: {value}')
