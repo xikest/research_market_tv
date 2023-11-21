@@ -6,15 +6,16 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from market_research.scraper._visualizer_scheme import Visualizer
+class Rvisualizer(Visualizer):
 
+    def __init__(self, df, output_folder_path="results"):
+        super().__init__(output_folder_path=output_folder_path)
 
-class Rvisualizer:
-
-    def __init__(self, df):
         self.df = df.copy()
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
-
+        self.output_folder = None
         self.title_units_dict = {
             "HDR Brightness": "cd/m²",
             "SDR Brightness": "cd/m²",
@@ -32,9 +33,7 @@ class Rvisualizer:
             "Variable Refresh Rate": "Hz",
             "Viewing Angle": "°"
         }
-
         self._initialize_data()
-
 
     def _initialize_data(self):
         self.df.loc[self.df['label'] == '1,000 cd/m² DCI P3 Coverage ITP', 'header'] = 'Color Volume(ITP)'
@@ -212,7 +211,7 @@ class Rvisualizer:
         if save_plot_name is None:
             save_plot_name = f"plot_pca_for_{sup_title}.png"
             # Save the plot as an image
-        fig.write_image(save_plot_name)
+        fig.write_image(self.output_folder/save_plot_name)
         fig.show()
 
 
@@ -250,7 +249,7 @@ class Rvisualizer:
         plt.title(title)
         if save_plot_name is None:
             save_plot_name = f"plot_for_{title}.png"
-        plt.savefig(save_plot_name, bbox_inches='tight')
+        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
 
 
@@ -300,6 +299,6 @@ class Rvisualizer:
         sns.despine()
         if save_plot_name is None:
             save_plot_name = f"plot_pca_for_{title}.png"
-        plt.savefig(save_plot_name, bbox_inches='tight')
+        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
 

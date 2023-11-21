@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mktretv',
-    version='1.363',
+    version='1.364',
     author='xikest',
     description='market research, TV ',
     packages=find_packages(),

@@ -7,9 +7,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from market_research.tools import FileManager
-from market_research.scraper._scaper_scheme import SCAPER
+from market_research.scraper._scaper_scheme import Scraper
 
-class ModelScraper_s(SCAPER):
+class ModelScraper_s(Scraper):
     def __init__(self, enable_headless=True,
                  export_prefix="model_sony_gobal", intput_folder_path="input",  output_folder_path="results",
                  verbose: bool = False, wait_time=1):

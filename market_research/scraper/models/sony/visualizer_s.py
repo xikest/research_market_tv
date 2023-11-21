@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 from .cleanup_s import DataCleanup_s
+from market_research.scraper._visualizer_scheme import Visualizer
+class Visualizer_s(Visualizer):
 
-class Visualizer_s:
-
-    def __init__(self, df):
+    def __init__(self, df, output_folder_path="results"):
+        super().__init__(output_folder_path = output_folder_path)
         self.dc = DataCleanup_s(df)
 
     def group_plot_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price_discount",
@@ -80,5 +81,6 @@ class Visualizer_s:
         plt.title(title)
         if save_plot_name is None:
             save_plot_name = f"heatmap_for_{title}.png"
-        plt.savefig(save_plot_name, bbox_inches='tight')  # bbox_inches='tight' prevents label cutoff
+        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
+

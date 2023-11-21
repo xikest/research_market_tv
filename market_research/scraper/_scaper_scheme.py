@@ -4,7 +4,7 @@ from datetime import date
 from ..tools import WebDriver
 
 
-class SCAPER:
+class Scraper:
 
     def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path = None, output_folder_path=None):
         """

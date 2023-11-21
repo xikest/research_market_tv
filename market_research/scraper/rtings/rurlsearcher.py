@@ -5,9 +5,6 @@ import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scaper_scheme import SCAPER
 
-
-
-
 class Rurlsearcher(SCAPER):
     def __init__(self, enable_headless=True):
         super().__init__(enable_headless=enable_headless)

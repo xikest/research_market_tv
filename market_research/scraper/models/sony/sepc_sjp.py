@@ -5,8 +5,8 @@ import requests
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
-from market_research.scraper._scaper_scheme import SCAPER
-class ModelScraper_sjp(SCAPER):
+from market_research.scraper._scaper_scheme import Scraper
+class ModelScraper_sjp(Scraper):
 
     def __init__(self, enable_headless=True,
                  export_prefix="model_sony_jp", intput_folder_path="input", output_folder_path="results",
