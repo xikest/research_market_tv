@@ -44,7 +44,7 @@ class Rtings(Scraper):
 
             if export_excel:
                 FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
-                FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='w')
+                FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='a')
                 FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
         except Exception as e:
             if self.verbose:

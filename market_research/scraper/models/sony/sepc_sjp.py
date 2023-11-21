@@ -17,11 +17,9 @@ class ModelScraper_sjp(Scraper):
         self.tracking_log = verbose
         self.wait_time = wait_time
         self.file_manager = FileManager
-        self.tracking_log = enable_headless
 
 
     def get_models_info(self, foramt_output="df"):
-        print("sony_jp")
         url_series_dict = self._get_spec_series()
         models_dict = {}
         for model, url in tqdm(url_series_dict.items()):
@@ -49,7 +47,7 @@ class ModelScraper_sjp(Scraper):
         for trycnt in range(trytotal):
             driver = self.web_driver.get_chrome()
             driver.get(url=url)
-            time.sleep(1)
+            time.sleep(self.wait_time)
             scroll_distance_total = self.web_driver.get_scroll_distance_total()
             scroll_distance = 0
             while scroll_distance < scroll_distance_total:
@@ -64,10 +62,11 @@ class ModelScraper_sjp(Scraper):
                         series_dict[model]=link
                     # 한 step씩 스크롤 내리기
                     driver.execute_script(f"window.scrollBy(0, {step});")
-                    time.sleep(1)  # 스크롤이 내려가는 동안 대기
+                    time.sleep(self.wait_time)  # 스크롤이 내려가는 동안 대기
                     scroll_distance += step
                 except:
-                    print(f"get_spec_series error, re-try {trycnt}/{trytotal}")
+                    if self.tracking_log:
+                        print(f"get_spec_series error, re-try {trycnt}/{trytotal}")
                     driver.quit()
             driver.quit()
             break
@@ -85,9 +84,10 @@ class ModelScraper_sjp(Scraper):
             step: int = 200
             driver = self.web_driver.get_chrome()
             driver.get(url=url)
-            time.sleep(1)
+            time.sleep(self.wait_time)
             try:
-                print("Trying with Selenium...")
+                if self.tracking_log:
+                    print("Trying with Selenium...")
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0  # 현재까지 스크롤한 거리
 
@@ -117,13 +117,14 @@ class ModelScraper_sjp(Scraper):
                     #     dictNote[bullet] = " @" + text
                     # 한 step씩 스크롤 내리기
                     driver.execute_script(f"window.scrollBy(0, {step});")
-                    time.sleep(1)  # 스크롤이 내려가는 동안 대기
+                    time.sleep(self.wait_time)  # 스크롤이 내려가는 동안 대기
                     scroll_distance += step
                 driver.quit()
                 break  # 셀레니움으로 성공적으로 스크래핑했을 경우 반복문 탈출
             except Exception as e:
                 driver.quit()
-                print(f"Failed to scrape using Selenium. Trying with BS4...")
+                if self.tracking_log:
+                    print(f"Failed to scrape using Selenium. Trying with BS4...")
 
                 response = requests.get(url)
                 html = response.text

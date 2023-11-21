@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
+import re
 from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -11,11 +12,10 @@ class Rvisualizer(Visualizer):
 
     def __init__(self, df, output_folder_path="results"):
         super().__init__(output_folder_path=output_folder_path)
-
+        self.output_folder_path =output_folder_path
         self.df = df.copy()
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
-        self.output_folder = None
         self.title_units_dict = {
             "HDR Brightness": "cd/m²",
             "SDR Brightness": "cd/m²",
@@ -143,7 +143,8 @@ class Rvisualizer(Visualizer):
         # g.set_xticklabels(rotation=90, horizontalalignment='right')
         for ax in g.axes.flat:
             for label in ax.get_xticklabels():
-                if len(label.get_text()) > 4:
+
+                if len(label.get_text()) > 5:
                     label.set_rotation(90)
                     label.set_horizontalalignment('right')
                 else:
@@ -173,8 +174,9 @@ class Rvisualizer(Visualizer):
         plt.tight_layout()
 
         if save_plot_name is None:
-            save_plot_name = f"plot_for_{sup_title}.png"
-        plt.savefig(save_plot_name, bbox_inches='tight')
+            file_name = re.sub(r'\([^)]*\)', '', sup_title)
+            save_plot_name = f"plot_for_{file_name}.png"
+        plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
         plt.show()
 
     def plot_lines(self, column, swap_mode=True, ylims: list = None,
@@ -209,9 +211,9 @@ class Rvisualizer(Visualizer):
             fig.update_yaxes(range=ylims)
 
         if save_plot_name is None:
-            save_plot_name = f"plot_pca_for_{sup_title}.png"
-            # Save the plot as an image
-        fig.write_image(self.output_folder/save_plot_name)
+            file_name = re.sub(r'\([^)]*\)', '', sup_title)
+            save_plot_name = f"plot_for_{file_name}.png"
+        # fig.write_image(save_plot_name)
         fig.show()
 
 
@@ -235,7 +237,7 @@ class Rvisualizer(Visualizer):
 
 
 
-    def heatmap_scores(self, cmap="cividis", cbar=True, annot=True, save_plot_name:str=None):
+    def heatmap_scores(self, cmap="cividis", cbar=True, annot=True, save_plot_name:str=None , figsize=(8,10)):
         col_socres = ["maker", "product", "category", "header", "score"]
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         data_df["score"] = data_df["score"].map(lambda x: float(x))
@@ -243,7 +245,7 @@ class Rvisualizer(Visualizer):
         data_df = data_df.pivot(index=["maker", "product"], columns=["category", "header"], values='score')
         data_df = data_df.T.reset_index().sort_index(axis=1).drop("category", axis=1).set_index("header")
         data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
-        plt.figure(figsize=(8, 10))
+        plt.figure(figsize=figsize)
         sns.heatmap(data_df, annot=annot, cmap=cmap, cbar=cbar, vmin=0, vmax=10, yticklabels=data_df.index)
         title = "Rtings Score heatmap"
         plt.title(title)

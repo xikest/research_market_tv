@@ -4,18 +4,19 @@ from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
 class Visualizer_s(Visualizer):
 
-    def __init__(self, df, output_folder_path="results"):
+    def __init__(self, df, output_folder_path="results", style="whitegrid"):
         super().__init__(output_folder_path = output_folder_path)
+        sns.set_style(style)
         self.dc = DataCleanup_s(df)
 
     def group_plot_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price_discount",
-                       ylabel_mark: str = "%", save_plot_name=None):
+                       ylabel_mark: str = "%", figsize=(10, 6), save_plot_name=None):
 
         df = self.dc.get_price_df()
         col_group_str = '&'.join(col_group)
         grouped_data = df.groupby(col_group)[col_plot].mean().sort_values(ascending=False)
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=figsize)
 
         grouped_data.plot(kind="bar")
         plt.ylabel(f"{col_plot}({ylabel_mark})")
@@ -63,8 +64,6 @@ class Visualizer_s(Visualizer):
         data_df = self.dc.get_df_cleaned()
         data_df = data_df[col_selected]
         if display_types is not None:
-            # data_df = data_df.loc[data_df.index.get_level_values('display type') == display_type]
-            # data_df = data_df[data_df.index.get_level_values('display type').str.contains(display_type, case=False, na=False)]
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
         data_df = data_df.replace({"-": 0})

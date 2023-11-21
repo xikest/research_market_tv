@@ -3,9 +3,9 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
-from market_research.scraper._scaper_scheme import SCAPER
+from market_research.scraper._scaper_scheme import Scraper
 
-class Rurlsearcher(SCAPER):
+class Rurlsearcher(Scraper):
     def __init__(self, enable_headless=True):
         super().__init__(enable_headless=enable_headless)
         self.wait_time=2

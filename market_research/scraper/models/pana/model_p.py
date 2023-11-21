@@ -17,7 +17,6 @@ class ModelScraper_pjp(Scraper):
 
 
     def get_models_info(self, foramt_output="df"):
-        print("panasonic")
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
         dictModels = OrderedDict()
@@ -88,8 +87,9 @@ class ModelScraper_pjp(Scraper):
                 return dictSpec
 
             except Exception as e:
-                print(f"getPage3rd error: {model} try {cntTry + 1}/{cntTryTotal}")
-                print(e)
+                if self.tracking_log:
+                    print(f"getPage3rd error: {model} try {cntTry + 1}/{cntTryTotal}")
+                    print(e)
                 driver.quit()
                 pass
 
