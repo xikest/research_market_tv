@@ -255,7 +255,7 @@ class Rvisualizer(Visualizer):
         plt.show()
 
 
-  def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
+    def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
         sns.set(style="whitegrid")
         ddf = self.df.copy()
         ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
