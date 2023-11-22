@@ -159,7 +159,7 @@ class Rtings(Scraper):
         except:
             if self.verbose:
                 print("no comment")
-            comments_df = pd.DataFrame([{'idx': "Na", 'maker': "Na", 'Na': "Na", 'sentences': "Na"}]).set_index("idx")
+            comments_df = pd.DataFrame([{'idx': "Na", 'maker': maker, 'product': product, 'sentences': "Na"}]).set_index("idx")
             comments_dict = comments_df.to_dict()
 
         if format_df:
