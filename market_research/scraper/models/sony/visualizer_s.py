@@ -57,7 +57,8 @@ class Visualizer_s(Visualizer):
                              'auto genre picture mode',
                              'features for playstation5 auto genre picture mode',
                              'auto hdr tone mapping',
-                             'features for playstation5 auto hdr tone mapping'
+                             'features for playstation5 auto hdr tone mapping',
+                             'multi-view',
                              ]
 
 

@@ -43,9 +43,9 @@ class Rtings(Scraper):
                 comments_df = pd.concat([comments_df, df], axis=0)
 
             if export_excel:
-                FileManager.df_to_excel(score_df, file_name=self.output_file_name, sheet_name="scores", mode='w')
-                FileManager.df_to_excel(measurement_df, file_name=self.output_file_name, sheet_name="measurement", mode='a')
-                FileManager.df_to_excel(comments_df, file_name=self.output_file_name, sheet_name="comments", mode='a')
+                FileManager.df_to_excel(score_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
+                FileManager.df_to_excel(measurement_df, file_name=self.output_xlsx_name, sheet_name="measurement", mode='a')
+                FileManager.df_to_excel(comments_df, file_name=self.output_xlsx_name, sheet_name="comments", mode='a')
         except Exception as e:
             if self.verbose:
                 print(f"fail {url}")
@@ -159,7 +159,7 @@ class Rtings(Scraper):
         except:
             if self.verbose:
                 print("no comment")
-            comments_df = pd.DataFrame([{'idx': "Na", 'maker': maker, 'product': product, 'sentences': "Na"}]).set_index("idx")
+            comments_df = pd.DataFrame([{'idx': 0, 'maker': maker, 'product': product, 'sentences': "No data"}]).set_index("idx")
             comments_dict = comments_df.to_dict()
 
         if format_df:
