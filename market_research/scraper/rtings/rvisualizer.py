@@ -272,8 +272,9 @@ class Rvisualizer(Visualizer):
         pca = PCA(n_components=0.8)  # Set explained variance threshold to 0.8
         X_pca = pca.fit_transform(X_numeric_scaled)
     
-        label_pc = [f"PC{i + 1}" for i in range(X_pca.shape[1])]  # Naming components as PC1, PC2, ...
-    
+        #label_pc = [f"PC{i + 1}" for i in range(X_pca.shape[1])]  # Naming components as PC1, PC2, ...
+        label_pc = [f"PC{i + 1}: {var:.2f}%" for i, var in enumerate(pca.explained_variance_)]
+
         pca_result_df = (
             pd.DataFrame(np.round(pca.components_.T * np.sqrt(pca.explained_variance_), 4),
                          columns=label_pc, index=ddf_pivot.columns)
