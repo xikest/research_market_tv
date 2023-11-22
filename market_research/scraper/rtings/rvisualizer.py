@@ -255,50 +255,51 @@ class Rvisualizer(Visualizer):
         plt.show()
 
 
-    def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
-    sns.set(style="whitegrid")
-    ddf = self.df.copy()
-    ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
-    ddf['maker_product'] = ddf['maker'] + '_' + ddf['product']
-    ddf = ddf.drop(["category", "header", "label", "score", "maker", "product"], axis=1)[
-        ddf.category.isin(["Picture Quality"])]
+  def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
+        sns.set(style="whitegrid")
+        ddf = self.df.copy()
+        ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
+        ddf['maker_product'] = ddf['maker'] + '_' + ddf['product']
+        ddf = ddf.drop(["category", "header", "label", "score", "maker", "product"], axis=1)[
+            ddf.category.isin(["Picture Quality"])]
+    
+        ddf_pivot = ddf.pivot_table(index=['maker_product'], columns=['category_header_label'],
+                                    values=['result_value'],
+                                    aggfunc={'result_value': 'first'})
+        scaler = StandardScaler()
+        X_numeric_scaled = scaler.fit_transform(ddf_pivot)
+    
+        pca = PCA(n_components=0.8)  # Set explained variance threshold to 0.8
+        X_pca = pca.fit_transform(X_numeric_scaled)
+    
+        label_pc = [f"PC{i + 1}" for i in range(X_pca.shape[1])]  # Naming components as PC1, PC2, ...
+    
+        pca_result_df = (
+            pd.DataFrame(np.round(pca.components_.T * np.sqrt(pca.explained_variance_), 4),
+                         columns=label_pc, index=ddf_pivot.columns)
+            .reset_index()
+            .assign(category=lambda x: x["category_header_label"].str.split("_").str[0],
+                    header=lambda x: x["category_header_label"].str.split("_").str[1],
+                    label=lambda x: x["category_header_label"].str.split("_").str[2])
+            .drop("category_header_label", axis=1)
+        )
+    
+        pca_result_by_header_df = pca_result_df.groupby(["header"])[label_pc].mean().reset_index()
+        pca_result_by_header_df = pca_result_by_header_df.sort_values(by=label_pc[0], ascending=False)
+        pca_result_long_df = pd.melt(pca_result_by_header_df, id_vars=["header"], var_name="Principal Component",
+                                     value_name="loading")
+    
+        # 그래프 생성
+        plt.figure(figsize=figsize)
+        sns.barplot(x="loading", y="header", hue="Principal Component", data=pca_result_long_df, palette=palette)
+        plt.xlim(-1, 1)
+        plt.title(label=title, y=1.1)
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=False, ncol=3)
+    
+        plt.tight_layout()
+        sns.despine()
+        if save_plot_name is None:
+            save_plot_name = f"plot_pca_for_{title}.png"
+        plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
+        plt.show()
 
-    ddf_pivot = ddf.pivot_table(index=['maker_product'], columns=['category_header_label'],
-                                values=['result_value'],
-                                aggfunc={'result_value': 'first'})
-    scaler = StandardScaler()
-    X_numeric_scaled = scaler.fit_transform(ddf_pivot)
-
-    pca = PCA(n_components=0.8)  # Set explained variance threshold to 0.8
-    X_pca = pca.fit_transform(X_numeric_scaled)
-
-    label_pc = [f"PC{i + 1}" for i in range(X_pca.shape[1])]  # Naming components as PC1, PC2, ...
-
-    pca_result_df = (
-        pd.DataFrame(np.round(pca.components_.T * np.sqrt(pca.explained_variance_), 4),
-                     columns=label_pc, index=ddf_pivot.columns)
-        .reset_index()
-        .assign(category=lambda x: x["category_header_label"].str.split("_").str[0],
-                header=lambda x: x["category_header_label"].str.split("_").str[1],
-                label=lambda x: x["category_header_label"].str.split("_").str[2])
-        .drop("category_header_label", axis=1)
-    )
-
-    pca_result_by_header_df = pca_result_df.groupby(["header"])[label_pc].mean().reset_index()
-    pca_result_by_header_df = pca_result_by_header_df.sort_values(by=label_pc[0], ascending=False)
-    pca_result_long_df = pd.melt(pca_result_by_header_df, id_vars=["header"], var_name="Principal Component",
-                                 value_name="loading")
-
-    # 그래프 생성
-    plt.figure(figsize=figsize)
-    sns.barplot(x="loading", y="header", hue="Principal Component", data=pca_result_long_df, palette=palette)
-    plt.xlim(-1, 1)
-    plt.title(label=title, y=1.1)
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=False, ncol=3)
-
-    plt.tight_layout()
-    sns.despine()
-    if save_plot_name is None:
-        save_plot_name = f"plot_pca_for_{title}.png"
-    plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
-    plt.show()
