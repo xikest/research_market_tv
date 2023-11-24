@@ -27,11 +27,8 @@ class Rtings(Scraper):
         url = None
         try:
             for url in tqdm(urls):
-                # maker = url.split("/")[-2]
-                # model = url.split("/")[-1]
                 if self.verbose:
                     print(f"connecting to {url}")
-
                 df = self._get_score(url, format_df=True)
                 score_df = pd.concat([score_df, df], axis=0)
 
@@ -53,7 +50,7 @@ class Rtings(Scraper):
         return {
             "scores":score_df,
                 "measurement":measurement_df,
-                # "comments":comments_df
+                "comments":comments_df
         }
         
 

@@ -36,18 +36,20 @@ class Rurlsearcher(Scraper):
                                     }
         }
 
-    def get_model_dictionary(self, maker:str="sony", key_mode=False):
+    def get_model_from_dictionary(self, maker:str="sony", key_mode=False):
         if key_mode:
             return self.model_dictionary.keys()
         return self.model_dictionary.get(maker.lower())
 
-    def get_urls_web(self, keywords:list[str,] = None)->list:
+    def get_urls_from_web(self, keywords:list[str,] = None)->list:
         urls_set = set()  
         for keyword in tqdm(keywords):
-            urls_set.add(self._search_and_extract_url(search_query=keyword))
+            url = self._search_and_extract_url(search_query=keyword)
+            if url is not None:
+                urls_set.add(url)
         return list(urls_set)
 
-    def get_urls_inputpath(self, intput_folder_path:str)->list:
+    def get_urls_from_inputpath(self, intput_folder_path:str)->list:
         self.set_data_path(intput_folder_path=intput_folder_path)
 
         urls = []
@@ -77,7 +79,7 @@ class Rurlsearcher(Scraper):
                 if "tv/reviews" in url:
                     split_url = url.split('/')
                     if len(split_url) == 5:
-                        return base_url+url  # 첫번째 결과만 반환 됨
+                        return base_url + url
         finally:
             # 브라우저 종료
             driver.quit()

@@ -7,25 +7,39 @@ import matplotlib.pyplot as plt
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import nltk
+import PyPDF2
 from pathlib import Path
-
-class TextAnalysis:
-    def __init__(self):
+import fitz  # PyMuPDF
+from ._analysis_scheme import Analysis
+class TextAnalysis(Analysis):
+    def __init__(self,
+                 export_prefix="text_", intput_folder_path="input",  output_folder_path="results"):
         self.comments:[str,]
         self.nouns:[str,]
         self.df_word_freq:pd.DataFrame
-        self._set_datapack()
+        super().__init__(export_prefix=export_prefix,  intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
 
-    def get_comments(self, comments:str)-> None:
+        # self._set_datapack()
+    def read_files_from_inputpath(self, docs_type="excel"):
+
+        file_type = {"excel":['.xlsx', '.xls'],
+                     "pdf":[".pdf"]
+
+                     }
+        file_list = self.intput_folder.glob('*')
+
+        files = [file for file in file_list if file.suffix in file_type.get(docs_type)]
+        return files
+    def get_comments(self, comments:list[str,] , cleaning_words:list=None)-> None:
         self.comments = comments
+        self.cleaning_words = cleaning_words
         self._prepare_nouns()
         self._prepare_word_freq()
         return None
 
-    def save_df_freq_as_excel(self, output_dir: Path = Path("results"), file_name: str = "your_excel_file_name"):
-        output_dir.mkdir(parents=True, exist_ok=True)  # 디렉터리 생성
+    def save_df_freq_as_excel(self, file_name: str = "your_excel_file_name"):
         df = self.df_word_freq
-        df.to_excel(output_dir / (file_name + "_freq.xlsx"), index=False)
+        df.to_excel(self.output_folder / (file_name + "_freq.xlsx"), index=False)
 
 
 
@@ -40,6 +54,7 @@ class TextAnalysis:
             tokens = word_tokenize(comment)
             all_words.extend(tokens)
         stop_words = set(stopwords.words('english'))
+        stop_words.update(self.cleaning_words)
         filtered_words = [word.lower() for word in all_words if
                           word.isalnum() and word.lower() not in stop_words]
         self._nouns = [word for (word, tag) in pos_tag(filtered_words) if tag.startswith('N')]
@@ -60,9 +75,6 @@ class TextAnalysis:
             plt.title("Top 10 Words Frequency")
             plt.xticks(rotation=45)
             sns.despine()
-            if save_path:
-                plt.savefig(save_path)
-
             plt.show()
 
         except Exception as e:
@@ -82,3 +94,30 @@ class TextAnalysis:
         except Exception as e:
             print(e)
             print("data not prepared")
+
+    def pdf_to_text(self, pdf_path):
+        text = ""
+        try:
+            with fitz.open(pdf_path) as pdf_document:
+                for page_number in range(pdf_document.page_count):
+                    page = pdf_document[page_number]
+                    text += page.get_text().lower().strip()
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+        return text
+
+    # def pdf_to_text(self, pdf_path):
+    #     text = ''
+    #     with open(pdf_path, 'rb') as file:
+    #         pdf_reader = PyPDF2.PdfReader(file)
+    #         num_pages = len(pdf_reader.pages)
+    #
+    #         for page_num in range(num_pages):
+    #             page = pdf_reader.pages[page_num]
+    #             text += page.extract_text()
+    #
+    #     return text
+
+

@@ -4,6 +4,7 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 import re
+from sklearn.cluster import KMeans
 from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -272,8 +273,7 @@ class Rvisualizer(Visualizer):
         pca = PCA(n_components=0.8)  # Set explained variance threshold to 0.8
         X_pca = pca.fit_transform(X_numeric_scaled)
     
-        #label_pc = [f"PC{i + 1}" for i in range(X_pca.shape[1])]  # Naming components as PC1, PC2, ...
-        label_pc = [f"PC{i + 1}: {var:.2f}%" for i, var in enumerate(pca.explained_variance_)]
+        label_pc = [f"PC{i + 1}: {var*100:.2f}%" for i, var in enumerate(pca.explained_variance_ratio_)]
 
         pca_result_df = (
             pd.DataFrame(np.round(pca.components_.T * np.sqrt(pca.explained_variance_), 4),
@@ -284,7 +284,7 @@ class Rvisualizer(Visualizer):
                     label=lambda x: x["category_header_label"].str.split("_").str[2])
             .drop("category_header_label", axis=1)
         )
-    
+
         pca_result_by_header_df = pca_result_df.groupby(["header"])[label_pc].mean().reset_index()
         pca_result_by_header_df = pca_result_by_header_df.sort_values(by=label_pc[0], ascending=False)
         pca_result_long_df = pd.melt(pca_result_by_header_df, id_vars=["header"], var_name="Principal Component",
