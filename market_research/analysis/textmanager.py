@@ -30,7 +30,7 @@ class TextAnalysis(Analysis):
 
         files = [file for file in file_list if file.suffix in file_type.get(docs_type)]
         return files
-    def get_comments(self, comments:list[str,] , cleaning_words:list=None)-> None:
+    def set_comments(self, comments:list[str,] , cleaning_words:list=None)-> None:
         self.comments = comments
         self.cleaning_words = cleaning_words
         self._prepare_nouns()
@@ -40,8 +40,6 @@ class TextAnalysis(Analysis):
     def save_df_freq_as_excel(self, file_name: str = "your_excel_file_name"):
         df = self.df_word_freq
         df.to_excel(self.output_folder / (file_name + "_freq.xlsx"), index=False)
-
-
 
     def _set_datapack(self) -> None:
         nltk.download('punkt')
@@ -69,7 +67,7 @@ class TextAnalysis(Analysis):
         try:
             df_word_freq=self.df_word_freq
             sns.set(style="white")
-            top_words = df_word_freq.head(num_dis)
+            top_words = df_word_freq.sort_values(by="Frequency", ascending=False).head(num_dis)
             plt.figure(figsize=(10, 4))
             sns.barplot(x='Nouns', y='Frequency', data=top_words)
             plt.title("Top 10 Words Frequency")
