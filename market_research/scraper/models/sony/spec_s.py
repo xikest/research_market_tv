@@ -32,7 +32,8 @@ class ModelScraper_s(Scraper):
         print("number of total model:", len(url_series_dict))
 
         if fastmode:
-            return url_series_dict
+            model_list = list(url_series_dict.keys())
+            return model_list
 
         dict_models = {}
         for key, url_model in tqdm(url_series_dict.items()):

@@ -36,7 +36,40 @@ class Rurlsearcher(Scraper):
                                     }
         }
 
+        self.model_url_preset = {"sony":
+            {
+                "oled": [
+                    'https://www.rtings.com/tv/reviews/sony/a90k-oled',
+                     'https://www.rtings.com/tv/reviews/sony/a80l-a80cl-oled',
+                     'https://www.rtings.com/tv/reviews/sony/a90j-oled',
+                     'https://www.rtings.com/tv/reviews/sony/a95k-oled',
+                     'https://www.rtings.com/tv/reviews/sony/a95l-oled',
+                     'https://www.rtings.com/tv/reviews/lg/g3-oled',
+                     'https://www.rtings.com/tv/reviews/sony/a80k-a80ck-oled'
+                         ],
+                "mini_led": [
+                    'https://www.rtings.com/tv/reviews/sony/x95l',
+                    'https://www.rtings.com/tv/reviews/sony/x93l-x93cl'
+                ],
+                "lcd":[
+                    'https://www.rtings.com/tv/reviews/sony/x90l-x90cl',
+                     'https://www.rtings.com/tv/reviews/sony/x77l-x77cl',
+                     'https://www.rtings.com/tv/reviews/sony/x85k',
+                     'https://www.rtings.com/tv/reviews/sony/a95l-oled',
+                     'https://www.rtings.com/tv/reviews/sony/x90k-x90ck',
+                     'https://www.rtings.com/tv/reviews/sony/x95k',
+                     'https://www.rtings.com/tv/reviews/sony/x80k-x80ck'
+                ]
+            }
+        }
+
+
     def get_model_from_dictionary(self, maker:str="sony", key_mode=False):
+        if key_mode:
+            return self.model_dictionary.keys()
+        return self.model_dictionary.get(maker.lower())
+
+    def get_url_from_model_preset(self, maker:str="sony", key_mode=False):
         if key_mode:
             return self.model_dictionary.keys()
         return self.model_dictionary.get(maker.lower())

@@ -2,19 +2,18 @@ from setuptools import setup, find_packages
 
 setup(
     name='mkt-retv',
-    version='1.376',
+    version='1.377',
     author='xikest',
     description='market research TV ',
     packages=find_packages(),
     python_requires='>=3.7',
     install_requires=[
-        'numpy',
-        'pandas',
-        'selenium',
-        'beautifulsoup4',
-        'tqdm',
-        'openpyxl',
-        'requests'
+        'numpy', 'pandas',
+        'selenium','beautifulsoup4','requests',
+        'tqdm', 'openpyxl',
+        'wordcloud', 'nltk',
+        'scikit-learn', 'openai',
+        'matplotlib', 'seaborn', 'plotly', 'kaleido'
     ],
 
     entry_points={
@@ -23,9 +22,9 @@ setup(
         ],
     },
 
-    url='https://github.com/xikest/research-market-tv',  # GitHub 프로젝트 페이지 링크
+    url='https://github.com/xikest/research_market_tv',  # GitHub 프로젝트 페이지 링크
     project_urls={
-        'Source': 'https://github.com/xikest/research-market-tv',  # GitHub 프로젝트 페이지 링크
-        'Bug Tracker': 'https://github.com/xikest/research-market-tv/issues',  # 버그 트래커 링크
+        'Source': 'https://github.com/xikest/research_market_tv',  # GitHub 프로젝트 페이지 링크
+        'Bug Tracker': 'https://github.com/xikest/research_market_tv/issues',  # 버그 트래커 링크
     },
 )
