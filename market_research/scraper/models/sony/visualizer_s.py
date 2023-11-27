@@ -4,7 +4,7 @@ from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
 class Visualizer_s(Visualizer):
 
-    def __init__(self, df, output_folder_path="results", style="whitegrid", stop_words=None):
+    def __init__(self, df, output_folder_path="results", style="whitegrid", stop_words=[]):
         super().__init__(output_folder_path = output_folder_path)
         sns.set_style(style)
         self.dc = DataCleanup_s(df, stop_words=stop_words)
