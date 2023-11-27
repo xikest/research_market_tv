@@ -33,7 +33,7 @@ class DataCleanup_s:
                            "ci+",
                            "bass", "master", "shut", "sorplas", "volume", "wireless", "china",
                            "hole", "program", "manual", "latency",
-                           "inversion","twin","multi-view","h x v","bravia","motion", "netflix","calman","rate"]
+                           "inversion","twin","h x v","bravia","motion", "netflix","calman","rate"]
         return stop_words_list
 
     def _preprocess_df(self):
