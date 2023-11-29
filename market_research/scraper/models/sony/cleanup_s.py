@@ -13,13 +13,14 @@ class DataCleanup_s:
         if stop_words is None:
             stop_words = self._call_stop_words()
         self.stop_words = [stop_word.lower() for stop_word in stop_words]
+        self.stop_words.extend(["model","size"])
         self._preprocess_df()
         self._create_price_df()
         self._cleanup_columns()
 
     def _call_stop_words(self):
-        stop_words_list = ["price", "model", "description",
-                           "weight", "dimension", "size", "stand", "W x H", "W x H x D", "Wi-Fi", "atore", "audio",
+        stop_words_list = ["price", "description",
+                           "weight", "dimension", "stand", "W x H", "W x H x D", "Wi-Fi", "atore", "audio",
                            "frame", "length", "qty",
                            "power", "usb", "channels", "language", "timer", "apple", "TALKBACK", "voice", "sensor",
                            "system", "channel", "storage", "cable",

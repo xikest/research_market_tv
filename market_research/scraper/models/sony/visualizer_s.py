@@ -24,7 +24,7 @@ class Visualizer_s(Visualizer):
 
         if save_plot_name is None:
             save_plot_name = f"barplot_{col_plot}_to_{col_group_str}.png"
-        plt.savefig(save_plot_name, bbox_inches='tight')  # bbox_inches='tight'를 추가하여 레이블이 잘림 방지
+        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
 
     def heatmap_spec(self, display_types:str=None, save_plot_name=None, title="SONY Spec", cmap="Blues", figsize=(8, 8),
