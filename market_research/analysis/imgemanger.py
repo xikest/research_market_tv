@@ -40,7 +40,22 @@ class ImgAnalysis(Analysis):
 
         return file_path
 
-    def toLAB(self, image, input_type='BGR', showmode=True):
+    def to_lab_images(self, image_list):
+        for filename in image_list:
+            image_path = str(filename)
+            title = filename.name.split(".")[0]
+            image_BGR = cv2.imread(image_path)
+            for _ in range(10):
+                try:
+                    _ = self.to_lab_image(image=image_BGR, save_title=title, showmode=True)
+
+                    print("=" * 150)
+                    break
+                except:
+                    pass
+
+
+    def to_lab_image(self, image, input_type='BGR', save_title:str=None, showmode=True):
 
         if showmode:
             # BGR을 RGB로 변환
@@ -91,6 +106,10 @@ class ImgAnalysis(Analysis):
         ax2.set_title('2D Plot')
 
         plt.tight_layout()
+
+        if save_title is not None:
+            plt.savefig(os.path.join(self.output_folder, f'{save_title}.png'))
+
         if showmode:
             plt.show()
             return None
