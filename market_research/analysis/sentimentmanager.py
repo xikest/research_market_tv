@@ -12,7 +12,7 @@ class SentimentManager:
         self.aim = AIManager(self.api_key, gpt_model=gpt_model)
         self.messages_prompt = []
         self.verbose = verbose
-        self.df_analyzed_results:pd.DataFrame = None
+        self.preset_assistant={"summarize_5keywords":"Define up to five important keywords to gain insights, and summarize them in a sentence, using each of the selected keywords."}
 
     def add_message(self, role, content):
         self.messages_prompt.append({"role": role, "content": content})
@@ -20,20 +20,14 @@ class SentimentManager:
     def reset_message(self):
         self.messages_prompt =[]
 
-    def analyze_sentiment(self, keyword:str, sentence:str) -> float:
+    def analyze_sentiment(self, assistant:str, sentence:str) -> str:
         try:
-            # print(f"keyword {keyword}, sentence {sentence}")
-            self.add_message("assistant", "You excel as a Picture quality expert and demonstrate exceptional skills in sentiment analysis.")
-            # "You are a highly skilled sentiment analyst"
-            self.add_message("user", f"Analyze the sentiment of the following text: "
-                                     f"Rate the '{keyword}' in the sentence '{sentence}' on a scale from 0 (strongly negative) to 10 (strongly positive)."
-                                     f"only respond as only number")
+            self.add_message("assistant", assistant)
+            self.add_message("user", f"{sentence}")
             bot_response = self.aim.get_text_from_gpt(self.messages_prompt)
-            # print(f"bot_response: {bot_response}")
-            bot_response = float(bot_response)
         except Exception as e:
-            print("Analysis error occurred: Returning default value.")
-            bot_response = 5.0
+            print(e)
+            bot_response = "error"
 
         self.reset_message()  # 리셋
         return bot_response
