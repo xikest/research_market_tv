@@ -6,7 +6,7 @@
 > **Demo Note book**  
 > [market model information](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quick_guide_market_models.ipynb)  
 > [model scores & measurement](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quick_guide_market_rtings.ipynb)  
-> [text analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quick_guide_textanalysis.ipynb)
+> [text analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quick_guide_textanalysis.ipynb)  
 > [image analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quick_guide_imganalysis.ipynb)
 
 
