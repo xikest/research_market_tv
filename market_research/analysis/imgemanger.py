@@ -13,20 +13,31 @@ class ImgAnalysis(Analysis):
         super().__init__(export_prefix=export_prefix, intput_folder_path=intput_folder_path,
                          output_folder_path=output_folder_path)
 
-        self.preset_video_dict={"elemental":"https://www.youtube.com/watch?v=hXzcyx9V0xw",
-                   "supermario":"https://www.youtube.com/watch?v=RjNcTBXTk4I",
-                   "spideman1_1":"https://www.youtube.com/watch?v=g4Hbz2jLxvQ",
-                   "spideman1_2":"https://www.youtube.com/watch?v=tg52up16eq0",
-                   "spideman2_1":"https://www.youtube.com/watch?v=cqGjhVJWtEg&t=74s",
-                   "spideman2_2":"https://www.youtube.com/watch?v=shW9i6k8cB0",
-                   "arcane1":"https://www.youtube.com/watch?v=fXmAurh012s",
-                   "arcane2":"https://www.youtube.com/watch?v=xISkcHi7djw"}
+        self.preset_video_dict={"elemental1_1":"https://www.youtube.com/watch?v=-pVfWjUUlaE",
+                                "elemental1_2":"https://www.youtube.com/watch?v=lG3QmHRsmRk",
+                                "elemental1_3":"https://www.youtube.com/watch?v=KLBSxj_sqtg",
+                                "supermario1_1":"https://www.youtube.com/watch?v=Gb0wtjSFv94",
+                                "supermario1_2":"https://www.youtube.com/watch?v=rhKeo86YpyE",
+                                "spideman1_1":"https://youtu.be/eazNXtXuohc?si=vr8ThkM-IQcGS71l",
+                                "spideman1_2": "https://www.youtube.com/watch?v=9ON1YisZmSQ",
+                                "spideman1_3": "https://www.youtube.com/watch?v=3N0wxkPtzVs",
+                                "spideman1_4": "https://www.youtube.com/watch?v=7F0GITe1UWk",
+                               "spideman2_1":"https://www.youtube.com/watch?v=HjYC6u061V0",
+                               "spideman2_2":"https://www.youtube.com/watch?v=uuDeh9-f-rc",
+                               "spideman2_3":"https://www.youtube.com/watch?v=vjOvi8UdrNE",
+                               "spideman2-4": "https://www.youtube.com/watch?v=eIPkkK85bl0",
+                                "lgoled_2023_1":"https://www.youtube.com/watch?v=xT6NbiPqsT0",
+                                "lgoled_2023_2":"https://youtu.be/TA1jS07SfeU?si=HtO83elrrSo6_yRM",
+                                "lgoled_2023_3":"https://youtu.be/xT6NbiPqsT0?si=2wMoWauuEqiBbXsE",
+                                "oled_4k":"https://youtu.be/kF-0q042Jjk?si=OLsUt7koxNHdLOA-",
+                                "topgun_m":"https://youtu.be/gNtJ4HdMavo?si=lZdVJO0tOiUdFGrE"
+                           }
 
 
     def read_files_from_inputpath(self, docs_type="img"):
 
         file_type = {"img": ['.png', '.jpeg'],
-                     "video": ['.mp4', ]
+                     "video": ['.mp4', '.webm']
                      }
         file_list = self.intput_folder.glob('*')
 
@@ -39,8 +50,7 @@ class ImgAnalysis(Analysis):
         print(f"Downloading {yt.title}...")
         for _ in range(10):
             try:
-                video_stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by(
-                    'resolution').desc().first()
+                video_stream = yt.streams.filter().order_by('resolution').desc().first()
                 video_stream.download(output_path=self.intput_folder)
                 filename = video_stream.default_filename
                 file_path = os.path.join(os.getcwd(), f"{filename}")
@@ -65,7 +75,6 @@ class ImgAnalysis(Analysis):
                     pass
 
     def to_lab_image(self, image, input_type='BGR', save_title: str = None, showmode=True):
-
         if showmode:
             # BGR을 RGB로 변환
             img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -81,6 +90,7 @@ class ImgAnalysis(Analysis):
 
         colors = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) if input_type == 'BGR' else image
         colors = np.reshape(colors, [y * x, z]) / 255.
+
 
         l = LAB_flat[:, 0]
         a = LAB_flat[:, 1]
@@ -101,9 +111,9 @@ class ImgAnalysis(Analysis):
         ax1.yaxis.pane.fill = False
         ax1.zaxis.pane.fill = False
         ax1.grid(False)
-        ax1.set_xticks([])
-        ax1.set_yticks([])
-        ax1.set_zticks([])
+        # ax1.set_xticks([])
+        # ax1.set_yticks([])
+        # ax1.set_zticks([])
 
         # 두 번째 서브플롯 (2D scatter plot)
         ax2 = fig.add_subplot(122)
@@ -124,11 +134,6 @@ class ImgAnalysis(Analysis):
             print("=" * 150)
             return None
 
-        else:
-            fig = plt.gcf()
-            fig.canvas.draw()
-            img_array = np.array(fig.canvas.renderer.buffer_rgba())
-            return img_array
 
     def _resize_window(self, window_name, width, height):
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -139,7 +144,7 @@ class ImgAnalysis(Analysis):
         color_extraction = cv2.bitwise_and(frame, frame, mask=color_mask)
         return color_extraction
 
-    def process_video(self, file_path, frame_interval=60, showmode=False):
+    def process_video(self, file_path, skip_interval =30, showmode=False):
         video_path = str(file_path)
         title = file_path.name.split(".")[0].replace(" ", "_")
         print(title)
@@ -157,20 +162,20 @@ class ImgAnalysis(Analysis):
             # self._resize_window('Red Extraction', 800, 600)
             # self._resize_window('Green Extraction', 800, 600)
             # self._resize_window('Blue Extraction', 800, 600)
-        frame_count = 0
+        frame_number = 0
         while True:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             ret, frame = cap.read()
 
             if not ret:
                 break
 
             # 프레임 파일로 저장
-            if frame_count % frame_interval == 0:
-                frame_filename = os.path.join(self.intput_folder, f'{title}_frame_{frame_count:04d}.png')
-                cv2.imwrite(frame_filename, frame)
-                frame_filenames.append(frame_filename)
+
+            frame_filename = os.path.join(self.intput_folder, f'{title}_frame_{frame_number:04d}.png')
+            cv2.imwrite(frame_filename, frame)
             # 다음 프레임으로 진행
-            frame_count += 1
+            frame_number += skip_interval
 
             if showmode:
                 # red_extraction = self._extract_color(frame, np.array([0, 0, 100]), np.array([100, 100, 255]))
@@ -183,11 +188,11 @@ class ImgAnalysis(Analysis):
                 # cv2.imshow('Green Extraction', green_extraction)
                 # cv2.imshow('Blue Extraction', blue_extraction)
 
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    break
 
         cap.release()
         if showmode:
             cv2.destroyAllWindows()
         else:
-            frame_filenames
+            return frame_filenames
