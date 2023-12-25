@@ -29,7 +29,7 @@ class TextAnalysis(Analysis):
 
         files = [file for file in file_list if file.suffix in file_type.get(docs_type)]
         return files
-    def set_comments(self, comments: list[str], cleaning_words: list = None) -> None:
+    def set_comments(self, comments: list, cleaning_words: list = None) -> None:
         self.comments = comments
         self.cleaning_words = cleaning_words
         self._prepare_nouns()
