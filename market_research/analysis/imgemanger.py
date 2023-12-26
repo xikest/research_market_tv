@@ -105,10 +105,10 @@ class ImgAnalysis(Analysis):
         ax1.xaxis.pane.fill = False
         ax1.yaxis.pane.fill = False
         ax1.zaxis.pane.fill = False
-        ax1.grid(False)
-        # ax1.set_xticks([])
-        # ax1.set_yticks([])
-        # ax1.set_zticks([])
+        # ax1.grid(False)
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        ax1.set_zticks([])
 
         # 두 번째 서브플롯 (2D scatter plot)
         ax2 = fig.add_subplot(122)
