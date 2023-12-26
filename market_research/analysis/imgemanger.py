@@ -14,19 +14,20 @@ class ImgAnalysis(Analysis):
                          output_folder_path=output_folder_path)
 
         self.preset_video_dict={
-                                # 'elemental1_1': 'https://www.youtube.com/watch?v=JK29WoCFZ4c',
-                                # 'supermario1_1': 'https://www.youtube.com/watch?v=rhKeo86YpyE',
+                                'elemental1_1': 'https://www.youtube.com/watch?v=JK29WoCFZ4c',
+                                'supermario1_1': 'https://www.youtube.com/watch?v=rhKeo86YpyE',
                                 'spideman1_1': 'https://www.youtube.com/watch?v=3N0wxkPtzVs',
-                                # 'spideman1_2': 'https://www.youtube.com/watch?v=7F0GITe1UWk',
+                                 'spideman1_2':'https://www.youtube.com/watch?v=tumNjgEfXz0',
+                                'spideman1_3': 'https://www.youtube.com/watch?v=7F0GITe1UWk',
                                 'spideman2-1':'https://www.youtube.com/watch?v=4RlYCscGLHg&t=76s',
-                                # 'spideman2-2': 'https://www.youtube.com/watch?v=eIPkkK85bl0',
-                                # 'lgoled_2023_1': 'https://www.youtube.com/watch?v=xT6NbiPqsT0',
-                                # 'lgoled_2023_2': 'https://youtu.be/TA1jS07SfeU?si=HtO83elrrSo6_yRM',
-                                # 'lgoled_2023_3': 'https://youtu.be/xT6NbiPqsT0?si=2wMoWauuEqiBbXsE',
+                                'spideman2-2': 'https://www.youtube.com/watch?v=eIPkkK85bl0',
+                                'lgoled_2023_1': 'https://www.youtube.com/watch?v=xT6NbiPqsT0',
+                                'lgoled_2023_2': 'https://youtu.be/TA1jS07SfeU?si=HtO83elrrSo6_yRM',
+                                'lgoled_2023_3': 'https://youtu.be/xT6NbiPqsT0?si=2wMoWauuEqiBbXsE',
                                 'oled_4k': 'https://youtu.be/kF-0q042Jjk?si=OLsUt7koxNHdLOA-',
-                                # 'topgun 4k':'https://www.youtube.com/watch?v=szXQBwmjAOo',
+                                'topgun 4k':'https://www.youtube.com/watch?v=szXQBwmjAOo',
                                 'avata 4k': 'https://www.youtube.com/watch?v=rJNBGqiBI7s',
-                                # 'end game 4k':'https://www.youtube.com/watch?v=rrGMENN1iaY'
+                                'end game 4k':'https://www.youtube.com/watch?v=rrGMENN1iaY'
                                 }
 
     def read_files_from_inputpath(self, docs_type="img"):
@@ -91,33 +92,52 @@ class ImgAnalysis(Analysis):
         a = LAB_flat[:, 1]
         b = LAB_flat[:, 2]
 
-        fig = plt.figure(figsize=(12, 6))
+        fig = plt.figure(figsize=(12, 12))
 
-        ax1 = fig.add_subplot(121, projection='3d')
-        ax1.scatter(ys=b, xs=a, zs=l, s=10, c=colors, lw=0)
-        ax1.set_xlabel('B')
-        ax1.set_ylabel('A')
+        ax1 = fig.add_subplot(221, projection='3d')
+        ax1.scatter(xs=a,ys=b, zs=l, s=10, c=colors, lw=0)
+        ax1.set_xlabel('A')
+        ax1.set_ylabel('B')
         ax1.set_zlabel('L')
         ax1.set_xlim([0, 255])
         ax1.set_ylim([0, 255])
         ax1.set_zlim([0, 255])
-        ax1.set_title('3D Plot')
-        ax1.xaxis.pane.fill = False
-        ax1.yaxis.pane.fill = False
-        ax1.zaxis.pane.fill = False
+        ax1.set_title('L-A-B')
+        # ax1.xaxis.pane.fill = False
+        # ax1.yaxis.pane.fill = False
+        # ax1.zaxis.pane.fill = False
         # ax1.grid(False)
-        ax1.set_xticks([])
-        ax1.set_yticks([])
-        ax1.set_zticks([])
+        # ax1.set_xticks([])
+        # ax1.set_yticks([])
+        # ax1.set_zticks([])
 
         # 두 번째 서브플롯 (2D scatter plot)
-        ax2 = fig.add_subplot(122)
+        ax2 = fig.add_subplot(222)
         ax2.scatter(y=b, x=a, s=10, c=colors, lw=0)
-        ax2.set_xlabel('B')
-        ax2.set_ylabel('A')
+        ax2.set_xlabel('A')
+        ax2.set_ylabel('B')
         ax2.set_xlim([0, 255])
         ax2.set_ylim([0, 255])
-        ax2.set_title('2D Plot')
+        ax2.set_title('A-B')
+
+        # 두 번째 서브플롯 (2D scatter plot)
+        ax3 = fig.add_subplot(223)
+        ax3.scatter(x=a, y=l, s=10, c=colors, lw=0)
+        ax3.set_xlabel('A')
+        ax3.set_ylabel('L')
+        ax3.set_xlim([0, 255])
+        ax3.set_ylim([0, 255])
+        ax3.set_title('L-A')
+
+
+        # 두 번째 서브플롯 (2D scatter plot)
+        ax4 = fig.add_subplot(224)
+        ax4.scatter(x=b, y=l, s=10, c=colors, lw=0)
+        ax4.set_xlabel('B')
+        ax4.set_ylabel('L')
+        ax4.set_xlim([0, 255])
+        ax4.set_ylim([0, 255])
+        ax4.set_title('L-B')
 
         plt.tight_layout()
 
