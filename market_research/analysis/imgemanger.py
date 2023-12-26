@@ -139,7 +139,7 @@ class ImgAnalysis(Analysis):
         color_extraction = cv2.bitwise_and(frame, frame, mask=color_mask)
         return color_extraction
 
-    def process_video(self, file_path, skip_interval =30, showmode=False):
+    def process_video(self, file_path, skip_interval =60, showmode=False):
         video_path = str(file_path)
         title = file_path.name.split(".")[0].replace(" ", "_")
         print(title)
