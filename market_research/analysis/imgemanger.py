@@ -13,26 +13,21 @@ class ImgAnalysis(Analysis):
         super().__init__(export_prefix=export_prefix, intput_folder_path=intput_folder_path,
                          output_folder_path=output_folder_path)
 
-        self.preset_video_dict={"elemental1_1":"https://www.youtube.com/watch?v=-pVfWjUUlaE",
-                                "elemental1_2":"https://www.youtube.com/watch?v=lG3QmHRsmRk",
-                                "elemental1_3":"https://www.youtube.com/watch?v=KLBSxj_sqtg",
-                                "supermario1_1":"https://www.youtube.com/watch?v=Gb0wtjSFv94",
-                                "supermario1_2":"https://www.youtube.com/watch?v=rhKeo86YpyE",
-                                "spideman1_1":"https://youtu.be/eazNXtXuohc?si=vr8ThkM-IQcGS71l",
-                                "spideman1_2": "https://www.youtube.com/watch?v=9ON1YisZmSQ",
-                                "spideman1_3": "https://www.youtube.com/watch?v=3N0wxkPtzVs",
-                                "spideman1_4": "https://www.youtube.com/watch?v=7F0GITe1UWk",
-                               "spideman2_1":"https://www.youtube.com/watch?v=HjYC6u061V0",
-                               "spideman2_2":"https://www.youtube.com/watch?v=uuDeh9-f-rc",
-                               "spideman2_3":"https://www.youtube.com/watch?v=vjOvi8UdrNE",
-                               "spideman2-4": "https://www.youtube.com/watch?v=eIPkkK85bl0",
-                                "lgoled_2023_1":"https://www.youtube.com/watch?v=xT6NbiPqsT0",
-                                "lgoled_2023_2":"https://youtu.be/TA1jS07SfeU?si=HtO83elrrSo6_yRM",
-                                "lgoled_2023_3":"https://youtu.be/xT6NbiPqsT0?si=2wMoWauuEqiBbXsE",
-                                "oled_4k":"https://youtu.be/kF-0q042Jjk?si=OLsUt7koxNHdLOA-",
-                                "topgun_m":"https://youtu.be/gNtJ4HdMavo?si=lZdVJO0tOiUdFGrE"
-                           }
-
+        self.preset_video_dict={
+                                # 'elemental1_1': 'https://www.youtube.com/watch?v=JK29WoCFZ4c',
+                                # 'supermario1_1': 'https://www.youtube.com/watch?v=rhKeo86YpyE',
+                                'spideman1_1': 'https://www.youtube.com/watch?v=3N0wxkPtzVs',
+                                # 'spideman1_2': 'https://www.youtube.com/watch?v=7F0GITe1UWk',
+                                'spideman2-1':'https://www.youtube.com/watch?v=4RlYCscGLHg&t=76s',
+                                # 'spideman2-2': 'https://www.youtube.com/watch?v=eIPkkK85bl0',
+                                # 'lgoled_2023_1': 'https://www.youtube.com/watch?v=xT6NbiPqsT0',
+                                # 'lgoled_2023_2': 'https://youtu.be/TA1jS07SfeU?si=HtO83elrrSo6_yRM',
+                                # 'lgoled_2023_3': 'https://youtu.be/xT6NbiPqsT0?si=2wMoWauuEqiBbXsE',
+                                'oled_4k': 'https://youtu.be/kF-0q042Jjk?si=OLsUt7koxNHdLOA-',
+                                # 'topgun 4k':'https://www.youtube.com/watch?v=szXQBwmjAOo',
+                                'avata 4k': 'https://www.youtube.com/watch?v=rJNBGqiBI7s',
+                                # 'end game 4k':'https://www.youtube.com/watch?v=rrGMENN1iaY'
+                                }
 
     def read_files_from_inputpath(self, docs_type="img"):
 
