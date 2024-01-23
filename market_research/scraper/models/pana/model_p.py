@@ -5,7 +5,7 @@ from collections import OrderedDict
 import pandas as pd
 from market_research.scraper._scaper_scheme import Scraper
 from market_research.tools import FileManager
-class ModelScraper_pjp(Scraper):
+class ModelScraper_p(Scraper):
 
     def __init__(self, enable_headless=True,
                  export_prefix="model_pana_global", intput_folder_path="input", output_folder_path="results",
