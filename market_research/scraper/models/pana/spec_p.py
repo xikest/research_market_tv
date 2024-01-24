@@ -19,13 +19,17 @@ class ModelScraper_p(Scraper):
     def get_models_info(self, foramt_output="df"):
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
+        visit_url_dict = {}
         dictModels = OrderedDict()
         for model, url in tqdm(setUrlSeries.items()):
-            print(model,":", url)
+            # print(model,":", url)
             modelspec = self._get_spec_global(url=url)
             modelspec["url"] = url
             dictModels[model] = modelspec
-        print("Number of all Series:", len(dictModels))
+
+            visit_url_dict[model] = url
+        for model, url in visit_url_dict.items():  print(f"{model}: {url}")
+        # print("Number of all Series:", len(dictModels))
 
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(dictModels).T

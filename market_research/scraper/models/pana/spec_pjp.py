@@ -46,7 +46,7 @@ class ModelScraper_pjp(Scraper):
         # print("Number of all Series:", len(models_dict))
         visit_url_dict = {}
         for model, url in tqdm(specs_dict.items()):
-            print(f"{model}: {url}")
+            # print(f"{model}: {url}")
             visit_url_dict[model] = url
             modelspec = self._get_spec(model = model, url=url)
 
@@ -57,7 +57,7 @@ class ModelScraper_pjp(Scraper):
         # with open('models_dict.pickle', 'rb') as file:
         #     models_dict = pickle.load(file)
 
-        print("Models:", len(models_dict))
+        # print("Models:", len(models_dict))
         for model, url in visit_url_dict.items():
             print(f"{model}: {url}")
         # print(models_dict)
@@ -65,8 +65,8 @@ class ModelScraper_pjp(Scraper):
 
 
         if foramt_output == "df":
-            df_models = pd.DataFrame.from_dict(models_dict).T.reset_index(drop=True)
-            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
+            df_models = pd.DataFrame.from_dict(models_dict).T
+            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_jp", mode='w')
             return df_models
         else:
             return models_dict
@@ -155,7 +155,7 @@ class ModelScraper_pjp(Scraper):
 
         dictNote = {}
         TotalCnt = 5
-        spec_dict['model'] = model
+        # spec_dict['model'] = model
         #=============================
         for tryCnt in range(TotalCnt):
             step: int = 200

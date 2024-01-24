@@ -34,7 +34,7 @@ class ModelScraper_s(Scraper):
         if fastmode:
             model_list = list(url_series_dict.keys())
             return model_list
-
+        visit_url_dict = {}
         dict_models = {}
         for key, url_model in tqdm(url_series_dict.items()):
             try:
@@ -42,9 +42,12 @@ class ModelScraper_s(Scraper):
                 dict_models[key] = dict_info
                 dict_spec = self._get_global_spec(url=url_model)
                 dict_models[key].update(dict_spec)
+                visit_url_dict[key] = url_model
             except Exception as e:
                 print(f"Failed to get info from {key}")
                 pass
+
+        for model, url in visit_url_dict.items():  print(f"{model}: {url}")
 
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(dict_models).T

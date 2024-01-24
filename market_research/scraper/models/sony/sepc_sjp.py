@@ -22,11 +22,14 @@ class ModelScraper_sjp(Scraper):
     def get_models_info(self, foramt_output="df"):
         url_series_dict = self._get_spec_series()
         models_dict = {}
+        visit_url_dict = {}
         for model, url in tqdm(url_series_dict.items()):
-            print(f"{model}: {url}")
+            # print(f"{model}: {url}")
             modelspec = self._get_spec(url=url)
             models_dict.update(modelspec)
-        print("Number of all Series:", len(models_dict))
+            visit_url_dict[model] = url
+        for model, url in visit_url_dict.items():  print(f"{model}: {url}")
+        # print("Number of all Series:", len(models_dict))
 
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(models_dict).T
