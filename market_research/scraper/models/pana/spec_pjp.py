@@ -24,45 +24,16 @@ class ModelScraper_pjp(Scraper):
         models_dict = {}
         specs_dict = {}
         url_model_dict = self._get_model_series(step=1000)
-
-        # with open('url_model_dict.pickle', 'wb') as file:
-        #     pickle.dump(url_model_dict, file)
-        # with open('url_model_dict.pickle', 'rb') as file:
-        #     url_model_dict = pickle.load(file)
-
+        print("collecting models")
         for model, url in tqdm(url_model_dict.items()):
-            # print(f"{model}: {url}")
             specs_dict.update(self._get_spec_series(url=url,step=3000))
-
-        # with open('specs_dict.pickle', 'wb') as file:
-        #     pickle.dump(specs_dict, file)
-        # with open('specs_dict.pickle', 'rb') as file:
-        #     specs_dict = pickle.load(file)
-
-
-        # url ="https://panasonic.jp/viera/p-db/TH-55MZ2500_spec.html"
-        # modelspec = self._get_spec(url=url)
-        # models_dict.update(modelspec)
-        # print("Number of all Series:", len(models_dict))
+        print("collecting spec")
         visit_url_dict = {}
         for model, url in tqdm(specs_dict.items()):
-            # print(f"{model}: {url}")
             visit_url_dict[model] = url
             modelspec = self._get_spec(model = model, url=url)
-
             models_dict[model] = modelspec
-
-        # with open('models_dict.pickle', 'wb') as file:
-        #     pickle.dump(models_dict, file)
-        # with open('models_dict.pickle', 'rb') as file:
-        #     models_dict = pickle.load(file)
-
-        # print("Models:", len(models_dict))
-        for model, url in visit_url_dict.items():
-            print(f"{model}: {url}")
-        # print(models_dict)
-
-
+        for model, url in visit_url_dict.items(): print(f"{model}: {url}")
 
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(models_dict).T
@@ -147,7 +118,7 @@ class ModelScraper_pjp(Scraper):
                     driver.quit()
             driver.quit()
             break
-        print(f"number of total Series: {len(series_dict)}")
+        # print(f"number of total Series: {len(series_dict)}")
         return series_dict
 
     def _get_spec(self, model='model', url: str = "https://panasonic.jp/viera/p-db/TH-65MZ2500_spec.html") -> list:
@@ -183,7 +154,7 @@ class ModelScraper_pjp(Scraper):
 
                             key = self._extract_foot(key)
                             value = self._extract_foot(value)
-                            value = self._extract_product_info(value)
+                            # value = self._extract_product_info(value)
                             spec_dict[key] = value
                     # print(spec_dict)
                     # ## 노트 추출
@@ -218,7 +189,7 @@ class ModelScraper_pjp(Scraper):
                             key = self._extract_foot(key)
                         if value_element and key:
                             value = value_element.get_text(strip=True)
-                            value = self._extract_foot(value)
+                            # value = self._extract_foot(value)
                             spec_dict[key] = self._extract_product_info(value)
                     break  # BS4로 성공적으로 스크래핑했을 경우 반복문 탈출
                 else:
@@ -277,7 +248,7 @@ class ModelScraper_pjp(Scraper):
 
 
     def _extract_foot(self, text):
-        footMarks = ["*" + str(i) for i in reversed(range(1, 30))]
+        footMarks = ["※" + str(i) for i in reversed(range(1, 30))]
         for footMark in footMarks:
             text = text.replace(footMark, "")
         return text

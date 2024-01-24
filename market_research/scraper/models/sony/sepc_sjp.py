@@ -20,9 +20,11 @@ class ModelScraper_sjp(Scraper):
 
 
     def get_models_info(self, foramt_output="df"):
+        print("collecting models")
         url_series_dict = self._get_spec_series()
         models_dict = {}
         visit_url_dict = {}
+        print("collecting spec")
         for model, url in tqdm(url_series_dict.items()):
             # print(f"{model}: {url}")
             modelspec = self._get_spec(url=url)
@@ -73,7 +75,7 @@ class ModelScraper_sjp(Scraper):
                     driver.quit()
             driver.quit()
             break
-        print(f"number of total Series: {len(series_dict)}")
+        # print(f"number of total Series: {len(series_dict)}")
         return series_dict
 
     def _get_spec(self, url: str = "https://www.sony.jp/bravia/products/XRJ-A80J/spec.html") -> list:

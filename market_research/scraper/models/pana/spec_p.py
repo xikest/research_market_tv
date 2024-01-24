@@ -17,10 +17,12 @@ class ModelScraper_p(Scraper):
 
 
     def get_models_info(self, foramt_output="df"):
+        print("collecting models")
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
         visit_url_dict = {}
         dictModels = OrderedDict()
+        print("collecting spec")
         for model, url in tqdm(setUrlSeries.items()):
             # print(model,":", url)
             modelspec = self._get_spec_global(url=url)
@@ -56,7 +58,7 @@ class ModelScraper_p(Scraper):
             time.sleep(self.wait_time)  # 스크롤이 내려가는 동안 대기
             scroll_distance += step
         driver.quit()
-        print(f"number of total Series: {len(series_dict)}")
+        # print(f"number of total Series: {len(series_dict)}")
         return series_dict
 
 

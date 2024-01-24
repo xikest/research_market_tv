@@ -24,16 +24,17 @@ class ModelScraper_s(Scraper):
             FileManager.make_dir(self.log_dir)
 
     def get_models_info(self, foramt_output:str='df', fastmode:bool=False):
+        print("collecting models")
         url_series_set = self._get_url_series()
         url_series_dict = {}
         for url in url_series_set:
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
         print("number of total model:", len(url_series_dict))
-
         if fastmode:
             model_list = list(url_series_dict.keys())
             return model_list
+        print("collecting spec")
         visit_url_dict = {}
         dict_models = {}
         for key, url_model in tqdm(url_series_dict.items()):
