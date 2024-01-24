@@ -44,17 +44,28 @@ class ModelScraper_pjp(Scraper):
         # modelspec = self._get_spec(url=url)
         # models_dict.update(modelspec)
         # print("Number of all Series:", len(models_dict))
+        visit_url_dict = {}
         for model, url in tqdm(specs_dict.items()):
             print(f"{model}: {url}")
+            visit_url_dict[model] = url
             modelspec = self._get_spec(model = model, url=url)
 
-            models_dict.update(modelspec)
-        print("Number of all Series:", len(models_dict))
+            models_dict[model] = modelspec
+
+        # with open('models_dict.pickle', 'wb') as file:
+        #     pickle.dump(models_dict, file)
+        # with open('models_dict.pickle', 'rb') as file:
+        #     models_dict = pickle.load(file)
+
+        print("Models:", len(models_dict))
+        for model, url in visit_url_dict.items():
+            print(f"{model}: {url}")
+        # print(models_dict)
 
 
 
         if foramt_output == "df":
-            df_models = pd.DataFrame.from_dict(models_dict, orient='index').T
+            df_models = pd.DataFrame.from_dict(models_dict).T.reset_index(drop=True)
             FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
             return df_models
         else:
@@ -63,11 +74,11 @@ class ModelScraper_pjp(Scraper):
 
     ###=====================get info main page====================================##
 
-    def _get_model_series(self, url: str = "https://panasonic.jp/viera/products.html#4k_oled", step=200) -> dict:
+    def _get_model_series(self, url: str = "https://panasonic.jp/viera/products.html#4k_oled", step: int=200) -> dict:
         """
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
-        step: int = 500
+        step = step
         model_dict = {}
         trytotal = 3
         for trycnt in range(trytotal):
@@ -98,16 +109,16 @@ class ModelScraper_pjp(Scraper):
                     driver.quit()
             driver.quit()
             break
-        print(f"number of total Modl: {len(model_dict)}")
+        # print(f"number of total Modl: {len(model_dict)}")
         return model_dict
 
 
 
-    def _get_spec_series(self, url: str = "https://panasonic.jp/viera/products/mz2500.html", step=200) -> dict:
+    def _get_spec_series(self, url: str = "https://panasonic.jp/viera/products/mz2500.html", step: int=200) -> dict:
         """
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
-        step: int = step
+        step = step
         series_dict = {}
         trytotal = 3
         for trycnt in range(trytotal):
@@ -144,7 +155,7 @@ class ModelScraper_pjp(Scraper):
 
         dictNote = {}
         TotalCnt = 5
-
+        spec_dict['model'] = model
         #=============================
         for tryCnt in range(TotalCnt):
             step: int = 200
@@ -222,7 +233,7 @@ class ModelScraper_pjp(Scraper):
         #             dictSpec[k] = v.replace(kNote, dictNote.get(kNote))
 
         spec_dict['url'] = url
-        spec_dict['model'] = model
+
         # print(spec_dict)
         # print(pd.DataFrame.from_dict(spec_dict,orient='index', columns=['Value']))
         # spec_dict = self._split_models(spec_dict)
