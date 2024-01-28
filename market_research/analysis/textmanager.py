@@ -10,6 +10,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import nltk
 
+
 # import PyPDF2
 import fitz  # PyMuPDF
 from ._analysis_scheme import Analysis
