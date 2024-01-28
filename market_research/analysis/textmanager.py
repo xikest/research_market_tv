@@ -1,5 +1,7 @@
 import pandas as pd
 import seaborn as sns
+import os
+import wget
 from nltk.probability import FreqDist
 from nltk import pos_tag
 from wordcloud import WordCloud
@@ -7,6 +9,7 @@ import matplotlib.pyplot as plt
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import nltk
+
 # import PyPDF2
 import fitz  # PyMuPDF
 from ._analysis_scheme import Analysis
@@ -29,6 +32,20 @@ class TextAnalysis(Analysis):
 
         files = [file for file in file_list if file.suffix in file_type.get(docs_type)]
         return files
+
+
+
+    def download_pdfs(self, urls:list, target_folder="/content/input"):
+        if not os.path.exists(target_folder):
+            os.makedirs(target_folder)
+        for url in urls:
+            try:
+                filename = os.path.join(target_folder, os.path.basename(url))
+                if not os.path.exists(filename):
+                    wget.download(url, filename)
+            except Exception as e:
+                print(f"Error downloading {url}: {str(e)}")
+
     def set_comments(self, comments: list, cleaning_words: list = None) -> None:
         self.comments = comments
         self.cleaning_words = cleaning_words
