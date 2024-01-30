@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from pytube import YouTube
 from PIL import Image
 import colour
-from colour import MSDS_CMFS, SPECTRAL_SHAPE_DEFAULT
+# from colour import MSDS_CMFS, SPECTRAL_SHAPE_DEFAULT
 from ._analysis_scheme import Analysis
 from tqdm import tqdm
 
@@ -64,38 +64,38 @@ class ImgAnalysis(Analysis):
         # cal color temperature
         # ============================================
 
-    def _calculate_average_color(self, image):
-        # 이미지를 numpy 배열로 변환
-        np_img = np.array(image)
+    # def _calculate_average_color(self, image):
+    #     # 이미지를 numpy 배열로 변환
+    #     np_img = np.array(image)
+    #
+    #     # RGBA 이미지인 경우 RGB로 변환
+    #     if np_img.shape[2] == 4:
+    #         np_img = np_img[:, :, :3]
+    #
+    #     # 평균 색상 계산
+    #     average_color = np.mean(np_img, axis=(0, 1))
+    #     return average_color
 
-        # RGBA 이미지인 경우 RGB로 변환
-        if np_img.shape[2] == 4:
-            np_img = np_img[:, :, :3]
+    # def _map_color_to_temperature(self, average_color):
+    #     # RGB를 XYZ로 변환
+    #     XYZ = colour.sRGB_to_XYZ(average_color / 255)
+    #
+    #     # cmfs 설정 (CIE 1931 2도 표준 관찰자)
+    #     cmfs = (
+    #         MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
+    #         .copy()
+    #         .align(SPECTRAL_SHAPE_DEFAULT)
+    #     )
+    #
+    #     # 관련 색온도(CCT)와 델타 UV 추정 (Ohno 2013 방법 사용)
+    #     CCT, delta_uv = colour.temperature.XYZ_to_CCT_Ohno2013(XYZ, cmfs=cmfs)
+    #     return CCT, delta_uv
 
-        # 평균 색상 계산
-        average_color = np.mean(np_img, axis=(0, 1))
-        return average_color
-
-    def _map_color_to_temperature(self, average_color):
-        # RGB를 XYZ로 변환
-        XYZ = colour.sRGB_to_XYZ(average_color / 255)
-
-        # cmfs 설정 (CIE 1931 2도 표준 관찰자)
-        cmfs = (
-            MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
-            .copy()
-            .align(SPECTRAL_SHAPE_DEFAULT)
-        )
-
-        # 관련 색온도(CCT)와 델타 UV 추정 (Ohno 2013 방법 사용)
-        CCT, delta_uv = colour.temperature.XYZ_to_CCT_Ohno2013(XYZ, cmfs=cmfs)
-        return CCT, delta_uv
-
-    def estimate_color_temperature(self, image_path):
-        with Image.open(image_path) as img:
-            average_color = self._calculate_average_color(img)
-            CCT, delta_uv = self._map_color_to_temperature(average_color)
-            return int(CCT), delta_uv
+    # def estimate_color_temperature(self, image_path):
+    #     with Image.open(image_path) as img:
+    #         average_color = self._calculate_average_color(img)
+    #         CCT, delta_uv = self._map_color_to_temperature(average_color)
+    #         return int(CCT), delta_uv
 
     # ============================================
 
@@ -106,8 +106,8 @@ class ImgAnalysis(Analysis):
             image_BGR = cv2.imread(image_path)
             for _ in range(10):
                 try:
-                    color_temp, delta_uv = self.estimate_color_temperature(image_path)  ##색온도
-                    _ = self.to_lab_image(image=image_BGR, save_title=title, showmode=showmode, title=color_temp)
+                    # color_temp, delta_uv = self.estimate_color_temperature(image_path)  ##색온도
+                    _ = self.to_lab_image(image=image_BGR, save_title=title, showmode=showmode)
 
 
                     break
@@ -115,7 +115,7 @@ class ImgAnalysis(Analysis):
                     print(e)
                     pass
 
-    def to_lab_image(self, image, title, input_type='BGR', save_title: str = None, showmode=True):
+    def to_lab_image(self, image, input_type='BGR', save_title: str = None, showmode=True):
         if showmode:
             # BGR을 RGB로 변환
             img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -193,7 +193,6 @@ class ImgAnalysis(Analysis):
         ax4.set_xticks([])
         ax4.set_yticks([])
         ax4.set_title('L-V')
-        plt.suptitle(f"Estimated Color temperature: {title}K")
         plt.tight_layout()
 
         if save_title is not None:
