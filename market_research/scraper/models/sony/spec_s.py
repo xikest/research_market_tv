@@ -231,8 +231,6 @@ class ModelScraper_s(Scraper):
         dict_info["grade"] = model.split("-")[0]
 
         year_mapping = {
-            "N": 2025,
-            "M": 2024,
             'L': 2023,
             'K': 2022,
             'J': 2021,
@@ -242,7 +240,7 @@ class ModelScraper_s(Scraper):
         try:
             dict_info["year"] = year_mapping.get(dict_info.get("year"))
         except:
-            dict_info["year"] = ""
+            dict_info["year"] = "2024_" ## 임시
 
         return dict_info
 

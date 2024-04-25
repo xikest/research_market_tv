@@ -44,16 +44,18 @@ class Visualizer_s(Visualizer):
         # Blues
         """
         if col_selected is None:
-            col_selected = [
-                            'contrast enhancement', 'peak luminance', 'pixel contrast booster',
-                             'color enhancement', 'triluminos', 'smoothing', 'live colour technology',
-                             'clarity enhancement', 'dual database processing', 'video processing',
-                             'object-based super resolution',
+            col_selected = ['high peak luminance','peak luminance',
+                            'contrast enhancement', 'pixel contrast booster', 'dynamic contrast enhancer','xr backlight master drive',
+                            'color enhancement', 'triluminos',
+                            # 'live colour technology',
+                             # 'clarity enhancement', 'dual database processing', 'video processing',
+                             # 'object-based super resolution',
                              'viewing angle (x-wide angle)', 'x-wide angle',
                              'anti reflection (x-anti reflection)', 'x-anti reflection',
                              'picture processor', '4k processor',
-                             'color space',
-                             'eco friendly',
+                             # 'color space',
+                             # 'eco friendly',
+                             'bravia core calibrated mode','sony pictures core calibrated mode', 'netflix calibrated mode', 'prime video calibrated mode',
                              'auto genre picture mode',
                              'features for playstation5 auto genre picture mode',
                              'auto hdr tone mapping',

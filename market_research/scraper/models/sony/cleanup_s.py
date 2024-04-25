@@ -32,10 +32,14 @@ class DataCleanup_s:
                            "built", "tuners", "demo", "presence", "switch", "reader", "face", "surround", "phase",
                            "batteries", "info", "Parental", "setup", "aspect", "dashboard", "formats", "accessibility",
                            "ci+",
-                           "bass", "master", "shut", "sorplas", "volume", "wireless", "china",
+                           "bass", "shut", "sorplas", "volume", "wireless", "china",
                            "hole", "program", "manual", "latency",
-                           "inversion","twin","h x v","bravia","motion", "netflix","calman","rate"]
+                           "inversion","twin","h x v", "motion","calman","rate"]
         return stop_words_list
+
+
+
+
 
     def _preprocess_df(self):
         self.df = self.df.sort_values(["year", "series", "size", "grade"], axis=0, ascending=False)
@@ -84,7 +88,7 @@ class DataCleanup_s:
 
     def get_df_cleaned(self):
         if self.df is not None:
-            df = self.df.set_index(["year", "display type", "series"]).drop(
+            df = self.df.set_index(["year", "series", "display type"]).drop(
                 ["model", "size", "grade"], axis=1)
             # df = df.fillna("-")
             return df
