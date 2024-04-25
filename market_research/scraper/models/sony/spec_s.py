@@ -23,7 +23,7 @@ class ModelScraper_s(Scraper):
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, foramt_output:str='df', fastmode:bool=False):
+    def get_models_info(self, foramt_output:str='df', fastmode:bool=False, temporary_year_marking=False):
         print("collecting models")
         url_series_set = self._get_url_series()
         url_series_dict = {}
@@ -52,6 +52,8 @@ class ModelScraper_s(Scraper):
 
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(dict_models).T
+            if temporary_year_marking:
+                df_models['year'] = df_models['year'].fillna(2024) ## 임시
             FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
             return df_models
         else:
@@ -216,7 +218,8 @@ class ModelScraper_s(Scraper):
                 return dict_spec
             except Exception as e:
                 print(f"An error occurred on page 3rd : {model} try {cnt_try + 1}/{try_total}")
-                print(e)
+                if self.tracking_log:
+                    print(e)
                 driver.quit()
                 pass
 
@@ -240,7 +243,7 @@ class ModelScraper_s(Scraper):
         try:
             dict_info["year"] = year_mapping.get(dict_info.get("year"))
         except:
-            dict_info["year"] = "2024_" ## 임시
+            dict_info["year"] = None
 
         return dict_info
 

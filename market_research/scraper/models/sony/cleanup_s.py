@@ -20,21 +20,21 @@ class DataCleanup_s:
 
     def _call_stop_words(self):
         stop_words_list = ["price", "description",
-                           "weight", "dimension", "stand", "W x H", "W x H x D", "Wi-Fi", "atore", "audio",
-                           "frame", "length", "qty",
-                           "power", "usb", "channels", "language", "timer", "apple", "TALKBACK", "voice", "sensor",
-                           "system", "channel", "storage", "cable",
-                           "style", "protection", "hdmi", "energy", "sound", "camera", "subwoofer", "satellite",
-                           "input", "output", "caption", "headphone", "radio", "text", "internet", "dsee", "speaker",
-                           "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
-                           "wallmount", "mic", "network", "android", "ios", "miracast",
-                           "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp",
-                           "built", "tuners", "demo", "presence", "switch", "reader", "face", "surround", "phase",
-                           "batteries", "info", "Parental", "setup", "aspect", "dashboard", "formats", "accessibility",
-                           "ci+",
-                           "bass", "shut", "sorplas", "volume", "wireless", "china",
-                           "hole", "program", "manual", "latency",
-                           "inversion","twin","h x v", "motion","calman","rate"]
+                                  "weight", "dimension", "stand", "W x H", "W x H x D", "Wi-Fi", "atore", "audio",
+                                  "frame", "length", "qty",
+                                  "power", "usb", "channels", "language", "timer", "apple", "TALKBACK", "voice", "sensor",
+                                  "system", "channel", "storage", "cable",
+                                  "style", "protection", "hdmi", "energy", "sound", "camera", "subwoofer", "satellite",
+                                  "input", "output", "caption", "headphone", "radio", "text", "internet", "dsee", "speaker",
+                                  "bluetooth", "accessories", "mercury", "remote", "smart", "acoustic", "support",
+                                  "wallmount", "network", "android", "ios", "miracast",
+                                  "operating", "store", "clock", "rs-232c", "menu", "mute", "4:3", "hdcp",
+                                  "built", "tuners", "demo", "presence", "switch", "reader", "face", "surround", "phase",
+                                  "batteries", "info", "Parental", "setup", "aspect", "dashboard", "formats", "accessibility",
+                                  "ci+",
+                                  "bass", "shut", "sorplas", "volume", "wireless", "china",
+                                  "hole", "program", "manual", "latency",
+                                  "twin","h x v", "motion","calman"]
         return stop_words_list
 
 

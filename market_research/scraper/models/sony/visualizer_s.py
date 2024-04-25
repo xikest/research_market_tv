@@ -69,11 +69,13 @@ class Visualizer_s(Visualizer):
         if display_types is not None:
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
-        data_df = data_df.replace({"-": 0})
+        data_df = data_df.mask(data_df == '-', 0)
         data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
+        idx_names = data_df.index.names
+        data_df = data_df.reset_index().drop_duplicates()
+        data_df = data_df.set_index(idx_names)
         data_df = data_df.sort_index(ascending=True)
-        data_df = data_df.drop_duplicates()
         # Use plt.subplots to get the axis for colorbar
         self.data_df = data_df
 
@@ -86,4 +88,5 @@ class Visualizer_s(Visualizer):
             save_plot_name = f"heatmap_for_{title}.png"
         plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
+
 
