@@ -11,7 +11,7 @@ from market_research.scraper._scaper_scheme import Scraper
 
 class ModelScraper_s(Scraper):
     def __init__(self, enable_headless=True,
-                 export_prefix="model_sony_gobal", intput_folder_path="input",  output_folder_path="results",
+                 export_prefix="sony_model_info_web", intput_folder_path="input",  output_folder_path="results",
                  verbose: bool = False, wait_time=2):
 
         super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,  intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)

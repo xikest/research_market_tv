@@ -9,7 +9,7 @@ from market_research.scraper._scaper_scheme import Scraper
 class ModelScraper_sjp(Scraper):
 
     def __init__(self, enable_headless=True,
-                 export_prefix="model_sony_jp", intput_folder_path="input", output_folder_path="results",
+                 export_prefix="sony_model_info_web_jp", intput_folder_path="input", output_folder_path="results",
                  verbose: bool = False, wait_time=1):
         super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,
                          intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
