@@ -73,6 +73,7 @@ class Visualizer_s(Visualizer):
         data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
         data_df = data_df.sort_index(ascending=True)
+        data_df = data_df.drop_duplicates()
         # Use plt.subplots to get the axis for colorbar
         self.data_df = data_df
 
