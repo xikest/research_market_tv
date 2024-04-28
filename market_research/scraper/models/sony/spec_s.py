@@ -53,7 +53,7 @@ class ModelScraper_s(Scraper):
         if foramt_output == "df":
             df_models = pd.DataFrame.from_dict(dict_models).T
             if temporary_year_marking:
-                df_models['year'] = df_models['year'].fillna(2024) ## 임시
+                df_models['year'] = df_models['year'].fillna("2024") ## 임시
             FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
             return df_models
         else:
@@ -234,9 +234,9 @@ class ModelScraper_s(Scraper):
         dict_info["grade"] = model.split("-")[0]
 
         year_mapping = {
-            'L': 2023,
-            'K': 2022,
-            'J': 2021,
+            'L': "2023",
+            'K': "2022",
+            'J': "2021",
             # Add additional mappings as needed
         }
 

@@ -16,7 +16,7 @@ import fitz  # PyMuPDF
 from ._analysis_scheme import Analysis
 class TextAnalysis(Analysis):
     def __init__(self,
-                 export_prefix="text_", intput_folder_path="input",  output_folder_path="results"):
+                 export_prefix="text_", intput_folder_path="/content/input",  output_folder_path="results"):
         self.comments:[str,]
         self.nouns:[str,]
         self.df_word_freq:pd.DataFrame
@@ -36,16 +36,41 @@ class TextAnalysis(Analysis):
 
 
 
-    def download_pdfs(self, urls:list, target_folder="/content/input"):
-        if not os.path.exists(target_folder):
-            os.makedirs(target_folder)
+    def download_pdfs(self, urls:list):
+        # current_directory = os.getcwd()
+        # target_folder = os.path.join(current_directory, intput_folder_path)
+        # print(target_folder)
+        # if not os.path.exists(target_folder):
+        #     # print("sds")
+        #     # current_directory = os.getcwd()
+        #     # if not os.path.isabs(target_folder):
+        #     #     target_folder = os.path.join(current_directory, target_folder)
+        #     # if not os.path.exists(target_folder):
+        #     os.makedirs(target_folder)
+        #     print(f"Folder created at: {target_folder}")
+        # else:
+        #     print(f"Folder already exists at: {target_folder}")
+
+        # if not os.path.exists(target_folder):
+        #     print(f"Folder does not exist, will create: {target_folder}")
+        #     os.makedirs(target_folder)
+        #     print(f"Folder created: {target_folder}")
+        # else:
+        #     print(f"Folder already exists, no need to create: {target_folder}")
+
+            #
+            # target_folder = os.path.join(current_directory, target_folder)
+            # os.makedirs(target_folder)
+            # print(target_folder)
         for url in urls:
             try:
-                filename = os.path.join(target_folder, os.path.basename(url))
+                filename = os.path.join(self.intput_folder, os.path.basename(url))
                 if not os.path.exists(filename):
                     wget.download(url, filename)
             except Exception as e:
                 print(f"Error downloading {url}: {str(e)}")
+
+        print(f"downloaded in '{os.path.join(os.getcwd(), self.intput_folder)}'")
 
     def set_comments(self, comments: list, cleaning_words: list = None) -> None:
         self.comments = comments
