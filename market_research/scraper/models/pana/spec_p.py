@@ -20,16 +20,26 @@ class ModelScraper_p(Scraper):
         print("collecting models")
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
+        print("collecting spec")
         visit_url_dict = {}
         dictModels = OrderedDict()
-        print("collecting spec")
-        for model, url in tqdm(setUrlSeries.items()):
-            # print(model,":", url)
-            modelspec = self._get_spec_global(url=url)
-            modelspec["url"] = url
-            dictModels[model] = modelspec
+        cnt_loop=2
+        for cnt in range(cnt_loop):#main try
+            for model, url in tqdm(setUrlSeries.items()):
+                try:
+                    # print(model,":", url)
+                    modelspec = self._get_spec_global(url=url)
+                    modelspec["url"] = url
+                    dictModels[model] = modelspec
 
-            visit_url_dict[model] = url
+                    visit_url_dict[model] = url
+                except Exception as e:
+                    if cnt == cnt_loop:
+                        print(f"\nFailed to get info from {model}")
+                        print(e)
+                    pass
+            break
+        print("\n")
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
         # print("Number of all Series:", len(dictModels))
 

@@ -29,10 +29,20 @@ class ModelScraper_pjp(Scraper):
             specs_dict.update(self._get_spec_series(url=url,step=3000))
         print("collecting spec")
         visit_url_dict = {}
-        for model, url in tqdm(specs_dict.items()):
-            visit_url_dict[model] = url
-            modelspec = self._get_spec(model = model, url=url)
-            models_dict[model] = modelspec
+        cnt_loop=2
+        for cnt in range(cnt_loop):#main try
+            for model, url in tqdm(specs_dict.items()):
+                try:
+                    visit_url_dict[model] = url
+                    modelspec = self._get_spec(model = model, url=url)
+                    models_dict[model] = modelspec
+                except Exception as e:
+                    if cnt == cnt_loop:
+                        print(f"\nFailed to get info from {model}")
+                        print(e)
+                    pass
+            break
+        print("\n")
         for model, url in visit_url_dict.items(): print(f"{model}: {url}")
 
         if foramt_output == "df":

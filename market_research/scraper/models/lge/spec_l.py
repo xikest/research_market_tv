@@ -9,6 +9,8 @@ from market_research.tools import FileManager
 from market_research.scraper._scaper_scheme import Scraper
 
 
+
+
 class ModelScraper_l(Scraper):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
@@ -38,17 +40,21 @@ class ModelScraper_l(Scraper):
         print("collecting spec")
         visit_url_dict = {}
         dict_models = {}
-        for key, url_model in tqdm(url_series_dict.items()):
-            try:
-                dict_info = self._get_model_info(url_model)
-                dict_models[key] = dict_info
-                dict_spec = self._get_global_spec(url=url_model)
-                dict_models[key].update(dict_spec)
-                visit_url_dict[key] = url_model
-            except Exception as e:
-                print(f"Failed to get info from {key}")
-                print(e)
-                pass
+        cnt_loop=2
+        for cnt in range(cnt_loop):#main try
+            for key, url_model in tqdm(url_series_dict.items()):
+                try:
+                    dict_info = self._get_model_info(url_model)
+                    dict_models[key] = dict_info
+                    dict_spec = self._get_global_spec(url=url_model)
+                    dict_models[key].update(dict_spec)
+                    visit_url_dict[key] = url_model
+                except Exception as e:
+                    if cnt == cnt_loop:
+                        print(f"\nFailed to get info from {key}")
+                        print(e)
+                    pass
+            break
         print("\n")
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
 

@@ -22,14 +22,23 @@ class ModelScraper_sjp(Scraper):
     def get_models_info(self, foramt_output="df"):
         print("collecting models")
         url_series_dict = self._get_spec_series()
+        print("collecting spec")
         models_dict = {}
         visit_url_dict = {}
-        print("collecting spec")
-        for model, url in tqdm(url_series_dict.items()):
-            # print(f"{model}: {url}")
-            modelspec = self._get_spec(url=url)
-            models_dict.update(modelspec)
-            visit_url_dict[model] = url
+        cnt_loop=2
+        for cnt in range(cnt_loop):#main try
+            for model, url in tqdm(url_series_dict.items()):
+                try:
+                    # print(f"{model}: {url}")
+                    modelspec = self._get_spec(url=url)
+                    models_dict.update(modelspec)
+                    visit_url_dict[model] = url
+                except Exception as e:
+                    if cnt == cnt_loop:
+                        print(f"\nFailed to get info from {model}")
+                        print(e)
+                    pass
+        print("\n")
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
         # print("Number of all Series:", len(models_dict))
 

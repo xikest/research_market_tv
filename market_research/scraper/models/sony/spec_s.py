@@ -37,18 +37,21 @@ class ModelScraper_s(Scraper):
         print("collecting spec")
         visit_url_dict = {}
         dict_models = {}
-        for key, url_model in tqdm(url_series_dict.items()):
-            try:
-                dict_info = self._get_model_info(url_model)
-                dict_models[key] = dict_info
-                dict_spec = self._get_global_spec(url=url_model)
-                dict_models[key].update(dict_spec)
-                visit_url_dict[key] = url_model
-            except Exception as e:
-                print(f"Failed to get info from {key}")
-                print(e)
-                pass
-
+        cnt_loop=2
+        for cnt in range(cnt_loop):#main try
+            for key, url_model in tqdm(url_series_dict.items()):
+                try:
+                    dict_info = self._get_model_info(url_model)
+                    dict_models[key] = dict_info
+                    dict_spec = self._get_global_spec(url=url_model)
+                    dict_models[key].update(dict_spec)
+                    visit_url_dict[key] = url_model
+                except Exception as e:
+                    if cnt == cnt_loop:
+                        print(f"\nFailed to get info from {key}")
+                        print(e)
+                    pass
+        print("\n")
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
 
         if format_df:
