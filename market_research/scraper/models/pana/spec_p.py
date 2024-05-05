@@ -34,7 +34,7 @@ class ModelScraper_p(Scraper):
 
                     visit_url_dict[model] = url
                 except Exception as e:
-                    if cnt == cnt_loop:
+                    if cnt == cnt_loop - 1 :
                         print(f"\nFailed to get info from {model}")
                         print(e)
                     pass

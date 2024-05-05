@@ -37,7 +37,7 @@ class ModelScraper_pjp(Scraper):
                     modelspec = self._get_spec(model = model, url=url)
                     models_dict[model] = modelspec
                 except Exception as e:
-                    if cnt == cnt_loop:
+                    if cnt == cnt_loop - 1 :
                         print(f"\nFailed to get info from {model}")
                         print(e)
                     pass

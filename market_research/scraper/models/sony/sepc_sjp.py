@@ -34,10 +34,11 @@ class ModelScraper_sjp(Scraper):
                     models_dict.update(modelspec)
                     visit_url_dict[model] = url
                 except Exception as e:
-                    if cnt == cnt_loop:
+                    if cnt == cnt_loop - 1 :
                         print(f"\nFailed to get info from {model}")
                         print(e)
                     pass
+            break
         print("\n")
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
         # print("Number of all Series:", len(models_dict))

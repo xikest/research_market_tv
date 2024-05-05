@@ -50,7 +50,7 @@ class ModelScraper_l(Scraper):
                     dict_models[key].update(dict_spec)
                     visit_url_dict[key] = url_model
                 except Exception as e:
-                    if cnt == cnt_loop:
+                    if cnt == cnt_loop - 1 :
                         print(f"\nFailed to get info from {key}")
                         print(e)
                     pass
