@@ -57,7 +57,7 @@ class DataCleanup_s:
 
     def _create_price_df(self):
         ds_prices = (self.df.loc[:, ["price"]]
-                     .map(lambda x: x.split(" ") if isinstance(x, str) & len(x) > 0 else np.nan).dropna()
+                     .map(lambda x: x.split(" ") if isinstance(x, str) and len(x) > 0 else np.nan).dropna()
                      .map(lambda x: [x[0], x[0]] if len(x) < 2 else x))  # idx 정보 보관 및 스플릿
 
         list_prices = [[idx, prices[0],

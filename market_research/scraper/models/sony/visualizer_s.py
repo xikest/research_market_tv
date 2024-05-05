@@ -4,10 +4,15 @@ from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
 class Visualizer_s(Visualizer):
 
-    def __init__(self, df, output_folder_path="results", style="whitegrid", stop_words=None):
+    def __init__(self, df, output_folder_path="results", style="whitegrid", cleaning_mask:list=None):
+
+        """
+        cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
+        기본 값으로는 사전 정의된 값을 사용합니다.
+        """
         super().__init__(output_folder_path = output_folder_path)
         sns.set_style(style)
-        self.dc = DataCleanup_s(df, stop_words=stop_words)
+        self.dc = DataCleanup_s(df, stop_words=cleaning_mask)
 
     def group_plot_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price_discount",
                        ylabel_mark: str = "%", figsize=(10, 6), save_plot_name=None):
