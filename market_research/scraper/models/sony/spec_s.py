@@ -46,6 +46,7 @@ class ModelScraper_s(Scraper):
                 visit_url_dict[key] = url_model
             except Exception as e:
                 print(f"Failed to get info from {key}")
+                print(e)
                 pass
 
         for model, url in visit_url_dict.items():  print(f"{model}: {url}")
