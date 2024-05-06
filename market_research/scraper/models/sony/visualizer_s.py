@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
-class Visualizer_s1(Visualizer):
+class Visualizer_s(Visualizer):
 
     def __init__(self, df, output_folder_path="results", style="whitegrid", cleaning_mask:list=None):
 
