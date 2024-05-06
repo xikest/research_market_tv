@@ -26,7 +26,7 @@ class ModelScraper_l(Scraper):
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, format_df: bool = True, fastmode: bool = False):
+    def get_models_info(self, format_df: bool = True, fastmode: bool = False, show_visit:bool=False):
         print("collecting models")
         url_series_set = self._get_url_series()
         url_series_dict = {}
@@ -55,8 +55,9 @@ class ModelScraper_l(Scraper):
                         print(e)
                     pass
             break
-        print("\n")
-        for model, url in visit_url_dict.items():  print(f"{model}: {url}")
+        if show_visit:
+            print("\n")
+            for model, url in visit_url_dict.items():  print(f"{model}: {url}")
 
         if format_df:
             df_models = pd.DataFrame.from_dict(dict_models).T

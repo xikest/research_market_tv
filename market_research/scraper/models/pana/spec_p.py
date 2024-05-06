@@ -16,7 +16,7 @@ class ModelScraper_p(Scraper):
         self.wait_time = wait_time
 
 
-    def get_models_info(self, foramt_output="df"):
+    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
         print("collecting models")
         setUrlSeries = self._get_spec_series()
         ## 웹페이지의 모든 모델 url을 추출
@@ -39,11 +39,12 @@ class ModelScraper_p(Scraper):
                         print(e)
                     pass
             break
-        print("\n")
-        for model, url in visit_url_dict.items():  print(f"{model}: {url}")
-        # print("Number of all Series:", len(dictModels))
+        if show_visit:
+            print("\n")
+            for model, url in visit_url_dict.items():  print(f"{model}: {url}")
+            # print("Number of all Series:", len(dictModels))
 
-        if foramt_output == "df":
+        if format_df:
             df_models = pd.DataFrame.from_dict(dictModels).T
             FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
             return df_models

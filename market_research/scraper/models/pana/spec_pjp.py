@@ -20,7 +20,7 @@ class ModelScraper_pjp(Scraper):
         self.file_manager = FileManager
 
 
-    def get_models_info(self, foramt_output="df"):
+    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
         models_dict = {}
         specs_dict = {}
         url_model_dict = self._get_model_series(step=1000)
@@ -42,10 +42,11 @@ class ModelScraper_pjp(Scraper):
                         print(e)
                     pass
             break
-        print("\n")
-        for model, url in visit_url_dict.items(): print(f"{model}: {url}")
+        if show_visit:
+            print("\n")
+            for model, url in visit_url_dict.items(): print(f"{model}: {url}")
 
-        if foramt_output == "df":
+        if format_df:
             df_models = pd.DataFrame.from_dict(models_dict).T
             FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_jp", mode='w')
             return df_models
