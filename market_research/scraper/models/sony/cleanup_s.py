@@ -38,38 +38,54 @@ class DataCleanup_s:
         return stop_words_list
 
 
-
-
-
     def _preprocess_df(self):
         self.df = self.df.sort_values(["year", "series", "size", "grade"], axis=0, ascending=False)
-        self.df = (self.df.map(lambda x: x.replace("  ", " ") if isinstance(x, str) else x)  # 공백 2개는 하나로 변경
-                   .map(lambda x: x.replace("™", "") if isinstance(x, str) else x)  # ™ 제거
-                   .map(lambda x: x.replace("®", "") if isinstance(x, str) else x)  # ® 제거
-                   .map(lambda x: x.replace("\n\n", "\n ") if isinstance(x, str) else x)
-                   .map(lambda x: x.replace(" \n", "\n ") if isinstance(x, str) else x)
-                   .map(lambda x: x.strip() if isinstance(x, str) else x)  # 문장 끝 공백 제거
-                   .map(lambda x: x.lower() if isinstance(x, str) else x))
+        def transform_text(x):
+            if isinstance(x, str):
+                x = x.replace("  ", " ")  # 두 개의 공백을 하나로 변경
+                x = x.replace("™", "")  # ™ 제거
+                x = x.replace("®", "")  # ® 제거
+                x = x.replace("\n\n", "\n ")  # 이중 줄바꿈을 단일 줄바꿈으로 변경
+                x = x.replace(" \n", "\n ")  # 공백 후 줄바꿈 처리
+                x = x.strip()  # 앞뒤 공백 제거
+                x = x.lower()  # 모두 소문자로 변경
+            return x
 
-        self.df.columns = [x.replace("  ", " ").replace("™", "").replace("®", "").strip() if isinstance(x, str) else x
-                           for x in self.df.columns]
-        self.df.columns = self.df.columns.map(lambda x: x.lower())
+        self.df = self.df.applymap(transform_text)
+        self.df.columns = [transform_text(x) for x in self.df.columns]
 
     def _create_price_df(self):
-        ds_prices = (self.df.loc[:, ["price"]]
-                     .map(lambda x: x.split(" ") if isinstance(x, str) and len(x) > 0 else np.nan).dropna()
-                     .map(lambda x: [x[0], x[0]] if len(x) < 2 else x))  # idx 정보 보관 및 스플릿
+        # 가격 데이터 추출 및 분리
+        def parse_prices(price):
+            if isinstance(price, str) and len(price) > 0:
+                price_parts = price.split(" ")
+                if len(price_parts) < 2:
+                    return [price_parts[0], price_parts[0]]
+                return price_parts
+            return np.nan
 
-        list_prices = [[idx, prices[0],
-                        prices[1],
-                        (1 - float(prices[0].replace(',', '').replace('$', '')) / float(prices[1].replace(',', '').replace('$', '')))*100 ]
-                                              for idx, prices in zip(ds_prices.index, ds_prices.price)]
+        ds_prices = self.df['price'].apply(parse_prices).dropna()
+
+        # 가격 정보 리스트로 변환 및 할인율 계산
+        list_prices = [
+            [idx, prices[0], prices[1],
+             (1 - float(prices[0].replace(',', '').replace('$', '')) /
+              float(prices[1].replace(',', '').replace('$', ''))) * 100]
+            for idx, prices in zip(ds_prices.index, ds_prices.values)]
+
+        # 새로운 DataFrame 생성
         df_prices = pd.DataFrame(list_prices, columns=["idx", "price_now", "price_release", "price_discount"])
-        df_prices = df_prices.set_index("idx")
-        self.df = pd.merge(df_prices, self.df, left_index=True, right_index=True).drop(["price"], axis=1)
+        df_prices.set_index("idx", inplace=True)
+
+        # 원래 DataFrame과 병합
+        self.df = pd.merge(df_prices, self.df, left_index=True, right_index=True, how='right').drop(["price"], axis=1)
+
+        # 관련된 열만 선택
         self.df_prices = self.df[
-            ["year", "display type", 'size', "series", 'model', 'price_release', 'price_now', "price_discount",
-             'description']]
+            ["year", "display type", "size", "series", "model", "price_release", "price_now", "price_discount",
+             "description"]
+        ]
+
 
     def get_price_df(self):
         if self.df_prices is not None:
@@ -90,5 +106,5 @@ class DataCleanup_s:
         if self.df is not None:
             df = self.df.set_index(["year", "series", "display type"]).drop(
                 ["model", "size", "grade"], axis=1)
-            # df = df.fillna("-")
+            df = df.fillna("-")
             return df

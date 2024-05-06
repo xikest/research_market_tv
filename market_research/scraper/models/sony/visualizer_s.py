@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
-class Visualizer_s(Visualizer):
+class Visualizer_s1(Visualizer):
 
     def __init__(self, df, output_folder_path="results", style="whitegrid", cleaning_mask:list=None):
 
@@ -75,7 +75,7 @@ class Visualizer_s(Visualizer):
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
         data_df = data_df.mask(data_df == '-', 0)
-        data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
+        data_df = data_df.applymap(lambda x: len(x.split(",")) if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
         idx_names = data_df.index.names
         data_df = data_df.reset_index().drop_duplicates()
