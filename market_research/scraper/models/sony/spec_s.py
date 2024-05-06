@@ -74,30 +74,32 @@ class ModelScraper_s(Scraper):
         step = 200
         url_series = set()
         try_total = 5
-        for _ in range(try_total):
-            driver = self.web_driver.get_chrome()
-            try:
-                driver.get(url=url)
-                time.sleep(self.wait_time)
-                scroll_distance_total = self.web_driver.get_scroll_distance_total()
-                scroll_distance = 0
+        for _ in range(2): #page_checker
+            for _ in range(try_total):
+                driver = self.web_driver.get_chrome()
+                try:
+                    driver.get(url=url)
+                    time.sleep(self.wait_time)
+                    scroll_distance_total = self.web_driver.get_scroll_distance_total()
+                    scroll_distance = 0
 
-                while scroll_distance < scroll_distance_total:
-                    for _ in range(2):
-                        html = driver.page_source
-                        soup = BeautifulSoup(html, 'html.parser')
-                        elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
-                        for element in elements:
-                            url_series.add(prefix + element['href'].strip())
-                        driver.execute_script(f"window.scrollBy(0, {step});")
-                        time.sleep(self.wait_time)
-                        scroll_distance += step
-                driver.quit()
-                break
-            except Exception as e:
-                driver.quit()
-                print(f"Try collecting {_ + 1}/{try_total}")
-                # print(e)
+                    while scroll_distance < scroll_distance_total:
+                        for _ in range(2):
+                            html = driver.page_source
+                            soup = BeautifulSoup(html, 'html.parser')
+                            elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
+                            for element in elements:
+                                url_series.add(prefix + element['href'].strip())
+                            driver.execute_script(f"window.scrollBy(0, {step});")
+                            time.sleep(self.wait_time)
+                            scroll_distance += step
+                    driver.quit()
+                    break
+                except Exception as e:
+                    driver.quit()
+                    print(f"Try collecting {_ + 1}/{try_total}")
+                    # print(e)
+
         print("The website scan has been completed.")
         print(f"number of total series: {len(url_series)}")
         return url_series
