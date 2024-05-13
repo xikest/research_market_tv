@@ -180,8 +180,10 @@ class Rvisualizer(Visualizer):
         plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
         plt.show()
 
+    import matplotlib.pyplot as plt
+
     def plot_lines(self, column, swap_mode=True, ylims: list = None,
-                   yticks: list = None, save_plot_name:str=None):
+                   yticks: list = None, save_plot_name: str = None):
 
         df = self._get_data(column)
         mode_dict = self._plot_mode(column, swap_mode)
@@ -190,32 +192,76 @@ class Rvisualizer(Visualizer):
         col_color = mode_dict.get("col_facet")
 
         suffix = self.title_units_dict.get(col_y)
-        
+
         if suffix is not None:
             sup_title = f"{col_y} ({suffix}) by {col_x}"
         else:
             sup_title = f"{col_y} by {col_x}"
 
-        if col_color is not None:
-            fig = px.line(df, x=col_x, y=col_y, color=col_color, title=sup_title, line_shape='linear',
-                          color_discrete_sequence=px.colors.qualitative.Vivid)
-        else:
-            fig = px.line(df, x=col_x, y=col_y, title=None, line_shape='linear',
-                          color_discrete_sequence=px.colors.qualitative.Vivid)
+        fig, ax = plt.subplots(figsize=(10, 5))
 
-        fig.update_layout(width=1000, height=500, template='plotly_white', margin=dict(l=10, r=10, b=10, t=40))
+        if col_color is not None:
+            colors = plt.cm.viridis(np.linspace(0, 1, len(df[col_color].unique())))
+            for i, (group, data) in enumerate(df.groupby(col_color)):
+                ax.plot(data[col_x], data[col_y], label=group, color=colors[i])
+                for x, y, val in zip(data[col_x], data[col_y], data[col_y]):
+                    ax.annotate(f'{val}', (x, y), textcoords="offset points", xytext=(0, 10), ha='center')
+        else:
+            ax.plot(df[col_x], df[col_y])
+            for x, y, val in zip(df[col_x], df[col_y], df[col_y]):
+                ax.annotate(f'{val}', (x, y), textcoords="offset points", xytext=(0, 10), ha='center')
+
+        ax.set_title(sup_title)
+        ax.set_xlabel(col_x)
+        ax.set_ylabel(col_y)
+
         if yticks is not None:
-            tickvals = [float(y_tick) for y_tick in yticks]
-            ticktext = [str(y_tick) for y_tick in yticks]
-            fig.update_yaxes(tickvals=tickvals, ticktext=ticktext)
+            ax.set_yticks(yticks)
         if ylims is not None:
-            fig.update_yaxes(range=ylims)
+            ax.set_ylim(ylims)
 
         if save_plot_name is None:
             file_name = re.sub(r'\([^)]*\)', '', sup_title)
             save_plot_name = f"plot_for_{file_name}.png"
-        # fig.write_image(save_plot_name)
-        fig.show()
+        plt.savefig(save_plot_name)
+        plt.show()
+
+    # def plot_lines(self, column, swap_mode=True, ylims: list = None,
+    #                yticks: list = None, save_plot_name:str=None):
+    #
+    #     df = self._get_data(column)
+    #     mode_dict = self._plot_mode(column, swap_mode)
+    #     col_y = mode_dict.get("col_y")
+    #     col_x = mode_dict.get("col_x")
+    #     col_color = mode_dict.get("col_facet")
+    #
+    #     suffix = self.title_units_dict.get(col_y)
+    #
+    #     if suffix is not None:
+    #         sup_title = f"{col_y} ({suffix}) by {col_x}"
+    #     else:
+    #         sup_title = f"{col_y} by {col_x}"
+    #
+    #     if col_color is not None:
+    #         fig = px.line(df, x=col_x, y=col_y, color=col_color, title=sup_title, line_shape='linear',
+    #                       color_discrete_sequence=px.colors.qualitative.Vivid)
+    #     else:
+    #         fig = px.line(df, x=col_x, y=col_y, title=None, line_shape='linear',
+    #                       color_discrete_sequence=px.colors.qualitative.Vivid)
+    #
+    #     fig.update_layout(width=1000, height=500, template='plotly_white', margin=dict(l=10, r=10, b=10, t=40))
+    #     if yticks is not None:
+    #         tickvals = [float(y_tick) for y_tick in yticks]
+    #         ticktext = [str(y_tick) for y_tick in yticks]
+    #         fig.update_yaxes(tickvals=tickvals, ticktext=ticktext)
+    #     if ylims is not None:
+    #         fig.update_yaxes(range=ylims)
+    #
+    #     if save_plot_name is None:
+    #         file_name = re.sub(r'\([^)]*\)', '', sup_title)
+    #         save_plot_name = f"plot_for_{file_name}.png"
+    #     # fig.write_image(save_plot_name)
+    #     fig.show()
 
 
     def _plot_mode(self, column, swap_mode):
@@ -244,7 +290,8 @@ class Rvisualizer(Visualizer):
         data_df["score"] = data_df["score"].map(lambda x: float(x))
         data_df["product"] = data_df["product"].map(lambda x: x.replace("-oled", ""))
         data_df = data_df.pivot(index=["maker", "product"], columns=["category", "header"], values='score')
-        data_df = data_df.T.reset_index().sort_index(axis=1).drop("category", axis=1).set_index("header")
+        # data_df = data_df.T.reset_index().sort_index(axis=1).drop("category", axis=1).set_index("header")
+        data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
         data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
         plt.figure(figsize=figsize)
         sns.heatmap(data_df, annot=annot, cmap=cmap, cbar=cbar, vmin=0, vmax=10, yticklabels=data_df.index)
