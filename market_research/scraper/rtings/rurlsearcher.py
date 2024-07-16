@@ -17,11 +17,11 @@ class Rurlsearcher(Scraper):
                 'XR-83A80CL', 'XR-55A80CK', 'XR-65A80K', 'XR-83A90J', 'XR-48A90K',
                 'XR-77A80L', 'XR-55A95K', 'XR-77A80CK', 'XR-55A80L', 'XR-55A80K',
                 'XR-55A95L', 'XR-65A95L', 'XR-55A75L', 'XR-65A80L', 'XR-83A80L',
-                'XR-55A90J'
+                'XR-55A90J', 'bravia8'
             ],
             "mini_led": [
                 'XR-65X93CL', 'XR-75X93CL', 'XR-75X93L', 'XR-85X93L', 'XR-85X95L',
-                'XR-65X93L'
+                'XR-65X93L', 'bravia7', 'bravia9'
             ],
             "lcd": ['XR-55X90CK', 'XR-65X90CK', 'XR-75X90CK', 'XR-85X90CK',
                     'KD-55X80CK', 'KD-65X80CK', 'KD-75X80CK', 'KD-85X80CK',
