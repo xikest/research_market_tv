@@ -46,9 +46,12 @@ class Rurlsearcher(Scraper):
                     'https://www.rtings.com/tv/reviews/sony/a95k-oled',
                     'https://www.rtings.com/tv/reviews/sony/a95l-oled',
                     'https://www.rtings.com/tv/reviews/lg/g3-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a80k-a80ck-oled'
+                    'https://www.rtings.com/tv/reviews/sony/a80k-a80ck-oled',
+                    'https://www.rtings.com/tv/reviews/sony/bravia-8-oled'
                 ],
                 "mini_led": [
+                    'https://www.rtings.com/tv/reviews/sony/bravia-9-qled',
+                    'https://www.rtings.com/tv/reviews/sony/bravia-7-qled',
                     'https://www.rtings.com/tv/reviews/sony/x95l',
                     'https://www.rtings.com/tv/reviews/sony/x93l-x93cl'
                 ],
