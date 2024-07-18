@@ -153,11 +153,12 @@ class ModelScraper_s(Scraper):
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
         dict_info = {}
-        label = soup.find('h2', class_='product-intro__code').text.strip()
-        dict_info["model"] = label.split()[-1]
-        dict_info["price"] = soup.find('div', class_='custom-product-summary__price').text.strip()
+        title = soup.title.string
+        title.split("|")[-1].strip()
+        dict_info["model"] = title.split("|")[-1].strip()
+        dict_info["description"] = title.split("|")[0].strip()
+        dict_info["price"] = soup.find('p', class_='product-pricing__amount-original-price m-0').text.strip()
         dict_info.update(self._extract_model_info(dict_info.get("model")))
-        dict_info["description"] = soup.find('h1', class_='product-intro__title').text.strip()
         return dict_info
 
     def _get_global_spec(self, url: str) -> dict:
@@ -188,7 +189,8 @@ class ModelScraper_s(Scraper):
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_1_move_to_spec_{stamp_today}.png")
                 time.sleep(self.wait_time)
 
-                element_click_spec = driver.find_element(By.ID, 'PDPSpecificationsLink')
+                # element_click_spec = driver.find_element(By.ID, 'PDPSpecificationsLink')
+                element_click_spec = driver.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]/cx-icon')
                 element_click_spec.click()
                 time.sleep(self.wait_time)
 
@@ -196,7 +198,7 @@ class ModelScraper_s(Scraper):
                     driver.save_screenshot(
                         f"./{dir_model}/{stamp_url}_2_after_click_specification_{stamp_today}.png")
                 try:
-                    element_see_more = driver.find_element(By.XPATH,'//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-product-specification/div/div[2]/div[3]/button')
+                    element_see_more = driver.find_element(By.XPATH,'//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[3]/button')
                     self.web_driver.move_element_to_center(element_see_more)
                     if self.tracking_log:
                         driver.save_screenshot(f"./{dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
