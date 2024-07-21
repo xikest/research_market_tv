@@ -14,23 +14,28 @@ class Visualizer_s(Visualizer):
         sns.set_style(style)
         self.dc = DataCleanup_s(df, stop_words=cleaning_mask)
 
-    def group_plot_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price_discount",
-                       ylabel_mark: str = "%", figsize=(10, 6), save_plot_name=None):
 
+    def group_price_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price",
+                       ylabel_mark: str = "", figsize=(10, 6), save_plot_name=None):
+        # Fetch the DataFrame
         df = self.dc.get_price_df()
+
+        # Join the column names for the save plot name
         col_group_str = '&'.join(col_group)
-        grouped_data = df.groupby(col_group)[col_plot].mean().sort_values(ascending=False)
 
+        grouped_stats = df.groupby(col_group)[col_plot].agg(['mean', 'max', 'min']).sort_values(by='mean',
+                                                                                                ascending=False)
         plt.figure(figsize=figsize)
-
-        grouped_data.plot(kind="bar")
-        plt.ylabel(f"{col_plot}({ylabel_mark})")
+        ax = grouped_stats.plot(kind="bar", y=["max", "mean", "min"], figsize=figsize)
+        plt.ylabel(f"{col_plot} ({ylabel_mark})")
+        plt.title(f"Mean, Max, and Min {col_plot} grouped by {col_group_str}")
         sns.despine()
 
         if save_plot_name is None:
             save_plot_name = f"barplot_{col_plot}_to_{col_group_str}.png"
-        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
+        plt.savefig(f"{self.output_folder}/{save_plot_name}", bbox_inches='tight')
         plt.show()
+
 
     def heatmap_spec(self, display_types:str=None, save_plot_name=None, title="SONY Spec", cmap="Blues", figsize=(8, 8),
                      cbar=False,
@@ -70,7 +75,16 @@ class Visualizer_s(Visualizer):
 
 
         data_df = self.dc.get_df_cleaned()
-        data_df = data_df[col_selected]
+
+        available_columns = [col for col in col_selected if col in data_df.columns]
+        missing_columns = [col for col in col_selected if col not in data_df.columns]
+        # Print missing columns
+        if missing_columns:
+            print("The following columns are missing from the DataFrame:")
+            for col in missing_columns:
+                print(col)
+
+        data_df = data_df[available_columns]
         if display_types is not None:
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
@@ -93,5 +107,3 @@ class Visualizer_s(Visualizer):
             save_plot_name = f"heatmap_for_{title}.png"
         plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
-
-

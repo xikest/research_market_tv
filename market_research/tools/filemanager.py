@@ -18,7 +18,23 @@ class FileManager:
             if not os.path.exists(current_path):
                 os.makedirs(current_path)
                 print(f"폴더 '{folder_name}'가 생성되었습니다.")
-
+    @staticmethod
+    def delete_dir(folder_path):
+        try:
+            if os.path.exists(folder_path):
+                for root, dirs, files in os.walk(folder_path, topdown=False):
+                    for name in files:
+                        file_path = os.path.join(root, name)
+                        os.remove(file_path)
+                    for name in dirs:
+                        dir_path = os.path.join(root, name)
+                        os.rmdir(dir_path)
+                os.rmdir(folder_path)
+                print(f"The folder at {folder_path} has been deleted.")
+            else:
+                print(f"The folder at {folder_path} does not exist.")
+        except Exception as e:
+            print(f"Error: {e}")
     @staticmethod
     def save_file(data, filename="backup"):
         with open(f"{filename}.pickle", "wb") as file:
