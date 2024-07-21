@@ -26,17 +26,12 @@ class ModelScraper_s(Scraper):
 
     def get_models_info(self, format_df:bool=True, temporary_year_marking=False, show_visit:bool=False):
         print("collecting models")
-        # url_series_set = self._get_url_series()
-
-        url_series_set= ('https://electronics.sony.com/tv-video/televisions/all-tvs/p/k85xr90',
-                         'https://electronics.sony.com/tv-video/televisions/all-tvs/p/k65xr80',
-                         'https://electronics.sony.com/tv-video/televisions/all-tvs/p/k65xr70')
+        url_series_set = self._get_url_series()
         url_series_dict = {}
         for url in url_series_set:
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
         print("number of total model:", len(url_series_dict))
-
         print("collecting spec")
         visit_url_dict = {}
         dict_models = {}
@@ -158,6 +153,7 @@ class ModelScraper_s(Scraper):
                 dict_spec = {}
                 driver = self.web_driver.get_chrome()
                 driver.get(url=url)
+                time.sleep(self.wait_time)
                 ## model name, price, descr
                 description = driver.find_element(By.XPATH,
                                                   '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
@@ -168,10 +164,8 @@ class ModelScraper_s(Scraper):
                                                     '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
                     price_original = driver.find_element(By.XPATH,
                                                          '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-
                     price_now = float(price_now.replace('$', '').replace(',', ''))
                     price_original = float(price_original.replace('$', '').replace(',', ''))
-
                     price_gap = price_original - price_now
                 except:
                     price_now = ""
@@ -198,9 +192,9 @@ class ModelScraper_s(Scraper):
                 dir_model = f"{self.log_dir}/{model}"
                 stamp_today = self.file_manager.get_datetime_info(include_time=False)
                 stamp_url = self.file_manager.get_name_from_url(url)
+
                 if self.tracking_log:
                     self.file_manager.make_dir(dir_model)
-                if self.tracking_log:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_0_model_{stamp_today}.png")
                 time.sleep(self.wait_time)
                 element_spec = driver.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]')
