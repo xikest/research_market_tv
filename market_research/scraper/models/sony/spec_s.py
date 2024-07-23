@@ -1,3 +1,4 @@
+import numpy as np
 from bs4 import BeautifulSoup
 import requests
 import time
@@ -13,6 +14,20 @@ class ModelScraper_s(Scraper):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input",  output_folder_path="results",
                  verbose: bool = False, wait_time=1):
+        """
+        Initialize the instance with the specified configuration.
+
+        Parameters:
+        enable_headless (bool): Whether to run the browser in headless mode. Default is True.
+        export_prefix (str): Prefix for export file names. Default is "sony_model_info_web".
+        intput_folder_path (str): Path to the input folder. Default is "input".
+        output_folder_path (str): Path to the output folder. Default is "results".
+        verbose (bool): If True, enables tracking logs. Default is False.
+        wait_time (int): Time to wait for page load in seconds. Default is 1.
+
+        If tracking_log is enabled:
+        Deletes the existing log directory and creates a new one.
+        """
 
         super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,  intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
 
@@ -24,7 +39,20 @@ class ModelScraper_s(Scraper):
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, format_df:bool=True, temporary_year_marking=False, show_visit:bool=False):
+    def get_models_info(self, format_df:bool=True, fastmode:bool=False, temporary_year_marking=False):
+        """
+        Collect model information from URLs and return the data in the desired format.
+
+        Parameters:
+        format_df (bool): If True, return the result as a DataFrame and save it to an Excel file. Default is True.
+        fastmode (bool): If True, skips collecting global specifications for faster processing. Default is False.
+        temporary_year_marking (bool): If True, temporarily mark the year as "2024" for models without a year. Default is False.
+
+        Returns:
+        pd.DataFrame or dict: A DataFrame of model information if format_df is True, otherwise a dictionary.
+        """
+
+
         print("collecting models")
         url_series_set = self._get_url_series()
         url_series_dict = {}
@@ -33,21 +61,18 @@ class ModelScraper_s(Scraper):
             url_series_dict.update(url_models)
         print("number of total model:", len(url_series_dict))
         print("collecting spec")
+        if fastmode:
+            print("operating fast mode")
         visit_url_dict = {}
         dict_models = {}
-        cnt_loop=2
-        for cnt in range(cnt_loop):#main try
-            for key, url_model in tqdm(url_series_dict.items()):
-                try:
-                    dict_models[key] = self._get_global_spec(url=url_model)
-                    visit_url_dict[key] = url_model
-                except Exception as e:
-                    if cnt == cnt_loop - 1:
-                        print(f"\nFailed to get info from {key}")
-                        print(e)
-                    pass
-            break
-        if show_visit:
+        for key, url_model in tqdm(url_series_dict.items()):
+            dict_info = self._get_model_info(url_model)
+            dict_models[key] = dict_info
+            visit_url_dict[key] = url_model
+            if fastmode is False:
+                dict_spec = self._get_global_spec(url=url_model)
+                dict_models[key].update(dict_spec)
+        if self.tracking_log:
             print("\n")
             for model, url in visit_url_dict.items():  print(f"{model}: {url}")
 
@@ -139,13 +164,75 @@ class ModelScraper_s(Scraper):
                 print(f'{key}: {value}')
         return dict_url_models
 
+    def _get_model_info(self, url: str) -> dict:
+        """
+        Extract model information (name, price, description) from a given model URL.
+        """
+        dict_info = {
+            "model": None,
+            "description": None,
+            "price": None,
+            "price_original": None,
+            "price_gap": None,
+        }
+        driver = self.web_driver.get_chrome()
+        try:
+            driver.get(url)
+            time.sleep(self.wait_time)
+            try:
+                description = driver.find_element(By.XPATH,
+                                                  '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
+            except:
+                description = ""
+
+            # Extract model
+            try:
+                model = driver.find_element(By.XPATH,
+                                            '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/div/span').text
+                model = model.split(":")[-1].strip()
+            except:
+                model = ""
+            # Extract price
+            try:
+                price_now = driver.find_element(By.XPATH,
+                                                '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
+                price_original = driver.find_element(By.XPATH,
+                                                     '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
+                price_now = float(price_now.replace('$', '').replace(',', ''))
+                price_original = float(price_original.replace('$', '').replace(',', ''))
+                price_gap = price_original - price_now
+            except:
+                try:
+                    price_now = driver.find_element(By.XPATH,
+                                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
+                    price_now = float(price_now.replace('$', '').replace(',', ''))
+                    price_original = price_now
+                    price_gap = 0.0
+                except:
+                    price_now = float('nan')
+                    price_original = float('nan')
+                    price_gap = float('nan')
+
+            dict_info.update({
+                "model": model,
+                "description": description,
+                "price": price_now,
+                "price_original": price_original,
+                "price_gap": price_gap,
+            })
+            dict_info.update(self._extract_model_info(dict_info.get("model")))
+        except Exception as e:
+            if self.tracking_log:
+                print("error at get_model_info")
+        finally:
+            driver.quit()
+        return dict_info
 
     def _get_global_spec(self, url: str) -> dict:
         """
         Extract global specifications from a given model URL.
         """
         try_total = 10
-        model = None
         driver = None
         if self.tracking_log:  print(" Connecting to", url)
         for cnt_try in range(try_total):
@@ -153,41 +240,6 @@ class ModelScraper_s(Scraper):
                 dict_spec = {}
                 driver = self.web_driver.get_chrome()
                 driver.get(url=url)
-                time.sleep(self.wait_time)
-                ## model name, price, descr
-                description = driver.find_element(By.XPATH,
-                                                  '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
-                model = driver.find_element(By.XPATH,
-                                            '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/div/span').text
-                try:
-                    price_now = driver.find_element(By.XPATH,
-                                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
-                    price_original = driver.find_element(By.XPATH,
-                                                         '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-                    price_now = float(price_now.replace('$', '').replace(',', ''))
-                    price_original = float(price_original.replace('$', '').replace(',', ''))
-                    price_gap = price_original - price_now
-                except:
-                    price_now = ""
-                    price_gap = ""
-                    try:
-                        price_now = driver.find_element(By.XPATH,
-                                                        '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
-                        price_now = float(price_now.replace('$', '').replace(',', ''))
-                    except:
-                        if self.tracking_log:
-                            print("no price")
-                    finally:
-                        price_original = price_now
-
-                dict_spec["model"]=model.split(":")[-1].strip()
-                dict_spec["description"] = description
-                dict_spec["price"] = price_now
-                dict_spec["price_original"] = price_original
-                dict_spec["price_gap"] = price_gap
-                dict_spec.update(self._extract_model_info(dict_spec.get("model")))
-
-                ## model spec
                 model = self.file_manager.get_name_from_url(url)
                 dir_model = f"{self.log_dir}/{model}"
                 stamp_today = self.file_manager.get_datetime_info(include_time=False)
@@ -252,7 +304,7 @@ class ModelScraper_s(Scraper):
         """
         dict_info = {}
         dict_info["year"] = model.split("-")[1][-1]
-        dict_info["series"] = model.split("-")[1][2:-1]
+        dict_info["series"] = model.split("-")[1][2:]
         dict_info["size"] = model.split("-")[1][:2]
         dict_info["grade"] = model.split("-")[0]
 
