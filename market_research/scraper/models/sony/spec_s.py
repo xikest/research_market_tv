@@ -175,57 +175,62 @@ class ModelScraper_s(Scraper):
             "price_original": None,
             "price_gap": None,
         }
-        driver = self.web_driver.get_chrome()
-        try:
-            driver.get(url)
-            time.sleep(self.wait_time)
-            try:
-                description = driver.find_element(By.XPATH,
-                                                  '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
-            except:
-                description = ""
 
-            # Extract model
+        for _ in rnage(10):
+            driver = self.web_driver.get_chrome()
             try:
-                model = driver.find_element(By.XPATH,
-                                            '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/div/span').text
-                model = model.split(":")[-1].strip()
-            except:
-                model = ""
-            # Extract price
-            try:
-                price_now = driver.find_element(By.XPATH,
-                                                '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
-                price_original = driver.find_element(By.XPATH,
-                                                     '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-                price_now = float(price_now.replace('$', '').replace(',', ''))
-                price_original = float(price_original.replace('$', '').replace(',', ''))
-                price_gap = price_original - price_now
-            except:
+                driver.get(url)
+                time.sleep(self.wait_time)
+                # Extract model
+                try:
+                    model = driver.find_element(By.XPATH,
+                                                '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/div/span').text
+                    model = model.split(":")[-1].strip()
+                except Exception as e:
+                    if self.tracking_log:
+                        print("Model extraction failed:", e)
+                    continue
+
+                try:
+                    description = driver.find_element(By.XPATH,
+                                                      '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
+                except:
+                    description = ""
+                # Extract price
                 try:
                     price_now = driver.find_element(By.XPATH,
-                                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
+                                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
+                    price_original = driver.find_element(By.XPATH,
+                                                         '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
                     price_now = float(price_now.replace('$', '').replace(',', ''))
-                    price_original = price_now
-                    price_gap = 0.0
+                    price_original = float(price_original.replace('$', '').replace(',', ''))
+                    price_gap = price_original - price_now
                 except:
-                    price_now = float('nan')
-                    price_original = float('nan')
-                    price_gap = float('nan')
-
-            dict_info.update({
-                "model": model,
-                "description": description,
-                "price": price_now,
-                "price_original": price_original,
-                "price_gap": price_gap,
-            })
-            dict_info.update(self._extract_model_info(dict_info.get("model")))
-        except Exception as e:
-            if self.tracking_log:
-                print("error at get_model_info")
-        finally:
-            driver.quit()
+                    try:
+                        price_now = driver.find_element(By.XPATH,
+                                                        '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
+                        price_now = float(price_now.replace('$', '').replace(',', ''))
+                        price_original = price_now
+                        price_gap = 0.0
+                    except:
+                        price_now = float('nan')
+                        price_original = float('nan')
+                        price_gap = float('nan')
+                dict_info.update({
+                    "model": model,
+                    "description": description,
+                    "price": price_now,
+                    "price_original": price_original,
+                    "price_gap": price_gap,
+                })
+                dict_info.update(self._extract_model_info(dict_info.get("model")))
+                break
+            except Exception as e:
+                pass
+                if self.tracking_log:
+                    print("error at get_model_info")
+            finally:
+                driver.quit()
         return dict_info
 
     def _get_global_spec(self, url: str) -> dict:
