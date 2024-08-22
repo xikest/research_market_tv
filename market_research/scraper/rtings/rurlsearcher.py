@@ -33,7 +33,7 @@ class Rurlsearcher(Scraper):
                     'KD-55X80K', 'KD-65X80K', 'KD-75X80K', 'KD-85X80K', 'XR-75Z9K',
                     'XR-85Z9K', 'KD-32W830K', 'KD-55X77CL', 'KD-65X77CL', 'KD-75X77CL',
                     'KD-85X77CL', 'KD-43X77L', 'KD-50X77L', 'KD-55X77L', 'KD-65X77L',
-                    'KD-75X77L', 'KD-85X77L']
+                    'KD-75X77L', 'KD-85X77L','bravia3',]
         }
         }
 
@@ -62,7 +62,8 @@ class Rurlsearcher(Scraper):
                     'https://www.rtings.com/tv/reviews/sony/a95l-oled',
                     'https://www.rtings.com/tv/reviews/sony/x90k-x90ck',
                     'https://www.rtings.com/tv/reviews/sony/x95k',
-                    'https://www.rtings.com/tv/reviews/sony/x80k-x80ck'
+                    'https://www.rtings.com/tv/reviews/sony/x80k-x80ck',
+                    'https://www.rtings.com/tv/reviews/sony/bravia-3'
                 ]
             }
         }
