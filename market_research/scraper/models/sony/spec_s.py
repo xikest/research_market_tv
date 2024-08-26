@@ -176,7 +176,7 @@ class ModelScraper_s(Scraper):
             "price_gap": None,
         }
 
-        for _ in rnage(10):
+        for _ in range(10):
             driver = self.web_driver.get_chrome()
             try:
                 driver.get(url)
