@@ -218,20 +218,24 @@ class ModelScraper_s(Scraper):
                 # Extract price
                 try:
                     price_now = driver.find_element(By.XPATH,
-                                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
+                                                    '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
                     price_original = driver.find_element(By.XPATH,
-                                                         '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
+                                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
                     price_now = float(price_now.replace('$', '').replace(',', ''))
                     price_original = float(price_original.replace('$', '').replace(',', ''))
                     price_gap = price_original - price_now
                 except:
                     try:
                         price_now = driver.find_element(By.XPATH,
-                                                        '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
+                                                        '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
                         price_now = float(price_now.replace('$', '').replace(',', ''))
                         price_original = price_now
                         price_gap = 0.0
                     except:
+                        if self.tracking_log:
+                            print(f"Price extraction failed from {url}")
+                            self.file_manager.make_dir(dir_model)
+                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Model extraction failed_{stamp_today}.png")
                         price_now = float('nan')
                         price_original = float('nan')
                         price_gap = float('nan')

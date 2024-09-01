@@ -23,7 +23,7 @@ class DataCleanup_s:
                 x = x.lower()  # 모두 소문자로 변경
             return x
 
-        self.df = self.df.applymap(transform_text)
+        self.df = self.df.map(transform_text)
         self.df.columns = [transform_text(x) for x in self.df.columns]
 
 
