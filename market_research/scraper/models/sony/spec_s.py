@@ -1,6 +1,7 @@
 import numpy as np
 from bs4 import BeautifulSoup
 import requests
+import pickle
 import time
 import pandas as pd
 from tqdm import tqdm
@@ -55,12 +56,26 @@ class ModelScraper_s(Scraper):
 
         print("collecting models")
         url_series_set = self._get_url_series()
+        
+        with open('url_series_set.pkl', 'wb') as f:
+            pickle.dump(url_series_set, f)
+        with open('url_series_set.pkl', 'rb') as f:
+            url_series_set = pickle.load(f)
+        
         url_series_dict = {}
         for url in url_series_set:
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
+            
+        with open('url_series_dict.pkl', 'wb') as f:
+            pickle.dump(url_series_dict, f)
+        with open('url_series_dict.pkl', 'rb') as f:
+            url_series_dict = pickle.load(f)
+            
         print("number of total model:", len(url_series_dict))
         print("collecting spec")
+    
+    
         if fastmode:
             print("operating fast mode")
         visit_url_dict = {}
@@ -137,12 +152,15 @@ class ModelScraper_s(Scraper):
             driver.get(url=url)
             time.sleep(self.wait_time)
             try:
-                try:
-                    elements = driver.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
-                except Exception:
-                    elements = driver.find_element(By.XPATH,
-                                                   '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                # try:
+                #     elements = driver.find_element(By.XPATH,
+                #                                       '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                # except Exception:
+                #     elements = driver.find_element(By.XPATH,
+                #                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                elements = driver.find_element(By.XPATH,
+                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]/div[1]')
+
                 url_elements = elements.find_elements(By.TAG_NAME, 'a')
 
                 for url_element in url_elements:
@@ -151,8 +169,7 @@ class ModelScraper_s(Scraper):
                     dict_url_models[label] = url.strip()
                 break
             except Exception as e:
-                if self.tracking_log:
-                    if cnt_try + 1 == try_total:
+                if cnt_try + 1 == try_total:
                         print(f"Getting series error from {url}")
             finally:
                 driver.quit()
@@ -216,6 +233,8 @@ class ModelScraper_s(Scraper):
                         price_now = float('nan')
                         price_original = float('nan')
                         price_gap = float('nan')
+                if self.tracking_log:
+                    print(f"{model}: {description}")
                 dict_info.update({
                     "model": model,
                     "description": description,
@@ -223,6 +242,9 @@ class ModelScraper_s(Scraper):
                     "price_original": price_original,
                     "price_gap": price_gap,
                 })
+                
+
+                    
                 dict_info.update(self._extract_model_info(dict_info.get("model")))
                 break
             except Exception as e:

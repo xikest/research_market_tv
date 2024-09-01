@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mkt-retv',
-    version='1.445',
+    version='1.446',
     author='xikest',
     description='market research TV ',
     packages=find_packages(),
@@ -13,7 +13,7 @@ setup(
         'tqdm', 'openpyxl',
         'wordcloud', 'nltk',
         'scikit-learn', 'openai',
-        'matplotlib', 'seaborn', 'plotly', 'kaleido'
+        'matplotlib', 'seaborn'
     ],
 
     entry_points={

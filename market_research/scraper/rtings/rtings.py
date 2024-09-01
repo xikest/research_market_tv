@@ -20,7 +20,7 @@ class Rtings(Scraper):
                              
         self.verbose = verbose
         self.wait_time = wait_time
-    def get_data(self, urls:list[str,], export_excel=True):
+    def get_data(self, urls:list, export_excel=True):
         score_df= pd.DataFrame()
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
