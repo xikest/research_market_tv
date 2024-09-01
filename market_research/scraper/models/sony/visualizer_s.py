@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import plotly.express as px
 import seaborn as sns
 from .cleanup_s import DataCleanup_s
 from market_research.scraper._visualizer_scheme import Visualizer
@@ -15,10 +17,101 @@ class Visualizer_s(Visualizer):
         self.dc = DataCleanup_s(df)
 
 
+
+    def price_map(self):
+
+        # 데이터 준비
+        data = self.dc.get_price_df().copy()
+        data['size_group'] = data['size'].map(lambda x: int((int(x)/10))*10)
+
+        # 연도와 사이즈에 따른 색상 및 마커 모양 설정
+        years = data['year'].unique()
+        sizes = sorted(data['size_group'].unique()) 
+        colors = px.colors.qualitative.Plotly
+        color_map = {year: colors[i % len(colors)] for i, year in enumerate(years)}
+
+        markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross']
+        marker_map = {size: markers[i % len(markers)] for i, size in enumerate(sizes)}
+
+        # 그래프 생성
+        fig = go.Figure()
+
+        # Reference 라인 추가
+        fig.add_trace(go.Scatter(
+            x=[0, 10000],
+            y=[0, 10000],
+            mode='lines',
+            line=dict(color='lightgray', width=2, dash='solid'),
+            name='Original Reference',
+            showlegend=False
+        ))
+
+        # 사이즈별 데이터 추가 (초기에는 숨김)
+        for size in sizes:
+            fig.add_trace(go.Scatter(
+                x=data[data['size_group'] == size]['price_original'],
+                y=data[data['size_group'] == size]['price'],
+                mode='markers',
+                marker=dict(
+                    size=12,
+                    color='rgba(211, 211, 211, 0.6)',  
+                    symbol= marker_map[size],
+                    opacity=0.8,  
+                    line=dict(width=3, color='black')
+                ),
+                text=data[data['size'] == size]['description'],  
+                hoverinfo='text',  
+                name=f'Size {size}',
+                visible='legendonly'  # 사이즈 마커는 기본적으로 숨김
+            ))
+
+        # 연도별 데이터 추가
+        for year in years:
+            fig.add_trace(go.Scatter(
+                x=data[data['year'] == year]['price_original'],
+                y=data[data['year'] == year]['price'],
+                mode='markers',
+                marker=dict(
+                    size=12,
+                    color=color_map[year],
+                    symbol='circle',  
+                    opacity=0.8,
+                ),
+                text=data[data['year'] == year]['description'], 
+                hoverinfo='text',  
+                name=f'Year {year}'
+            ))
+
+        # 레이아웃 설정
+        fig.update_layout(
+            title='Price map',
+            xaxis_title='Original Price($)',
+            yaxis_title='Current Price($)',
+            legend_title='Filter',
+            showlegend=True,
+            template='simple_white',
+            xaxis=dict(
+                range=[0, 10000],
+                showgrid=True
+            ),
+            yaxis=dict(
+                range=[0, 10000],
+                showgrid=False
+            ),
+            width=1000,
+            height= 1000,
+            hovermode='closest',
+            legend=dict(
+                traceorder='reversed' 
+            )
+        )
+        fig.show()
+
+
     def group_price_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price",
                        ylabel_mark: str = "", figsize=(10, 6), save_plot_name=None):
         # Fetch the DataFrame
-        df = self.dc.get_price_df()
+        df = self.dc.get_price_df().copy()
 
         # Join the column names for the save plot name
         col_group_str = '&'.join(col_group)
