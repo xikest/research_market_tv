@@ -1,7 +1,7 @@
 import platform
 from pathlib import Path
 from datetime import date
-from ..tools import WebDriver
+from tools.web import WebDriver
 
 
 class Scraper:

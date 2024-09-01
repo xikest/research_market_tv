@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 import re
 from selenium.webdriver.common.by import By
-from market_research.tools import FileManager
+from tools.file import FileManager
 from market_research.scraper._scaper_scheme import Scraper
 
 

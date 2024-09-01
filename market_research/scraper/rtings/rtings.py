@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 from tqdm import tqdm
-from market_research.tools import FileManager
+from tools.file import FileManager
 from market_research.scraper._scaper_scheme import Scraper
 
 class Rtings(Scraper):

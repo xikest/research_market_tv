@@ -1,5 +1,5 @@
 import time
-from market_research.tools import FileManager
+from tools.file import FileManager
 from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm

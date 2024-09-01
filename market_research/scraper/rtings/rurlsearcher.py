@@ -78,7 +78,7 @@ class Rurlsearcher(Scraper):
             return self.model_dictionary.keys()
         return self.model_dictionary.get(maker.lower())
 
-    def get_urls_from_web(self, keywords: list[str,] = None) -> list:
+    def get_urls_from_web(self, keywords: list = None) -> list:
         urls_set = set()
         for keyword in tqdm(keywords):
             url = self._search_and_extract_url(search_query=keyword)

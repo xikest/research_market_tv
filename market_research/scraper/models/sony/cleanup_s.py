@@ -4,7 +4,7 @@ class DataCleanup_s:
     df = cleanup.get_df_cleaned()
     df_prices = cleanup.get_price_df()
     """
-    def __init__(self, df, stop_words=None):
+    def __init__(self, df):
         self.df = df.copy()
         self._preprocess_df()
         self._cleanup_columns()

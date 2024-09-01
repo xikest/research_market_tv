@@ -1,6 +1,4 @@
-import numpy as np
 from bs4 import BeautifulSoup
-import requests
 import pickle
 import time
 import pandas as pd
@@ -8,13 +6,13 @@ from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from market_research.tools import FileManager
+from tools.file import FileManager
 from market_research.scraper._scaper_scheme import Scraper
 
 class ModelScraper_s(Scraper):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input",  output_folder_path="results",
-                 verbose: bool = False, wait_time=1):
+                 verbose: bool = False, wait_time=2):
         """
         Initialize the instance with the specified configuration.
 
@@ -56,21 +54,11 @@ class ModelScraper_s(Scraper):
 
         print("collecting models")
         url_series_set = self._get_url_series()
-        
-        with open('url_series_set.pkl', 'wb') as f:
-            pickle.dump(url_series_set, f)
-        with open('url_series_set.pkl', 'rb') as f:
-            url_series_set = pickle.load(f)
-        
+
         url_series_dict = {}
         for url in url_series_set:
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
-            
-        with open('url_series_dict.pkl', 'wb') as f:
-            pickle.dump(url_series_dict, f)
-        with open('url_series_dict.pkl', 'rb') as f:
-            url_series_dict = pickle.load(f)
             
         print("number of total model:", len(url_series_dict))
         print("collecting spec")
@@ -145,6 +133,11 @@ class ModelScraper_s(Scraper):
         """
         Extract all model URLs from a given series URL.
         """
+        model = self.file_manager.get_name_from_url(url)
+        dir_model = f"{self.log_dir}/{model}"
+        stamp_today = self.file_manager.get_datetime_info(include_time=False)
+        stamp_url = self.file_manager.get_name_from_url(url)
+        
         try_total = 5
         dict_url_models = {}
         for cnt_try in range(try_total):
@@ -152,14 +145,8 @@ class ModelScraper_s(Scraper):
             driver.get(url=url)
             time.sleep(self.wait_time)
             try:
-                # try:
-                #     elements = driver.find_element(By.XPATH,
-                #                                       '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
-                # except Exception:
-                #     elements = driver.find_element(By.XPATH,
-                #                                    '//*[@id="PDPOveriewLink"]/div[1]/div[2]/div[1]/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
                 elements = driver.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]/div[1]')
+                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
 
                 url_elements = elements.find_elements(By.TAG_NAME, 'a')
 
@@ -171,6 +158,9 @@ class ModelScraper_s(Scraper):
             except Exception as e:
                 if cnt_try + 1 == try_total:
                         print(f"Getting series error from {url}")
+                        if self.tracking_log:
+                            self.file_manager.make_dir(dir_model)
+                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Getting series error_{stamp_today}.png")
             finally:
                 driver.quit()
 
@@ -185,6 +175,11 @@ class ModelScraper_s(Scraper):
         """
         Extract model information (name, price, description) from a given model URL.
         """
+        model = self.file_manager.get_name_from_url(url)
+        dir_model = f"{self.log_dir}/{model}"
+        stamp_today = self.file_manager.get_datetime_info(include_time=False)
+        stamp_url = self.file_manager.get_name_from_url(url)
+        try_total = 10
         dict_info = {
             "model": None,
             "description": None,
@@ -193,24 +188,31 @@ class ModelScraper_s(Scraper):
             "price_gap": None,
         }
 
-        for _ in range(10):
+        for cnt_try in range(try_total):
             driver = self.web_driver.get_chrome()
             try:
                 driver.get(url)
                 time.sleep(self.wait_time)
+                
                 # Extract model
                 try:
                     model = driver.find_element(By.XPATH,
-                                                '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/div/span').text
+                                                '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/div/span').text
+
+                    
                     model = model.split(":")[-1].strip()
-                except Exception as e:
+                except Exception as e:                    
                     if self.tracking_log:
-                        print("Model extraction failed:", e)
-                    continue
+                        if cnt_try + 1 == try_total:
+                            print(f"Model extraction failed from {url}")
+                            self.file_manager.make_dir(dir_model)
+                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Model extraction failed_{stamp_today}.png")
+                    pass
 
                 try:
                     description = driver.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div[1]/div/app-custom-product-intro/div/h1/p').text
+                                                      '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/h1/p').text
+    
                 except:
                     description = ""
                 # Extract price
@@ -250,7 +252,7 @@ class ModelScraper_s(Scraper):
             except Exception as e:
                 pass
                 if self.tracking_log:
-                    print("error at get_model_info")
+                    print(f"error at get_model_info from{url}")
             finally:
                 driver.quit()
         return dict_info
@@ -287,6 +289,18 @@ class ModelScraper_s(Scraper):
                 if self.tracking_log:
                     driver.save_screenshot(
                         f"./{dir_model}/{stamp_url}_2_after_click_specification_{stamp_today}.png")
+                    
+                    
+                for _ in range(5):
+                    try:
+                        # 팝업 닫기 버튼을 기다렸다가 클릭
+                        close_button = driver.find_element(By.XPATH, '//*[@id="contentfulModalClose"]')
+                        close_button.click()
+                        break
+                    except Exception as e:
+                        pass
+                    
+                        
                 try:
                     element_see_more = driver.find_element(By.XPATH,'//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[3]/button')
                     self.web_driver.move_element_to_center(element_see_more)
@@ -325,6 +339,7 @@ class ModelScraper_s(Scraper):
 
             finally:
                 driver.quit()
+                
     def _extract_model_info(self, model):
         """
         Extract additional information from the model name.

@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import plotly.express as px
 import matplotlib.pyplot as plt
 import re
-from sklearn.cluster import KMeans
 from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
