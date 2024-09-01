@@ -13,7 +13,7 @@ setup(
         'tqdm', 'openpyxl',
         'wordcloud', 'nltk',
         'scikit-learn', 'openai',
-        'matplotlib', 'seaborn'
+        'matplotlib', 'seaborn', 'plotly'
     ],
 
     entry_points={
