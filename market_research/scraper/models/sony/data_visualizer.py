@@ -161,7 +161,7 @@ class DataVisualizer(BaseVisualizer):
                              ]
 
 
-        data_df = self.dc.get_df_cleaned()
+        data_df = self.dc.get_df_cleaned().copy()
 
         available_columns = [col for col in col_selected if col in data_df.columns]
         missing_columns = [col for col in col_selected if col not in data_df.columns]
