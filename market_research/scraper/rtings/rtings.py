@@ -5,7 +5,7 @@ import pandas as pd
 import re
 from tqdm import tqdm
 from tools.file import FileManager
-from market_research.scraper._scaper_scheme import Scraper
+from market_research.scraper._scraper_scheme import Scraper
 
 class Rtings(Scraper):
     def __init__(self, enable_headless = True,

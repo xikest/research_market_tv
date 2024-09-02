@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-import plotly.express as px
 import seaborn as sns
-from .cleanup_s import DataCleanup_s
-from market_research.scraper._visualizer_scheme import Visualizer
-class Visualizer_s(Visualizer):
+from .data_cleaner import DataCleaner
+from market_research.scraper._visualization_scheme import BaseVisualizer
+class Visualizer_s(BaseVisualizer):
 
     def __init__(self, df, output_folder_path="results", style="whitegrid"):
 
@@ -14,120 +13,114 @@ class Visualizer_s(Visualizer):
         """
         super().__init__(output_folder_path = output_folder_path)
         sns.set_style(style)
-        self.dc = DataCleanup_s(df)
+        self.dc = DataCleaner(df)
 
 
 
     def price_map(self):
 
-        # 데이터 준비
-        data = self.dc.get_price_df().copy()
-        data['size_group'] = data['size'].map(lambda x: int((int(x)/10))*10)
 
-        # 연도와 사이즈에 따른 색상 및 마커 모양 설정
+        # 데이터 준비
+
+        data = self.dc.get_price_df().copy()
         years = data['year'].unique()
-        sizes = sorted(data['size_group'].unique()) 
-        colors = px.colors.qualitative.Plotly
-        color_map = {year: colors[i % len(colors)] for i, year in enumerate(years)}
+        
+        series_idx = data[['series', 'display type', 'year']].drop_duplicates()
+        series_idx = series_idx.sort_values(by=['year',  'series'])
+        all_series_dict = {}
+        for year in series_idx.year.unique():
+            df_year = series_idx[series_idx['year']==year]
+            all_series_dict[year] = {key: value for key, value in zip(df_year['series'], df_year['display type'])}
+
+        colors = ['#636EFA','#00CC96','#EF553B']
+        color_map = {year: colors[i] for i, year in enumerate(years)}
 
         markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross']
-        marker_map = {size: markers[i % len(markers)] for i, size in enumerate(sizes)}
+        marker_map = {i: markers[i % len(markers)] for i in range(len(series_idx))}
 
         # 그래프 생성
         fig = go.Figure()
 
-        # Reference 라인 추가
-        fig.add_trace(go.Scatter(
-            x=[0, 10000],
-            y=[0, 10000],
-            mode='lines',
-            line=dict(color='lightgray', width=2, dash='solid'),
-            name='Original Reference',
-            showlegend=False
-        ))
-
-        # 사이즈별 데이터 추가 (초기에는 숨김)
-        for size in sizes:
-            fig.add_trace(go.Scatter(
-                x=data[data['size_group'] == size]['price_original'],
-                y=data[data['size_group'] == size]['price'],
-                mode='markers',
-                marker=dict(
-                    size=12,
-                    color='rgba(211, 211, 211, 0.6)',  
-                    symbol= marker_map[size],
-                    opacity=0.8,  
-                    line=dict(width=3, color='black')
-                ),
-                text=data[data['size'] == size]['description'],  
-                hoverinfo='text',  
-                name=f'Size {size}',
-                visible='legendonly'  # 사이즈 마커는 기본적으로 숨김
-            ))
-
-        # 연도별 데이터 추가
         for year in years:
+            data_year = data[data['year']==year]
+            series_dict = all_series_dict.get(year)
+            for seq, series, display in zip(range(len(series_dict.keys())), series_dict.keys(), series_dict.values()):
+                data_series = data_year[data_year['series']==series]
+
+                fig.add_trace(go.Scatter(
+                x=data_series['size'],
+                y=data_series['price'],
+                    mode='markers',
+                    marker=dict(
+                        size=12,
+                        color='rgba(211, 211, 211, 0.6)',  
+                        symbol= marker_map[seq],
+                        opacity=0.8,  
+                        line=dict(width=3, color='black')
+                    ),
+                    text=data_series['description'],  
+                    hoverinfo='text',  
+                    name=f'{series} [{display}]',
+                    visible='legendonly'  # 사이즈 마커는 기본적으로 숨김
+                ))
+
             fig.add_trace(go.Scatter(
-                x=data[data['year'] == year]['price_original'],
-                y=data[data['year'] == year]['price'],
+                x=data_year['size'],
+                y=data_year['price'],
                 mode='markers',
-                marker=dict(
-                    size=12,
+                marker=dict(size=10,
+                            color=color_map[year],
+                            symbol='circle'),
+                error_y=dict(
+                    type='data',
+                    symmetric=False,
+                    arrayminus=[0]*len(data),
+                    array=data_year['price_gap'],
                     color=color_map[year],
-                    symbol='circle',  
-                    opacity=0.8,
+                    thickness=1,
+                    width=5
                 ),
-                text=data[data['year'] == year]['description'], 
-                hoverinfo='text',  
-                name=f'Year {year}'
+                text=data_year['description'],
+                hoverinfo='text',
+                name=year,
+                showlegend=True
             ))
+
+
+
+        size_categories = sorted(data['size'].unique())
 
         # 레이아웃 설정
         fig.update_layout(
             title='Price map',
-            xaxis_title='Original Price($)',
-            yaxis_title='Current Price($)',
-            legend_title='Filter',
+            xaxis_title='Size (Inch)',
+            yaxis_title='Current Price ($)',
+            legend_title='Year',
             showlegend=True,
             template='simple_white',
             xaxis=dict(
-                range=[0, 10000],
-                showgrid=True
+                type='category',
+                categoryorder='array',
+                categoryarray=size_categories,
+                range = [-1, len(size_categories)],
+                showgrid=False
+
             ),
             yaxis=dict(
-                range=[0, 10000],
-                showgrid=False
+                range=[0, max(data['price_original'].max(),
+                            data['price'].max()) + 1000],
+                showgrid=True
             ),
             width=1000,
-            height= 1000,
+            height= 800,
             hovermode='closest',
             legend=dict(
                 traceorder='reversed' 
             )
         )
+        fig.write_html("sony_price_map.html")
         fig.show()
 
-
-    def group_price_bar(self, col_group: list = ["display type", "size"], col_plot: str = "price",
-                       ylabel_mark: str = "", figsize=(10, 6), save_plot_name=None):
-        # Fetch the DataFrame
-        df = self.dc.get_price_df().copy()
-
-        # Join the column names for the save plot name
-        col_group_str = '&'.join(col_group)
-
-        grouped_stats = df.groupby(col_group)[col_plot].agg(['mean', 'max', 'min']).sort_values(by='mean',
-                                                                                                ascending=False)
-        plt.figure(figsize=figsize)
-        ax = grouped_stats.plot(kind="bar", y=["max", "mean", "min"], figsize=figsize)
-        plt.ylabel(f"{col_plot} ({ylabel_mark})")
-        plt.title(f"Mean, Max, and Min {col_plot} grouped by {col_group_str}")
-        sns.despine()
-
-        if save_plot_name is None:
-            save_plot_name = f"barplot_{col_plot}_to_{col_group_str}.png"
-        plt.savefig(f"{self.output_folder}/{save_plot_name}", bbox_inches='tight')
-        plt.show()
 
 
     def heatmap_spec(self, display_types:str=None, save_plot_name=None, title="SONY Spec", cmap="Blues", figsize=(8, 8),

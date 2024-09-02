@@ -6,8 +6,10 @@ import re
 from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from market_research.scraper._visualizer_scheme import Visualizer
-class Rvisualizer(Visualizer):
+from market_research.scraper._visualization_scheme import BaseVisualizer
+
+
+class Rvisualizer(BaseVisualizer):
 
     def __init__(self, df, output_folder_path="results"):
         super().__init__(output_folder_path=output_folder_path)

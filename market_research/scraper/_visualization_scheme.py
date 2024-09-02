@@ -1,6 +1,6 @@
 from pathlib import Path
 
-class Visualizer:
+class BaseVisualizer:
     def __init__(self, output_folder_path="results"):
         self.output_folder = None
         self._set_output_path(output_folder_path=output_folder_path)

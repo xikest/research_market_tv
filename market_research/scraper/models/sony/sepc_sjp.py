@@ -5,7 +5,7 @@ import requests
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
-from market_research.scraper._scaper_scheme import Scraper
+from market_research.scraper._scraper_scheme import Scraper
 class ModelScraper_sjp(Scraper):
 
     def __init__(self, enable_headless=True,

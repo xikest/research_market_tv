@@ -6,7 +6,7 @@ from tqdm import tqdm
 import re
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
-from market_research.scraper._scaper_scheme import Scraper
+from market_research.scraper._scraper_scheme import Scraper
 
 
 
