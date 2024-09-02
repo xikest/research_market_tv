@@ -118,7 +118,7 @@ class Visualizer_s(BaseVisualizer):
                 traceorder='reversed' 
             )
         )
-        fig.write_html("sony_price_map.html")
+        fig.write_html(self.output_folder/"sony_price_map.html")
         fig.show()
 
 
