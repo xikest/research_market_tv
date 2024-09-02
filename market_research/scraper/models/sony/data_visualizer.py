@@ -3,7 +3,8 @@ import plotly.graph_objs as go
 import seaborn as sns
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
-class Visualizer_s(BaseVisualizer):
+
+class DataVisualizer(BaseVisualizer):
 
     def __init__(self, df, output_folder_path="results", style="whitegrid"):
 
