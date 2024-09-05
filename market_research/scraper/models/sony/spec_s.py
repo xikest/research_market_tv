@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import time
+import datetime
 from tqdm import tqdm
 import pandas as pd
 from selenium.webdriver.common.keys import Keys
@@ -38,19 +39,16 @@ class ModelScraper_s(Scraper):
         pd.DataFrame or dict: A DataFrame of model information if format_df is True, otherwise a dictionary.
         """
         
-        url_series_dict = {}
+
         visit_url_dict = {}   
         processes = []
         max_processes = cpu_count()
         manager = Manager()
         dict_models = manager.dict()
         url_series_dict = manager.dict()
-        
         print(f"collecting models with {max_processes} processes")
-        url_series_set = self._get_url_series()
-        print("The website scan has been completed.")
-        print(f"number of total series: {len(url_series_set)}")
         
+        url_series_set = self._get_url_series()
         for url in url_series_set:
             if len(processes) >= max_processes:
                 for process in processes:
@@ -59,7 +57,8 @@ class ModelScraper_s(Scraper):
             process = Process(target=self._get_models, args=(url, url_series_dict))
             processes.append(process)
             process.start()
-
+            
+        print("\n")
         print("number of total model:", len(url_series_dict)) 
         print("collecting spec")
 
@@ -73,6 +72,7 @@ class ModelScraper_s(Scraper):
             process = Process(target=self._get_global_spec, args=(url_model, dict_models, key))
             processes.append(process)
             process.start()
+            
         for process in processes:
             process.join()
             
@@ -83,6 +83,11 @@ class ModelScraper_s(Scraper):
         if format_df:
             df_models = pd.DataFrame.from_dict(dict_models).T
             df_models.to_csv("df_models.csv")
+            
+            
+            current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            df_models.to_csv(f"df_models_{current_date}.csv")
+            
             if temporary_year_marking:
                 df_models['year'] = df_models['year'].fillna("2024")  # 임시
             df_models.to_json(self.output_folder /'s_scrape_model_data.json', orient='records', lines=True)
@@ -100,19 +105,22 @@ class ModelScraper_s(Scraper):
         step = 200
         url_series = set()
         try_total = 5
-        for _ in range(2):  # page_checker
+        for _ in range(2): #page_checker
             for cnt_try in range(try_total):
                 driver = self.web_driver.get_chrome()
                 try:
                     driver.get(url=url)
                     time.sleep(self.wait_time)
+
+                    
+                    
                     scroll_distance_total = self.web_driver.get_scroll_distance_total()
                     scroll_distance = 0
                     while scroll_distance < scroll_distance_total:
                         for _ in range(2):
                             html = driver.page_source
                             soup = BeautifulSoup(html, 'html.parser')
-                            elements = soup.find_all('a', class_="custom-product-grid-item__product-name")
+                            elements = soup.find_all('a', class_="custom-product-grid-item__image-container")
                             for element in elements:
                                 url_series.add(prefix + element['href'].strip())
                             driver.execute_script(f"window.scrollBy(0, {step});")
@@ -122,12 +130,17 @@ class ModelScraper_s(Scraper):
                 except Exception as e:
                     if self.tracking_log:
                         if cnt_try + 1 == try_total:
-                            print(f"Collecting primary URL error from {url}")
+                            print(f"collecting primary url error from {url}")
                 finally:
                     driver.quit()
+        print("The website scan has been completed.")
+        print(f"number of total series: {len(url_series)}")
+        if self.tracking_log:
+            print(url_series)
         return url_series
+    
 
-    def _get_models(self, url: str, url_series_dict):
+    def _get_models(self, url: str, url_series_dict:dict):
         """
         Extract all model URLs from a given series URL.
         """
