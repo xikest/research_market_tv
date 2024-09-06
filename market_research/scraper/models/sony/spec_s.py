@@ -28,7 +28,7 @@ class ModelScraper_s(Scraper):
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, mode_demo:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
+    def get_models_info(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
         """
         Collect model information from URLs and return the data in the desired format.
 
@@ -41,9 +41,9 @@ class ModelScraper_s(Scraper):
         pd.DataFrame: A DataFrame of model information.
         """
         
-        if mode_demo:
+        if demo_mode:
             # Load existing JSON data
-            df_models = pd.read_json('https://github.com/xikest/research_market_tv/s_scrape_model_data.json', orient='records', lines=True)
+            df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/s_scrape_model_data.json', orient='records', lines=True)
             print("operating demo")
         else:
             
