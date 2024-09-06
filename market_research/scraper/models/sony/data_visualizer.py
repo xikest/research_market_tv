@@ -83,7 +83,7 @@ class DataVisualizer(BaseVisualizer):
                 ),
                 text=data_year['description'],
                 hoverinfo='text',
-                name=year,
+                name=str(year),
                 showlegend=True
             ))
 
