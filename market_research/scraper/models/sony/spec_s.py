@@ -69,12 +69,13 @@ class ModelScraper_s(Scraper):
             if self.tracking_log:
                 print("\n")
                 for model, url in visit_url_dict.items():  print(f"{model}: {url}")
-                df_models = pd.DataFrame.from_dict(dict_models).T
-                if temporary_year_marking:
-                    df_models['year'] = df_models['year'].fillna("2024")  # 임시
-                df_models.to_json(self.output_folder / 's_scrape_model_data.json', orient='records', lines=True)
-
-        # Save DataFrame to Excel
+                
+            df_models = pd.DataFrame.from_dict(dict_models).T
+            if temporary_year_marking:
+                df_models['year'] = df_models['year'].fillna("2024")  # 임시
+            df_models.to_json(self.output_folder / 's_scrape_model_data.json', orient='records', lines=True)
+            # Save DataFrame to Excel
+        
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
         return df_models    
 
