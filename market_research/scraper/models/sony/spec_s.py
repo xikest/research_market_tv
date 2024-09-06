@@ -28,7 +28,7 @@ class ModelScraper_s(Scraper):
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, mode_demo:bool=True, temporary_year_marking: bool = True) -> pd.DataFrame:
+    def get_models_info(self, mode_demo:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
         """
         Collect model information from URLs and return the data in the desired format.
 
