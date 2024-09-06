@@ -28,7 +28,7 @@ class ModelScraper_s(Scraper):
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, mode_stream:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
+    def get_models_info(self, mode_demo:bool=True, temporary_year_marking: bool = True) -> pd.DataFrame:
         """
         Collect model information from URLs and return the data in the desired format.
 
@@ -41,7 +41,12 @@ class ModelScraper_s(Scraper):
         pd.DataFrame: A DataFrame of model information.
         """
         
-        if mode_stream:
+        if mode_demo:
+            # Load existing JSON data
+            df_models = pd.read_json('https://github.com/xikest/research_market_tv/s_scrape_model_data.json', orient='records', lines=True)
+            print("operating demo")
+        else:
+            
             print("collecting models")
             url_series_set = self._get_url_series()
 
@@ -68,9 +73,6 @@ class ModelScraper_s(Scraper):
                 if temporary_year_marking:
                     df_models['year'] = df_models['year'].fillna("2024")  # 임시
                 df_models.to_json(self.output_folder / 's_scrape_model_data.json', orient='records', lines=True)
-        else:
-            # Load existing JSON data
-            df_models = pd.read_json('https://github.com/xikest/research_market_tv/s_scrape_model_data.json', orient='records', lines=True)
 
         # Save DataFrame to Excel
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
