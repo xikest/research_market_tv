@@ -39,23 +39,27 @@ class DataVisualizer(BaseVisualizer):
         markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross']
         marker_map = {i: markers[i % len(markers)] for i in range(len(series_idx))}
 
+        data.loc[:, 'description'] = data.apply(lambda row: 
+                    f"{row['description']}<br>release: {row['price_original']}<br>price: {row['price']} ({row['price_gap']}↓)", axis=1)
+
         # 그래프 생성
         fig = go.Figure()
 
         for year in years:
+            
+            
             data_year = data[data['year']==year]
             series_dict = all_series_dict.get(year)
             for seq, series, display in zip(range(len(series_dict.keys())), series_dict.keys(), series_dict.values()):
-                data_series = data_year[data_year['series']==series]
-
+                data_series = data_year[data_year['series'] == series].copy()
                 fig.add_trace(go.Scatter(
-                x=data_series['size'],
-                y=data_series['price'],
+                    x=data_series['size'],
+                    y=data_series['price'],
                     mode='markers',
                     marker=dict(
                         size=12,
                         color='rgba(211, 211, 211, 0.6)',  
-                        symbol= marker_map[seq],
+                        symbol=marker_map[seq],
                         opacity=0.8,  
                         line=dict(width=3, color='black')
                     ),
@@ -64,6 +68,7 @@ class DataVisualizer(BaseVisualizer):
                     name=f'{series} [{display}]',
                     visible='legendonly'  # 사이즈 마커는 기본적으로 숨김
                 ))
+
 
             fig.add_trace(go.Scatter(
                 x=data_year['size'],
