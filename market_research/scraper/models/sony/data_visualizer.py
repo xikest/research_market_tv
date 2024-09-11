@@ -4,10 +4,10 @@ import seaborn as sns
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
 
+
 class DataVisualizer(BaseVisualizer):
-
     def __init__(self, df, output_folder_path="results", style="whitegrid"):
-
+        
         """
         cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
         기본 값으로는 사전 정의된 값을 사용합니다.
@@ -17,12 +17,8 @@ class DataVisualizer(BaseVisualizer):
         self.dc = DataCleaner(df)
 
 
-
     def price_map(self):
-
-
         # 데이터 준비
-
         data = self.dc.get_price_df().copy()
         years = data['year'].unique()
         
@@ -38,15 +34,18 @@ class DataVisualizer(BaseVisualizer):
 
         markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross']
         marker_map = {i: markers[i % len(markers)] for i in range(len(series_idx))}
+        data['price_gap'] = data['price_gap'].fillna(0)
+        data['price_gap'] = data['price_gap'].map(lambda x: int(x))
 
         data.loc[:, 'description'] = data.apply(lambda row: 
-                    f"{row['description']}<br>release: {row['price_original']}<br>price: {row['price']} ({row['price_gap']}↓)", axis=1)
+                    f"{row['description']}<br>release: ${row['price_original']}<br>price: ${row['price']} ({row['price_gap']}↓)"  
+                                                if row['price_gap'] != 0 else 
+                                                f"{row['description']}<br>price: ${row['price']}" , axis=1)
 
         # 그래프 생성
         fig = go.Figure()
 
         for year in years:
-            
             
             data_year = data[data['year']==year]
             series_dict = all_series_dict.get(year)
@@ -93,8 +92,10 @@ class DataVisualizer(BaseVisualizer):
             ))
 
 
-
         size_categories = sorted(data['size'].unique())
+        ticks_below_3000 = list(range(0, 3001, 500))
+        ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
+        tickvals = ticks_below_3000 + ticks_above_3000
 
         # 레이아웃 설정
         fig.update_layout(
@@ -115,7 +116,11 @@ class DataVisualizer(BaseVisualizer):
             yaxis=dict(
                 range=[0, max(data['price_original'].max(),
                             data['price'].max()) + 1000],
-                showgrid=True
+                showgrid=True,
+                tickmode='array',  
+                tickvals=tickvals,  
+                # gridcolor='lightgray',  
+                # gridwidth=1  
             ),
             width=1000,
             height= 800,
