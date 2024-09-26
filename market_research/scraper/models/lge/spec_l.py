@@ -26,7 +26,15 @@ class ModelScraper_l(Scraper):
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
 
-    def get_models_info(self, format_df: bool = True, fastmode: bool = False, show_visit:bool=False):
+    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
+        # dict_models = {}
+        # dict_info = self._get_model_info()
+        # dict_models["key"] = dict_info
+        # dict_spec = self._get_global_spec()
+        # dict_models["key"].update(dict_spec)
+        # df_models = pd.DataFrame.from_dict(dict_models).T
+        # return df_models
+        
         print("collecting models")
         url_series_set = self._get_url_series()
         url_series_dict = {}
@@ -34,13 +42,11 @@ class ModelScraper_l(Scraper):
             url_models = self._get_models(url=url)
             url_series_dict.update(url_models)
         print("number of total model:", len(url_series_dict))
-        if fastmode:
-            model_list = list(url_series_dict.keys())
-            return model_list
         print("collecting spec")
         visit_url_dict = {}
         dict_models = {}
         cnt_loop=2
+        
         for cnt in range(cnt_loop):#main try
             for key, url_model in tqdm(url_series_dict.items()):
                 try:
@@ -144,7 +150,7 @@ class ModelScraper_l(Scraper):
                 if self.tracking_log:
                     print(f"_get_models try: {cnt_try + 1}/{try_total}")
 
-    def _get_model_info(self, url: str) -> dict:
+    def _get_model_info(self, url: str='https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv-b') -> dict:
         """
         Extract model information (name, price, description) from a given model URL.
         """
@@ -154,32 +160,37 @@ class ModelScraper_l(Scraper):
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
         dict_info = {}
-        label = soup.find('span', class_="MuiTypography-root MuiTypography-overline css-rmroyy").text.strip()
+        label = soup.find('span', class_="MuiTypography-root MuiTypography-overline css-rrulv7").text.strip()
         dict_info["model"] = label.split()[-1]
         try:
-            pattern = r'\$(\d+,\d+\.\d{2})'  # 달러 기호 후 숫자, 콤마, 소수점 및 두 자리 숫자 추출
-            price = soup.find('div', class_='MuiBox-root css-ayrjh9').text.strip()
+            price = soup.find('div', class_='MuiGrid-root MuiGrid-item css-8wacqv').text.strip()
+            split_price = price.split('$')
+            pattern = r'\d{1,3}(?:,\d{3})*(?:\.\d{2})?'
+            prices = [re.search(pattern, part).group() for part in split_price if re.search(pattern, part)]
 
-            matches = re.findall(pattern, price)
-            if len(matches) == 3:
-                dict_info["price"] = f"{matches[0]} {matches[1]}"
+            if len(prices) == 3:
+                dict_info["price"] = float(prices[0].replace(',', ''))
+                dict_info["price_gap"] = float(prices[1].replace(',', ''))
+                dict_info["price_original"] = float(prices[2].replace(',', ''))
             else:
                 dict_info["price"] = price
         except:
             dict_info["price"] = None
-        # dict_info.update(self._extract_model_info(dict_info.get("model")))
+        dict_info.update(self._extract_model_info(dict_info.get("model")))
         try:
             dict_info["description"] = soup.find('h2',
-                                                 class_='MuiTypography-root MuiTypography-h5 css-ff7u73').text.strip()
+                                                 class_='MuiTypography-root MuiTypography-subtitle2 css-8oa1vg').text.strip()
         except:
             try:
                 dict_info["description"] = soup.find('h1',
-                                                     class_='MuiTypography-root MuiTypography-h5 css-ff7u73').text.strip()
+                                                     class_='MuiTypography-root MuiTypography-subtitle2 css-8oa1vg').text.strip()
             except:
                 dict_info["description"] = ""
+        if self.tracking_log:
+            print(dict_info)
         return dict_info
 
-    def _get_global_spec(self, url: str, ) -> dict:
+    def _get_global_spec(self, url: str='https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv-b') -> dict:
         """
         Extract global specifications from a given model URL.
         """
@@ -200,35 +211,35 @@ class ModelScraper_l(Scraper):
                 if self.tracking_log:
                     driver.save_screenshot(f"./{dir_model}/{stamp_url}_0_model_{stamp_today}.png")
                 time.sleep(self.wait_time)
+                
+                try: 
 
-                for id in range(5):
-                    element_all_specs = driver.find_element(By.ID, f"simple-tab-{id}")
-                    if element_all_specs.text == "ALL SPECS":
-                        case = id
-                        break
-
-                self.web_driver.move_element_to_center(element_all_specs)
-                time.sleep(self.wait_time)
-                element_all_specs.click()
-                element_click_expand_all = driver.find_element(By.CSS_SELECTOR,
-                                                               ".MuiTypography-root.MuiTypography-h6.MuiTypography-alignLeft.MuiLink-root.MuiLink-underlineAlways.css-m4r0k4")
-                self.web_driver.move_element_to_center(element_click_expand_all)
-                element_click_expand_all.click()
-
-                time.sleep(self.wait_time)
+                    for id in range(5):
+                        element_all_specs = driver.find_element(By.ID, f"simple-tab-{id}")
+                        if element_all_specs.text.lower() == "all specs":
+                            break
+                    self.web_driver.move_element_to_center(element_all_specs)
+                    time.sleep(self.wait_time)
+                    
+                    element_all_specs.click()
+                    time.sleep(self.wait_time)
+                except:
+                    element_all_specs = driver.find_element(By.CLASS_NAME, "MuiTypography-root.MuiTypography-h6.MuiTypography-alignLeft.MuiLink-root.MuiLink-underlineAlways.css-kgbp8r")
+                    
+                    self.web_driver.move_element_to_center(element_all_specs)
+                    time.sleep(self.wait_time)
+                
 
                 if self.tracking_log:
                     driver.save_screenshot(
                         f"./{dir_model}/{stamp_url}_1_element_all_specs_{stamp_today}.png")
                 dict_spec = dict()
-                spec_table_element = driver.find_element(By.XPATH, f'//*[@id="simple-tabpanel-{case}"]')
-                spec_elements = spec_table_element.find_elements(By.CSS_SELECTOR, '.MuiBox-root.css-1nnt9ji')
-
+                spec_elements = driver.find_elements(By.CSS_SELECTOR, '.MuiBox-root.css-1nnt9ji')
                 for spec_element in spec_elements:
-                    label = spec_element.find_element(By.CSS_SELECTOR,
-                                                      '.MuiTypography-root.MuiTypography-caption.css-1k7x5zg').text.strip()
-                    content = spec_element.find_element(By.CSS_SELECTOR,
-                                                        '.MuiTypography-root.MuiTypography-body2.css-10wyomj').text.strip()
+                    label = spec_element.find_element(By.CLASS_NAME,
+                                                      'MuiTypography-root.MuiTypography-body3.css-11mszpq').text.strip()
+                    content = spec_element.find_element(By.CLASS_NAME,
+                                                        'MuiTypography-root.MuiTypography-body2.css-1yx8hz4').text.strip()
                     if label != '':
                         # if self.tracking_log:
                         #     print(f"{label}: {content}")
@@ -248,34 +259,32 @@ class ModelScraper_l(Scraper):
                 pass
 
     def _extract_model_info(self, model: str):
-        """
-        소문자로 시작하는 알파벳('type'), 뒤에 숫자('size'), 그 다음에 소문자 알파벳(시리즈)과 숫자(연도)가 섞인 'model',
-        마지막에 숫자가 포함되지 않는 문자열(소문자)을 'grade'로 추출
-        """
         dict_info = {}
-        pattern = r'([a-z]+)(\d+)([a-z]+)(\d+)([a-z]+)$'
+        # 시리즈와 연도, 등급을 분리하는 정규식
+        pattern = r'(?P<product_type>[A-Za-z]+)(?P<size>\d+)(?P<series>[A-Za-z]+)(?P<year>\d)(?P<grade>[A-Za-z]+)'
         match = re.search(pattern, model.lower())
+        
         if match:
             # 그룹화된 각 부분을 추출
-            dict_info["type"] = match.group(1)  # 예: 'oled'
-            dict_info["size"] = match.group(2)  # 예: '65'
-            dict_info["series"] = match.group(3)  # 예: 'g'
-            dict_info["year"] = match.group(4)  # 예: '4'
-            dict_info["grade"] = match.group(5)  # 예: 'pus'
+            dict_info["type"] = match.group("product_type")  # 예: 'oled'
+            dict_info["size"] = match.group("size")          # 예: '77'
+            dict_info["series"] = match.group("series")      # 예: 'g'
+            dict_info["year"] = match.group("year")          # 예: '4'
+            dict_info["grade"] = match.group("grade")        # 예: 'wua'
 
         year_mapping = {
             '1': "2021",
             '2': "2022",
             '3': "2023",
             '4': "2024",
-            '5': "2024",
-            '6': "2024",
+            '5': "2025",
+            '6': "2026",
             # Add additional mappings as needed
         }
-        try:
-            dict_info["year"] = year_mapping.get(dict_info.get("year"))
-        except:
-            dict_info["year"] = None
+
+        # 연도 매핑
+        dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+        
         return dict_info
 
     def _soup_to_dict(self, soup):
