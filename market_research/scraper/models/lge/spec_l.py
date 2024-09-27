@@ -259,19 +259,10 @@ class ModelScraper_l(Scraper):
                 pass
 
     def _extract_model_info(self, model: str):
+        model = model.lower()  # 대소문자 구분 제거
         dict_info = {}
-        # 시리즈와 연도, 등급을 분리하는 정규식
-        pattern = r'(?P<product_type>[A-Za-z]+)(?P<size>\d+)(?P<series>[A-Za-z]+)(?P<year>\d)(?P<grade>[A-Za-z]+)'
-        match = re.search(pattern, model.lower())
-        
-        if match:
-            # 그룹화된 각 부분을 추출
-            dict_info["type"] = match.group("product_type")  # 예: 'oled'
-            dict_info["size"] = match.group("size")          # 예: '77'
-            dict_info["series"] = match.group("series")      # 예: 'g'
-            dict_info["year"] = match.group("year")          # 예: '4'
-            dict_info["grade"] = match.group("grade")        # 예: 'wua'
 
+        # 연도 매핑
         year_mapping = {
             '1': "2021",
             '2': "2022",
@@ -279,13 +270,60 @@ class ModelScraper_l(Scraper):
             '4': "2024",
             '5': "2025",
             '6': "2026",
-            # Add additional mappings as needed
+            'p': "2021",
+            'q': "2022",
+            'r': "2023",
+            's': "2024",
+            't': "2025",
+            'u': "2026",
         }
-
-        # 연도 매핑
-        dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
         
+        # "oled"가 포함된 모델 처리
+        if "oled" in model:
+            model = model[:-3].replace("oled", "")
+            dict_info["grade"] = "oled"
+            dict_info["year"] = model[-1]
+            dict_info["series"] = model[-2:-1]
+            dict_info["size"] = model[:-2]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+        
+        # "qned" 또는 "nano"가 포함된 모델 처리
+        elif "qned" in model or "nano" in model:
+            if "qned" in model:
+                model_split = model.split("qned")
+                dict_info["grade"] = "qned"
+            else:
+                model_split = model.split("nano")
+                dict_info["grade"] = "nano"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[-2]
+            dict_info["series"] = model[:-3]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+        
+        # "lx"가 포함된 모델 처리
+        elif "lx" in model:
+            model_split = model.split("lx")
+            dict_info["grade"] = "flexble"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[0]
+            dict_info["series"] = model[1]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+        
+        # "u"가 포함된 모델 처리
+        elif "u" in model:
+            model_split = model.split("u")
+            dict_info["grade"] = "u"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[0]
+            dict_info["series"] = model[1:3]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+
         return dict_info
+
+
 
     def _soup_to_dict(self, soup):
         """
