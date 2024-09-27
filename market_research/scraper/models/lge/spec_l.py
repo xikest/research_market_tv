@@ -289,6 +289,7 @@ class ModelScraper_l(Scraper):
         
         # "qned" 또는 "nano"가 포함된 모델 처리
         elif "qned" in model or "nano" in model:
+            model = model[:-1]
             if "qned" in model:
                 model_split = model.split("qned")
                 dict_info["grade"] = "qned"
@@ -313,12 +314,13 @@ class ModelScraper_l(Scraper):
         
         # "u"가 포함된 모델 처리
         elif "u" in model:
+            model = model[:-3]
             model_split = model.split("u")
             dict_info["grade"] = "u"
             dict_info["size"] = model_split[0]
             model = model_split[-1]
             dict_info["year"] = model[0]
-            dict_info["series"] = model[1:3]
+            dict_info["series"] = model[1:]
             dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
 
         return dict_info
