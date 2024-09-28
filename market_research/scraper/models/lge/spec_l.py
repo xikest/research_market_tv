@@ -7,16 +7,16 @@ import re
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper
+from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
 
 
-
-class ModelScraper_l(Scraper):
+class ModelScraper_l(Scraper, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="lge_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 verbose: bool = False, wait_time=2):
+                 verbose: bool = False, wait_time=2, demo_mode:bool=False):
 
-        super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,
+        Scraper.__init__(self, enable_headless=enable_headless, export_prefix=export_prefix,
                          intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
 
         self.tracking_log = verbose
@@ -25,53 +25,61 @@ class ModelScraper_l(Scraper):
         self.log_dir = "logs/lge/models"
         if self.tracking_log:
             FileManager.make_dir(self.log_dir)
-
-    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
-        # dict_models = {}
-        # dict_info = self._get_model_info()
-        # dict_models["key"] = dict_info
-        # dict_spec = self._get_global_spec()
-        # dict_models["key"].update(dict_spec)
-        # df_models = pd.DataFrame.from_dict(dict_models).T
-        # return df_models
+            
+        self._data = self._get_models_info(demo_mode=demo_mode)    
+        DataVisualizer.__init__(self, df = self._data, plot_name='lge')
         
-        print("collecting models")
-        url_series_set = self._get_url_series()
-        url_series_dict = {}
-        for url in url_series_set:
-            url_models = self._get_models(url=url)
-            url_series_dict.update(url_models)
-        print("number of total model:", len(url_series_dict))
-        print("collecting spec")
-        visit_url_dict = {}
-        dict_models = {}
-        cnt_loop=2
+    @property
+    def data(self):
+        return self._data
+    
+    def _get_models_info(self, demo_mode:bool=False) -> pd.DataFrame:
         
-        for cnt in range(cnt_loop):#main try
-            for key, url_model in tqdm(url_series_dict.items()):
-                try:
-                    dict_info = self._get_model_info(url_model)
-                    dict_models[key] = dict_info
-                    dict_spec = self._get_global_spec(url=url_model)
-                    dict_models[key].update(dict_spec)
-                    visit_url_dict[key] = url_model
-                except Exception as e:
-                    if cnt == cnt_loop - 1 :
-                        print(f"\nFailed to get info from {key}")
-                        print(e)
-                    pass
-            break
-        if show_visit:
-            print("\n")
-            for model, url in visit_url_dict.items():  print(f"{model}: {url}")
-
-        if format_df:
-            df_models = pd.DataFrame.from_dict(dict_models).T
-            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na",
-                                    mode='w')
-            return df_models
+        if demo_mode:
+            # Load existing JSON data
+            df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/l_scrape_model_data.json', orient='records', lines=True)
+            print("operating demo")
         else:
-            return dict_models
+            print("collecting models")
+            url_series_set = self._get_url_series()
+            url_series_dict = {}
+            for url in url_series_set:
+                url_models = self._get_models(url=url)
+                url_series_dict.update(url_models)
+            print("number of total model:", len(url_series_dict))
+            print("collecting spec")
+            visit_url_dict = {}
+            dict_models = {}
+            cnt_loop=2
+            
+            for cnt in range(cnt_loop):#main try
+                for key, url_model in tqdm(url_series_dict.items()):
+                    try:
+                        dict_info = self._get_model_info(url_model)
+                        dict_models[key] = dict_info
+                        dict_spec = self._get_global_spec(url=url_model)
+                        dict_models[key].update(dict_spec)
+                        visit_url_dict[key] = url_model
+                    except Exception as e:
+                        if cnt == cnt_loop - 1 :
+                            print(f"\nFailed to get info from {key}")
+                            print(e)
+                        pass
+                break
+            
+            if self.tracking_log:
+                print("\n")
+                for model, url in visit_url_dict.items():  print(f"{model}: {url}")
+                
+            df_models = pd.DataFrame.from_dict(dict_models).T
+            df_models = df_models.drop(['Series', 'Size'], axis=1)
+            df_models.to_json(self.output_folder / 'l_scrape_model_data.json', orient='records', lines=True)
+            
+            
+        FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na",
+                                    mode='w')
+        return df_models
+
 
     def _get_url_series(self) -> set:
         """
@@ -173,19 +181,26 @@ class ModelScraper_l(Scraper):
                 dict_info["price_gap"] = float(prices[1].replace(',', ''))
                 dict_info["price_original"] = float(prices[2].replace(',', ''))
             else:
-                dict_info["price"] = price
+                dict_info["price"] = float(split_price[-1].replace(',', ''))
         except:
             dict_info["price"] = None
         dict_info.update(self._extract_model_info(dict_info.get("model")))
-        try:
-            dict_info["description"] = soup.find('h2',
-                                                 class_='MuiTypography-root MuiTypography-subtitle2 css-8oa1vg').text.strip()
-        except:
+        
+        dict_info["description"] = ""
+        descriptions = [
+            ('h2', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
+            ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
+            ('h1', 'MuiTypography-root MuiTypography-h5 css-vnteo9')
+        ]
+
+        for tag, class_name in descriptions:
             try:
-                dict_info["description"] = soup.find('h1',
-                                                     class_='MuiTypography-root MuiTypography-subtitle2 css-8oa1vg').text.strip()
-            except:
-                dict_info["description"] = ""
+                dict_info["description"] = soup.find(tag, class_=class_name).text.strip()
+                if dict_info["description"]:
+                    break  # 첫 번째로 찾은 description이 있으면 종료
+            except AttributeError:
+                pass  # 찾지 못했을 때는 그냥 넘어감
+                
         if self.tracking_log:
             print(dict_info)
         return dict_info
@@ -263,20 +278,26 @@ class ModelScraper_l(Scraper):
         dict_info = {}
 
         # 연도 매핑
-        year_mapping = {
-            '1': "2021",
-            '2': "2022",
-            '3': "2023",
-            '4': "2024",
-            '5': "2025",
-            '6': "2026",
-            'p': "2021",
-            'q': "2022",
-            'r': "2023",
-            's': "2024",
-            't': "2025",
-            'u': "2026",
-        }
+        year_mapping = {'oled':
+                            {'1': "2021",
+                            '2': "2022",
+                            '3': "2023",
+                            '4': "2024",
+                            '5': "2025",
+                            '6': "2026"},
+                        'qned':
+                            {'p': "2021",
+                            'q': "2022",
+                            'r': "2023",
+                            'u': "2024"},
+                        'u':{ 
+                            'p': "2021",
+                            'q': "2022",
+                            'r': "2023",
+                            't': "2024",}
+                        }
+
+
         
         # "oled"가 포함된 모델 처리
         if "oled" in model:
@@ -285,11 +306,11 @@ class ModelScraper_l(Scraper):
             dict_info["year"] = model[-1]
             dict_info["series"] = model[-2:-1]
             dict_info["size"] = model[:-2]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
         
         # "qned" 또는 "nano"가 포함된 모델 처리
         elif "qned" in model or "nano" in model:
-            model = model[:-1]
+            model = model[:-1] #마지막자리 삭제
             if "qned" in model:
                 model_split = model.split("qned")
                 dict_info["grade"] = "qned"
@@ -298,9 +319,10 @@ class ModelScraper_l(Scraper):
                 dict_info["grade"] = "nano"
             dict_info["size"] = model_split[0]
             model = model_split[-1]
-            dict_info["year"] = model[-2]
-            dict_info["series"] = model[:-3]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] = model[-1]
+            dict_info["series"] = model[:-2]
+            dict_info["year"] = year_mapping.get('qned').get(dict_info.get("year"), None)
+            dict_info
         
         # "lx"가 포함된 모델 처리
         elif "lx" in model:
@@ -310,7 +332,7 @@ class ModelScraper_l(Scraper):
             model = model_split[-1]
             dict_info["year"] = model[0]
             dict_info["series"] = model[1]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
         
         # "u"가 포함된 모델 처리
         elif "u" in model:
@@ -321,7 +343,7 @@ class ModelScraper_l(Scraper):
             model = model_split[-1]
             dict_info["year"] = model[0]
             dict_info["series"] = model[1:]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] =  year_mapping.get('u').get(dict_info.get("year"), None)
 
         return dict_info
 

@@ -1,24 +1,23 @@
 from bs4 import BeautifulSoup
 import time
-import json
 from tqdm import tqdm
 import pandas as pd
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from multiprocessing import Process, Manager, cpu_count
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper
+from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
 
-class ModelScraper_s(Scraper):
+class ModelScraper_s(Scraper, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 verbose: bool = False, wait_time=1):
+                 verbose: bool = False, wait_time=1, demo_mode:bool=False):
         """
         Initialize the instance with the specified configuration.
         """
-        super().__init__(enable_headless=enable_headless, export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
+        Scraper.__init__(self, enable_headless=enable_headless, export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
 
         self.tracking_log = verbose
         self.wait_time = wait_time
@@ -27,8 +26,16 @@ class ModelScraper_s(Scraper):
         if self.tracking_log:
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
+            
+        self._data = self._get_models_info(demo_mode=demo_mode)    
+        DataVisualizer.__init__(self, df = self._data, plot_name='sony')
 
-    def get_models_info(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
+    @property
+    def data(self):
+        return self._data
+
+
+    def _get_models_info(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
         """
         Collect model information from URLs and return the data in the desired format.
 
@@ -73,13 +80,12 @@ class ModelScraper_s(Scraper):
             df_models = pd.DataFrame.from_dict(dict_models).T
             if temporary_year_marking:
                 df_models['year'] = df_models['year'].fillna("2024")  # 임시
+                
             df_models.to_json(self.output_folder / 's_scrape_model_data.json', orient='records', lines=True)
-            # Save DataFrame to Excel
         
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
         return df_models    
-
-
+    
     def _get_url_series(self) -> set:
         """
         Get the series URLs by scrolling down the main page.

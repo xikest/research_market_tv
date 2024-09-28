@@ -6,12 +6,13 @@ from market_research.scraper._visualization_scheme import BaseVisualizer
 
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df, output_folder_path="results", style="whitegrid"):
+    def __init__(self, df, output_folder_path="results", style="whitegrid", plot_name=""):
         
         """
         cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
         기본 값으로는 사전 정의된 값을 사용합니다.
         """
+        self.plot_name = plot_name
         super().__init__(output_folder_path = output_folder_path)
         sns.set_style(style)
         self.dc = DataCleaner(df)
@@ -29,10 +30,14 @@ class DataVisualizer(BaseVisualizer):
             df_year = series_idx[series_idx['year']==year]
             all_series_dict[year] = {key: value for key, value in zip(df_year['series'], df_year['display type'])}
 
-        colors = ['#636EFA','#00CC96','#EF553B']
+        colors = ['#636EFA', '#00CC96', '#EF553B', '#CCFFFF', '#FFCCFF', '#FFFFCC']
         color_map = {year: colors[i] for i, year in enumerate(years)}
 
-        markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross']
+        markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross', 'octagon', 'bowtie', 'hourglass', 'x',
+                'triangle-up', 'triangle-down', 'triangle-left', 'triangle-right',
+                'hexagon2', 'arrow-up', 'arrow-down', 
+                'arrow-left', 'arrow-right']
+
         marker_map = {i: markers[i % len(markers)] for i in range(len(series_idx))}
         data['price_gap'] = data['price_gap'].fillna(0)
         data['price_gap'] = data['price_gap'].map(lambda x: int(x))
@@ -129,12 +134,12 @@ class DataVisualizer(BaseVisualizer):
                 traceorder='reversed' 
             )
         )
-        fig.write_html(self.output_folder/"sony_price_map.html")
+        fig.write_html(self.output_folder/f"{self.plot_name}_price_map.html")
         fig.show()
 
 
 
-    def heatmap_spec(self, display_types:str=None, save_plot_name=None, title="SONY Spec", cmap="Blues", figsize=(8, 8),
+    def heatmap_spec(self, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
                      cbar=False,
                      col_selected: list = None
                      ):
@@ -199,8 +204,8 @@ class DataVisualizer(BaseVisualizer):
         fig, ax = plt.subplots(figsize=figsize)
         sns.heatmap(data_df.T, cmap=cmap, cbar=cbar, ax=ax, vmax=1)
         plt.xticks(rotation=90)
-        plt.title(title)
+        plt.title(f"{self.plot_name} spec")
         if save_plot_name is None:
-            save_plot_name = f"heatmap_for_{title}.png"
+            save_plot_name = f"heatmap_for_{self.plot_name}_spec.png"
         plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
         plt.show()
