@@ -1,3 +1,4 @@
+import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import seaborn as sns
@@ -6,7 +7,7 @@ from market_research.scraper._visualization_scheme import BaseVisualizer
 
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df, output_folder_path="results", style="whitegrid", plot_name=""):
+    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", style="whitegrid", plot_name=""):
         
         """
         cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
@@ -15,12 +16,18 @@ class DataVisualizer(BaseVisualizer):
         self.plot_name = plot_name
         super().__init__(output_folder_path = output_folder_path)
         sns.set_style(style)
-        self.dc = DataCleaner(df)
+        
+        if df is not None:
+            self.dc = DataCleaner(df)
 
 
-    def price_map(self):
+    def price_map(self, data=None, return_data=False):
         # 데이터 준비
-        data = self.dc.get_price_df().copy()
+        if data is not None and isinstance(data, pd.DataFrame):   
+            data =  data
+        else:
+            data = self.dc.get_price_df().copy()
+            
         years = data['year'].unique()
         
         series_idx = data[['series', 'display type', 'year']].drop_duplicates()
@@ -136,6 +143,8 @@ class DataVisualizer(BaseVisualizer):
         )
         fig.write_html(self.output_folder/f"{self.plot_name}_price_map.html")
         fig.show()
+        if return_data:
+            return data
 
 
 
