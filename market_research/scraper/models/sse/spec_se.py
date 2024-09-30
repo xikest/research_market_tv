@@ -111,13 +111,10 @@ class ModelScraper_se(Scraper):
         """
         Extract all model URLs from a given series URL.
         """
-        print(url)
         try_total = 5
         for cnt_try in range(try_total):
             try:
                 dict_url_models = {}
-
-
                 driver = self.web_driver.get_chrome()
                 driver.get(url=url)
                 time.sleep(self.wait_time)
@@ -127,10 +124,10 @@ class ModelScraper_se(Scraper):
                     btn.click()
                     time.sleep(self.wait_time)
                     element_url =  driver.current_url
-                    print(element_url)
+                    if element_url[-1] == '/':
+                      element_url = element_url[:-1]
                     label = self.file_manager.get_name_from_url(element_url)
                     dict_url_models[label] = element_url.strip()
-
                 if self.tracking_log:
                     print(f"SSE {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
                 for key, value in dict_url_models.items():
@@ -141,49 +138,42 @@ class ModelScraper_se(Scraper):
                 if self.tracking_log:
                     print(f"_get_models try: {cnt_try + 1}/{try_total}")
 
-    def _get_model_info(self, url: str='https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv-b') -> dict:
+
+    def _get_model_info(self, url: str='') -> dict:
         """
         Extract model information (name, price, description) from a given model URL.
         """
-        response = requests.get(url)
+
+        driver = self.web_driver.get_chrome()
+        driver.get(url=url)
+        time.sleep(self.wait_time)
         if self.tracking_log:
             print(" Connecting to", url)
-        page_content = response.text
-        soup = BeautifulSoup(page_content, 'html.parser')
+  
         dict_info = {}
-        label = soup.find('span', class_="MuiTypography-root MuiTypography-overline css-rrulv7").text.strip()
+        label_element = driver.find_element(By.CLASS_NAME,"Header_sku__PBGyN")
+        label = label_element.text
+        print(f"label:{label}")
         dict_info["model"] = label.split()[-1]
         try:
-            price = soup.find('div', class_='MuiGrid-root MuiGrid-item css-8wacqv').text.strip()
-            split_price = price.split('$')
-            pattern = r'\d{1,3}(?:,\d{3})*(?:\.\d{2})?'
-            prices = [re.search(pattern, part).group() for part in split_price if re.search(pattern, part)]
+            price = driver.find_element(By.CLASS_NAME,'Header_newdesc__NRnRP')          
+            split_price = price.text.split('$')
+            prices = split_price
+            print(f"prices:{prices}")
+            if len(prices) > 2:
+                dict_info["price"] = float(prices[-2].replace(',', ''))
 
-            if len(prices) == 3:
-                dict_info["price"] = float(prices[0].replace(',', ''))
-                dict_info["price_gap"] = float(prices[1].replace(',', ''))
-                dict_info["price_original"] = float(prices[2].replace(',', ''))
+                dict_info["price_original"] = float(prices[-1].replace(',', ''))
+                dict_info["price_gap"] = round(dict_info["price_original"] - dict_info["price"], 1)
             else:
                 dict_info["price"] = price
         except:
             dict_info["price"] = None
-        dict_info.update(self._extract_model_info(dict_info.get("model")))
+        # dict_info.update(self._extract_model_info(dict_info.get("model")))
         
-        dict_info["description"] = ""
-        descriptions = [
-            ('h2', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
-            ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
-            ('h1', 'MuiTypography-root MuiTypography-h5 css-vnteo9')
-        ]
-
-        for tag, class_name in descriptions:
-            try:
-                dict_info["description"] = soup.find(tag, class_=class_name).text.strip()
-                if dict_info["description"]:
-                    break  # 첫 번째로 찾은 description이 있으면 종료
-            except AttributeError:
-                pass  # 찾지 못했을 때는 그냥 넘어감
-                
+        descriptions = driver.find_element(By.CLASS_NAME,'Header_productTitle__48wOA').text        
+        dict_info["description"] = descriptions
+        
         if self.tracking_log:
             print(dict_info)
         return dict_info

@@ -9,7 +9,6 @@ class DataCleaner:
         self._preprocess_df()
         self._cleanup_columns()
 
-
     def _preprocess_df(self):
         self.df = self.df.sort_values(["year", "series", "size", "grade"], axis=0, ascending=False)
         def transform_text(x):
@@ -25,6 +24,9 @@ class DataCleaner:
 
         self.df = self.df.map(transform_text)
         self.df.columns = [transform_text(x) for x in self.df.columns]
+        self.df[["series","display type" ]] = self.df[["series","display type" ]].sort_values(by=["series","display type"]).ffill()
+    
+
 
 
     def get_price_df(self):

@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import seaborn as sns
@@ -148,10 +149,8 @@ class DataVisualizer(BaseVisualizer):
 
 
 
-    def heatmap_spec(self, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
-                     cbar=False,
-                     col_selected: list = None
-                     ):
+    def heatmap_spec(self, col_selected:list, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
+                     cbar=False):
         """
         # YlGnBu
         # GnBu
@@ -165,24 +164,15 @@ class DataVisualizer(BaseVisualizer):
         # Blues
         """
         if col_selected is None:
-            col_selected = ['high peak luminance','peak luminance',
-                            'contrast enhancement', 'pixel contrast booster', 'dynamic contrast enhancer','xr backlight master drive',
-                            'color enhancement', 'triluminos',
-                            # 'live colour technology',
-                             # 'clarity enhancement', 'dual database processing', 'video processing',
-                             # 'object-based super resolution',
-                             'viewing angle (x-wide angle)', 'x-wide angle',
-                             'anti reflection (x-anti reflection)', 'x-anti reflection',
-                             'picture processor', '4k processor',
-                             # 'color space',
-                             # 'eco friendly',
-                             'bravia core calibrated mode','sony pictures core calibrated mode', 'netflix calibrated mode', 'prime video calibrated mode',
-                             'auto genre picture mode',
-                             'features for playstation5 auto genre picture mode',
-                             'auto hdr tone mapping',
-                             'features for playstation5 auto hdr tone mapping',
-                             'multi-view',
-                             ]
+            data = json.loads("./col_heatmap.json")
+            col_selected = data[self.plot_name]
+        elif isinstance(col_selected, list):
+            col_selected = col_selected
+        else:
+            raise ValueError
+        
+        col_selected =[c.lower() for c in col_selected]
+
 
 
         data_df = self.dc.get_df_cleaned().copy()
