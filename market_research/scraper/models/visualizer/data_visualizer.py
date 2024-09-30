@@ -145,11 +145,12 @@ class DataVisualizer(BaseVisualizer):
         fig.write_html(self.output_folder/f"{self.plot_name}_price_map.html")
         fig.show()
         if return_data:
+            data['series'] = data['series'].map(lambda x: f'{self.plot_name}_{x}')
             return data
 
 
 
-    def heatmap_spec(self, col_selected:list, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
+    def heatmap_spec(self, col_selected:list=None, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
                      cbar=False):
         """
         # YlGnBu
@@ -163,17 +164,21 @@ class DataVisualizer(BaseVisualizer):
         # coolwarm
         # Blues
         """
+        
+       
         if col_selected is None:
-            data = json.loads("./col_heatmap.json")
-            col_selected = data[self.plot_name]
+            try:
+                with open("market_research/scraper/models/visualizer/col_heatmap.json", 'r') as file:
+                    data = json.load(file)
+                col_selected = data[self.plot_name]
+            except Exception as e:
+                print(e)
         elif isinstance(col_selected, list):
             col_selected = col_selected
+            col_selected =[c.lower() for c in col_selected]
         else:
             raise ValueError
         
-        col_selected =[c.lower() for c in col_selected]
-
-
 
         data_df = self.dc.get_df_cleaned().copy()
 
@@ -190,13 +195,17 @@ class DataVisualizer(BaseVisualizer):
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
         data_df = data_df.mask(data_df == '-', 0)
-        data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
+        # data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
+        data_df = data_df.map(lambda x: 1 if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
         idx_names = data_df.index.names
-        data_df = data_df.reset_index().drop_duplicates()
+        
+
+        ## 중복 제거
+        data_df['row_sum'] = data_df.sum(axis=1)
+        data_df = data_df.reset_index().sort_values(by = idx_names + ['row_sum'], ascending=False).drop_duplicates(subset=idx_names).drop(['row_sum'], axis=1)
         data_df = data_df.set_index(idx_names)
         data_df = data_df.sort_index(ascending=True)
-        # Use plt.subplots to get the axis for colorbar
         self.data_df = data_df
 
         # Use plt.subplots to get the axis for colorbar

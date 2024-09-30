@@ -124,8 +124,6 @@ class ModelScraper_se(Scraper):
                     btn.click()
                     time.sleep(self.wait_time)
                     element_url =  driver.current_url
-                    if element_url[-1] == '/':
-                      element_url = element_url[:-1]
                     label = self.file_manager.get_name_from_url(element_url)
                     dict_url_models[label] = element_url.strip()
                 if self.tracking_log:
