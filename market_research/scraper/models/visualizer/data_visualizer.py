@@ -1,11 +1,10 @@
 import pandas as pd
-import json
 from tools.file import FileManager
 import plotly.graph_objs as go
-import os
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
-
+import streamlit as st
+import requests
 
 class DataVisualizer(BaseVisualizer):
     def __init__(self, df:pd.DataFrame=None, output_folder_path="results", plot_name=""):
@@ -176,8 +175,8 @@ class DataVisualizer(BaseVisualizer):
         if col_selected is None:
             try:
                 file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/col_heatmap.json"
-                with open(file_path, 'r') as file:
-                    data = json.load(file)
+                response = requests.get(file_path)
+                data = response.json()
                 col_selected = data[self.plot_name]
             except Exception as e:
                 print(e)
