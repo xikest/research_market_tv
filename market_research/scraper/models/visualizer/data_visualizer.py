@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-import numpy as np
+from tools.file import FileManager
 import plotly.graph_objs as go
 import seaborn as sns
 from .data_cleaner import DataCleaner
@@ -16,6 +16,7 @@ class DataVisualizer(BaseVisualizer):
         """
         self.plot_name = plot_name
         super().__init__(output_folder_path = output_folder_path)
+        FileManager.make_dir(output_folder_path)
         sns.set_style(style)
         
         if df is not None:
@@ -245,12 +246,10 @@ class DataVisualizer(BaseVisualizer):
             height=800  # 그래프 높이
         )
 
-        # 그래프 저장
         fig.write_html(self.output_folder/f"{self.plot_name}_heatmap.html")
 
-
-        # 그래프 반환 여부에 따라 처리
         if return_fig:
             return fig
         else:
             fig.show()  # 그래프 보여주기
+           
