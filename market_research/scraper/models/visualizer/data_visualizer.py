@@ -39,8 +39,8 @@ class DataVisualizer(BaseVisualizer):
             df_year = series_idx[series_idx['year']==year]
             all_series_dict[year] = {key: value for key, value in zip(df_year['series'], df_year['display type'])}
 
-        colors = ['#636EFA', '#00CC96', '#EF553B', '#CCFFFF', '#FFCCFF', '#FFFFCC']
-        color_map = {year: colors[i % len(colors)] for i, year in enumerate(years)}
+        colors = ['#EF553B', '#00CC96', '#636EFA', '#CCFFFF', '#FFCCFF', '#FFFFCC']
+        color_map = {year: colors[i] for i, year in enumerate(sorted(years, reverse=True))}
 
 
         markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross', 'octagon', 'bowtie', 'hourglass', 'x',
