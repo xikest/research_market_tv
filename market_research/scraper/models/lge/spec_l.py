@@ -61,7 +61,7 @@ class ModelScraper_l(Scraper, DataVisualizer):
             
         if demo_mode:
             print("operating demo")
-            df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/l_scrape_model_data.json', orient='records', lines=True)
+            df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json', orient='records', lines=True)
         else:
             print("collecting models")
             url_dict = find_urls()

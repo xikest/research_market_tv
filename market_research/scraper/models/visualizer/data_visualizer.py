@@ -175,8 +175,7 @@ class DataVisualizer(BaseVisualizer):
        
         if col_selected is None:
             try:
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                file_path = os.path.join(current_dir, "col_heatmap.json")
+                file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/col_heatmap.json"
                 with open(file_path, 'r') as file:
                     data = json.load(file)
                 col_selected = data[self.plot_name]
