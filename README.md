@@ -4,10 +4,10 @@
 이 프로젝트는 웹사이트에서 제품 정보를 수집하고 분석 합니다.
 사용법은 아래의 note를 참고 하세요.
 > **Demo Note book**  
-> [market model information](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_market_models.ipynb)  
-> [model scores & measurement](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_market_rtings.ipynb)  
-> [text analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_textanalysis.ipynb)  
-> [image analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_imganalysis.ipynb)
+> [market model information](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/notebook/quickguide_market_models.ipynb)  
+> [model scores & measurement](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/notebook/quickguide_market_rtings.ipynb)  
+> [text analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/notebook/quickguide_textanalysis.ipynb)  
+> [image analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/notebook/quickguide_imganalysis.ipynb)
 
 
 
