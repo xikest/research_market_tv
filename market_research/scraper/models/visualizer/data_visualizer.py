@@ -2,13 +2,13 @@ import pandas as pd
 import json
 from tools.file import FileManager
 import plotly.graph_objs as go
-import seaborn as sns
+import os
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
 
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", style="whitegrid", plot_name=""):
+    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", plot_name=""):
         
         """
         cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
@@ -17,7 +17,6 @@ class DataVisualizer(BaseVisualizer):
         self.plot_name = plot_name
         super().__init__(output_folder_path = output_folder_path)
         FileManager.make_dir(output_folder_path)
-        sns.set_style(style)
         
         if df is not None:
             self.dc = DataCleaner(df)
@@ -176,7 +175,9 @@ class DataVisualizer(BaseVisualizer):
        
         if col_selected is None:
             try:
-                with open("market_research/scraper/models/visualizer/col_heatmap.json", 'r') as file:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                file_path = os.path.join(current_dir, "col_heatmap.json")
+                with open(file_path, 'r') as file:
                     data = json.load(file)
                 col_selected = data[self.plot_name]
             except Exception as e:

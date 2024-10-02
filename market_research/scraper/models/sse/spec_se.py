@@ -14,7 +14,7 @@ class ModelScraper_se(Scraper, DataVisualizer):
                  verbose: bool = False, wait_time=2, demo_mode:bool=False):
         
         Scraper.__init__(self, enable_headless=enable_headless, export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
-
+    
         self.tracking_log = verbose
         self.wait_time = wait_time
         self.file_manager = FileManager
