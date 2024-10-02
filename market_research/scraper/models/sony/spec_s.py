@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper
+from market_research.scraper._scraper_scheme import Scraper, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
 
@@ -14,9 +14,7 @@ class ModelScraper_s(Scraper, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
                  verbose: bool = False, wait_time=1, demo_mode:bool=False):
-        """
-        Initialize the instance with the specified configuration.
-        """
+
         Scraper.__init__(self, enable_headless=enable_headless, export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
 
         self.tracking_log = verbose
@@ -27,273 +25,240 @@ class ModelScraper_s(Scraper, DataVisualizer):
             FileManager.delete_dir(self.log_dir)
             FileManager.make_dir(self.log_dir)
             
-        self._data = self._get_models_info(demo_mode=demo_mode)    
+        self._data = self._fetch_model_data(demo_mode=demo_mode)    
         DataVisualizer.__init__(self, df = self._data, plot_name='sony')
-
-    @property
-    def data(self):
-        return self._data
-
-
-    def _get_models_info(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
-        """
-        Collect model information from URLs and return the data in the desired format.
-
-        Parameters:
-        mode_stream (bool): If True, stream the model data collection process.
-        multi_processing (bool): If True, use multiprocessing to collect data. Default is False.
-        temporary_year_marking (bool): If True, fill empty year values with "2024". Default is True.
-
-        Returns:
-        pd.DataFrame: A DataFrame of model information.
-        """
+        pass
+    
+    def _fetch_model_data(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
+        def find_urls() -> dict:
+            url_set = set()
+            url_series_set = self._get_series_urls()
+            for url in url_series_set:
+                url_models_set = self._extract_models_from_series(url=url)
+                url_set.update(url_models_set)
+            url_dict = {idx: url for idx, url in enumerate(url_set)}
+            print("total model:", len(url_dict))
+            return url_dict
+        
+        def extract_specs(url_dict):
+            dict_models = {}
+            for key, url in tqdm(url_dict.items()):
+                try:
+                    dict_info = self._extract_model_details(url)
+                    dict_models[key] = dict_info
+                    dict_spec = self._extract_global_specs(url=url)
+                    dict_models[key].update(dict_spec)
+                except Exception as e:
+                    pass
+            return dict_models
+        
+        def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
+            df_models = pd.DataFrame.from_dict(dict_models).T
+            if temporary_year_marking:
+                df_models['year'] = df_models['year'].fillna("2024")  # 임시
+            df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
+            return df_models
         
         if demo_mode:
             # Load existing JSON data
             df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/s_scrape_model_data.json', orient='records', lines=True)
-            # df_models = pd.read_json('s_scrape_model_data.json', orient='records', lines=True)
             print("operating demo")
         else:
-            
             print("collecting models")
-            url_series_set = self._get_url_series()
-
-            url_series_dict = {}
-            for url in url_series_set:
-                url_models = self._get_models(url=url)
-                url_series_dict.update(url_models)
+            url_dict = find_urls()
                 
-            print("number of total model:", len(url_series_dict))
-            print("collecting spec")
-        
-            visit_url_dict = {}
-            dict_models = {}
-            for key, url_model in tqdm(url_series_dict.items()):
-                dict_info = self._get_model_info(url_model)
-                dict_models[key] = dict_info
-                visit_url_dict[key] = url_model
-                dict_spec = self._get_global_spec(url=url_model)
-                dict_models[key].update(dict_spec)
-            if self.tracking_log:
-                print("\n")
-                for model, url in visit_url_dict.items():  print(f"{model}: {url}")
-                
-            df_models = pd.DataFrame.from_dict(dict_models).T
-            if temporary_year_marking:
-                df_models['year'] = df_models['year'].fillna("2024")  # 임시
-                
-            df_models.to_json(self.output_folder / 's_scrape_model_data.json', orient='records', lines=True)
-        
-        FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
-        return df_models    
+            dict_models = extract_specs(url_dict)
+            
+            df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
+            
+        FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
+        return df_models
     
-    def _get_url_series(self) -> set:
-        """
-        Get the series URLs by scrolling down the main page.
-        """
-        url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/"
-        prefix = "https://electronics.sony.com/"
-        step = 200
-        url_series = set()
-        try_total = 5
-        for _ in range(2): #page_checker
-            for cnt_try in range(try_total):
+    @Scraper.try_loop(2)
+    def _get_series_urls(self) -> set:
+        def find_series_urls(url:str, prefix:str) -> set:
+            CustomException(message=f"error_find_series_urls: {url}")
+            url_series = set()
+            url = url
+            prefix = prefix
+            step = 200
+            try:
                 driver = self.web_driver.get_chrome()
-                try:
-                    driver.get(url=url)
-                    time.sleep(self.wait_time)
+                driver.get(url=url)
+                time.sleep(self.wait_time)
+                scroll_distance_total = self.web_driver.get_scroll_distance_total()
+                scroll_distance = 0
 
-                    scroll_distance_total = self.web_driver.get_scroll_distance_total()
-                    scroll_distance = 0
-                    while scroll_distance < scroll_distance_total:
-                        for _ in range(2):
-                            html = driver.page_source
-                            soup = BeautifulSoup(html, 'html.parser')
-                            elements = soup.find_all('a', class_="custom-product-grid-item__image-container")
-                            for element in elements:
-                                url_series.add(prefix + element['href'].strip())
-                            driver.execute_script(f"window.scrollBy(0, {step});")
-                            time.sleep(self.wait_time)
-                            scroll_distance += step
-                    break
-                except Exception as e:
-                    if self.tracking_log:
-                        if cnt_try + 1 == try_total:
-                            print(f"collecting primary url error from {url}")
-                finally:
-                    driver.quit()
+                while scroll_distance < scroll_distance_total:
+                    for _ in range(2):
+                        html = driver.page_source
+                        soup = BeautifulSoup(html, 'html.parser')
+                        elements = soup.find_all('a', class_="custom-product-grid-item__image-container")
+                        for element in elements:
+                            url_series.add(prefix + element['href'].strip())
+                        driver.execute_script(f"window.scrollBy(0, {step});")
+                        time.sleep(self.wait_time)
+                        scroll_distance += step
+                        
+                return url_series
+            except CustomException as e:
+                pass
+            finally:
+                driver.quit()
+                
+                            
+        url_series = find_series_urls(url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
         print("The website scan has been completed.")
-        print(f"number of total series: {len(url_series)}")
-        if self.tracking_log:
-            print(url_series)
+        print(f"total series: {len(url_series)}")
         return url_series
     
-    def _get_models(self, url: str) -> dict:
-        """
-        Extract all model URLs from a given series URL.
-        """
-        model = self.file_manager.get_name_from_url(url)
-        dir_model = f"{self.log_dir}/{model}"
-        stamp_today = self.file_manager.get_datetime_info(include_time=False)
-        stamp_url = self.file_manager.get_name_from_url(url)
+    @Scraper.try_loop(2)
+    def _extract_models_from_series(self, url: str) -> set:
         
-        try_total = 5
-        dict_url_models = {}
-        for cnt_try in range(try_total):
+        def extract_model_url(driver)->set:
+            url_models_set= set()
+            try: 
+                elements = driver.find_element(By.CLASS_NAME,
+                                               'custom-variant-selector__body')
+            except:
+                pass
+                # try:
+                #     elements = driver.find_element(By.XPATH,
+                #                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                # except:
+                #     elements = driver.find_element(By.XPATH,
+                #                                             '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                    
+            url_elements = elements.find_elements(By.TAG_NAME, 'a')
+            
+            for url_element in url_elements:
+                url = url_element.get_attribute('href')
+                url_models_set.add(url.strip())
+
+            return url_models_set
+        
+        url_models_set = set()
+        CustomException(message=f"error_extract_models_from_series: {url}")
+        try:
             driver = self.web_driver.get_chrome()
             driver.get(url=url)
             time.sleep(self.wait_time)
+            url_models_set = extract_model_url(driver)
+        except CustomException as e:
+            pass
+        finally:
+            driver.quit()
+        return url_models_set
+            
+    @Scraper.try_loop(2)
+    def _extract_model_details(self, url: str) -> dict:
+        
+        def extract_model(driver):
+            model = driver.find_element(By.XPATH,
+                                        '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/div/span').text
+
+            model = model.split(":")[-1].strip()
+            return {"model": model}
+        
+        def extract_description(driver)->dict:
             try:
-                elements = driver.find_element(By.XPATH,
-                                                      '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
-
-                url_elements = elements.find_elements(By.TAG_NAME, 'a')
-
-                for url_element in url_elements:
-                    url = url_element.get_attribute('href')
-                    label = self.file_manager.get_name_from_url(url)
-                    dict_url_models[label] = url.strip()
-                break
-            except Exception as e:
-                if cnt_try + 1 == try_total:
-                        print(f"Getting series error from {url}")
-                        if self.tracking_log:
-                            self.file_manager.make_dir(dir_model)
-                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Getting series error_{stamp_today}.png")
-            finally:
-                driver.quit()
-
-        if self.tracking_log:
-            print(f"SONY {self.file_manager.get_name_from_url(url)[4:]} series: {len(dict_url_models)}")
-        for key, value in dict_url_models.items():
-            if self.tracking_log:
-                print(f'{key}: {value}')
-        return dict_url_models
-
-    def _get_model_info(self, url: str) -> dict:
-        """
-        Extract model information (name, price, description) from a given model URL.
-        """
-        model = self.file_manager.get_name_from_url(url)
-        dir_model = f"{self.log_dir}/{model}"
-        stamp_today = self.file_manager.get_datetime_info(include_time=False)
-        stamp_url = self.file_manager.get_name_from_url(url)
-        try_total = 10
-        dict_info = {
-            "model": None,
-            "description": None,
-            "price": None,
-            "price_original": None,
-            "price_gap": None,
-        }
-
-        for cnt_try in range(try_total):
-            driver = self.web_driver.get_chrome()
+                description = driver.find_element(By.XPATH,
+                                                    '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/h1/p').text
+            except:
+                description = ""
+            return {"description": description}
+        
+        def extract_prices(driver)->dict:
+            prices_dict = dict()
             try:
-                driver.get(url)
-                time.sleep(self.wait_time)
-                
-                # Extract model
-                try:
-                    model = driver.find_element(By.XPATH,
-                                                '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/div/span').text
-
-                    
-                    model = model.split(":")[-1].strip()
-                except Exception as e:                    
-                    if self.tracking_log:
-                        if cnt_try + 1 == try_total:
-                            print(f"Model extraction failed from {url}")
-                            self.file_manager.make_dir(dir_model)
-                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Model extraction failed_{stamp_today}.png")
-                    pass
-
-                try:
-                    description = driver.find_element(By.XPATH,
-                                                      '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/h1/p').text
-    
-                except:
-                    description = ""
-                # Extract price
+                price_now = driver.find_element(By.XPATH,
+                                                '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
+                price_original  = driver.find_element(By.XPATH,
+                                                        '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
+                prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
+                prices_dict['price_original'] = float(price_original.replace('$', '').replace(',', ''))
+                prices_dict['price_gap'] = price_original - price_now
+            except:
                 try:
                     price_now = driver.find_element(By.XPATH,
-                                                    '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
-                    price_original = driver.find_element(By.XPATH,
-                                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-                    price_now = float(price_now.replace('$', '').replace(',', ''))
-                    price_original = float(price_original.replace('$', '').replace(',', ''))
-                    price_gap = price_original - price_now
+                                                    '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
+                    prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
+                    prices_dict['price_original'] = price_now
+                    prices_dict['price_gap'] = 0.0
                 except:
-                    try:
-                        price_now = driver.find_element(By.XPATH,
-                                                        '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
-                        price_now = float(price_now.replace('$', '').replace(',', ''))
-                        price_original = price_now
-                        price_gap = 0.0
-                    except:
-                        if self.tracking_log:
-                            print(f"Price extraction failed from {url}")
-                            self.file_manager.make_dir(dir_model)
-                            driver.save_screenshot(f"./{dir_model}/{stamp_url}_Model extraction failed_{stamp_today}.png")
-                        price_now = float('nan')
-                        price_original = float('nan')
-                        price_gap = float('nan')
-                if self.tracking_log:
-                    print(f"{model}: {description}")
-                dict_info.update({
-                    "model": model,
-                    "description": description,
-                    "price": price_now,
-                    "price_original": price_original,
-                    "price_gap": price_gap,
-                })
-                
+                    prices_dict['price'] = float('nan')
+                    prices_dict['price_original'] = float('nan')
+                    prices_dict['price_gap'] = float('nan')
+            return prices_dict
+         
+        def extract_info_from_model(model: str)->dict:
+            dict_info = {}
+            dict_info["year"] = model.split("-")[1][-1]
+            dict_info["series"] = model.split("-")[1][2:]
+            dict_info["size"] = model.split("-")[1][:2]
+            dict_info["grade"] = model.split("-")[0]
+            dict_info["model"] = model.split("-")[1]
+            
+            year_mapping = {
+                'L': "2023",
+                'K': "2022",
+                'J': "2021",
+            }
 
-                    
-                dict_info.update(self._extract_model_info(dict_info.get("model")))
-                break
-            except Exception as e:
-                pass
-                if self.tracking_log:
-                    print(f"error at get_model_info from{url}")
-            finally:
-                driver.quit()
-        return dict_info
-
-    def _get_global_spec(self, url: str) -> dict:
-        """
-        Extract global specifications from a given model URL.
-        """
-        try_total = 10
-        driver = None
-        if self.tracking_log:  print(" Connecting to", url)
-        for cnt_try in range(try_total):
             try:
-                dict_spec = {}
-                driver = self.web_driver.get_chrome()
-                driver.get(url=url)
-                model = self.file_manager.get_name_from_url(url)
-                dir_model = f"{self.log_dir}/{model}"
-                stamp_today = self.file_manager.get_datetime_info(include_time=False)
-                stamp_url = self.file_manager.get_name_from_url(url)
+                dict_info["year"] = year_mapping.get(dict_info.get("year"))
+            except:
+                dict_info["year"] = "2024"
 
-                if self.tracking_log:
-                    self.file_manager.make_dir(dir_model)
-                    driver.save_screenshot(f"./{dir_model}/{stamp_url}_0_model_{stamp_today}.png")
-                time.sleep(self.wait_time)
+            return dict_info
+        
+        dict_info = {}
+        CustomException(message=f"error_extract_model_details: {url}")
+        try:
+            driver = self.web_driver.get_chrome()
+            driver.get(url)
+            time.sleep(self.wait_time)
+            
+            # Extract model
+            dict_info.update(extract_model(driver))
+            dict_info.update(extract_description(driver))
+            dict_info.update(extract_prices(driver))
+            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            
+            if self.tracking_log:
+                self._dir_model = f"{self.log_dir}/{dict_info['model']}"
+                self.file_manager.make_dir(self._dir_model)
+            return dict_info
+        except CustomException as e:
+            pass
+        finally:
+            driver.quit()
+    
+    @Scraper.try_loop(5)
+    def _extract_global_specs(self, url: str) -> dict:
+        def set_driver(url):
+            driver = self.web_driver.get_chrome()
+            driver.get(url=url)
+            time.sleep(self.wait_time)
+            return driver
+   
+        def find_spec_tab(driver) -> None:
+            
+            def find_element_spec(driver) -> None:
                 element_spec = driver.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]')
                 self.web_driver.move_element_to_center(element_spec)
                 if self.tracking_log:
-                    driver.save_screenshot(f"./{dir_model}/{stamp_url}_1_move_to_spec_{stamp_today}.png")
+                    driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_1_move_to_spec_{stamp_today}.png")
                 time.sleep(self.wait_time)
+                return None
+                
+            def find_click_spec(driver) -> None:
                 element_click_spec = driver.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]/cx-icon')
                 element_click_spec.click()
                 time.sleep(self.wait_time)
-                if self.tracking_log:
-                    driver.save_screenshot(
-                        f"./{dir_model}/{stamp_url}_2_after_click_specification_{stamp_today}.png")
-                    
-                    
+                return None
+            
+            def remove_popup(driver) -> None:
                 for _ in range(5):
                     try:
                         # 팝업 닫기 버튼을 기다렸다가 클릭
@@ -302,84 +267,90 @@ class ModelScraper_s(Scraper, DataVisualizer):
                         break
                     except Exception as e:
                         pass
-                    
-                        
+                return None 
+
+            def act_click_see_more(driver):
                 try:
                     element_see_more = driver.find_element(By.XPATH,'//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[3]/button')
                     self.web_driver.move_element_to_center(element_see_more)
-                    if self.tracking_log:
-                        driver.save_screenshot(f"./{dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
                     element_see_more.click()
                 except:
                     try:
-                        element_see_more = driver.find_element(By.XPATH,
-                                                               '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
+                        element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
                         self.web_driver.move_element_to_center(element_see_more)
-                        if self.tracking_log:
-                            driver.save_screenshot(
-                                f"./{dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
                         element_see_more.click()
                     except:
                         if self.tracking_log:
                             print("Cannot find the 'see more' button on the page")
                 time.sleep(self.wait_time)
-                driver.find_element(By.ID, "ngb-nav-0-panel").click()
-                for _ in range(15):
-                    elements = driver.find_elements(By.CLASS_NAME,"full-specifications__specifications-single-card__sub-list")
-                    for element in elements:
-                        soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                        dict_spec.update(self._soup_to_dict(soup))
-                    ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
-                if self.tracking_log:
-                    driver.save_screenshot(f"./{dir_model}/{stamp_url}_4_end_{stamp_today}.png")
-                if self.tracking_log:
-                    print(f"Received information from {url}")
-                return dict_spec
-            except Exception as e:
-                if self.tracking_log:
-                    if cnt_try + 1 == try_total:
-                        print(f"An error occurred on page 3rd : {model}")
-
-            finally:
-                driver.quit()
+                return None
+            
+            find_element_spec(driver)
+            find_click_spec(driver)
+            if self.tracking_log: driver.save_screenshot( f"./{self._dir_model}/{stamp_url}_2_after_click_specification_{stamp_today}.png")
+            remove_popup(driver)
+            act_click_see_more(driver)    
+            if self.tracking_log:driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
+            
+            return None
+            
+        def extract_specs(driver) -> dict:
+            def convert_soup_to_dict(soup):
+                """
+                Convert BeautifulSoup soup to dictionary.
+                """
+                try:
+                    h4_tag = soup.find('h4').text.strip()
+                    p_tag = soup.find('p').text.strip()
+                except :
+                    try:
+                        h4_tag = soup.find('h4').text.strip()
+                        p_tag = ""
+                    except Exception as e:
+                        print("Parser error", e)
+                        h4_tag = "Parser error"
+                        p_tag = "Parser error"
+                return h4_tag, p_tag
+            
+            dict_spec = {}
+            driver.find_element(By.ID, "ngb-nav-0-panel").click()
+            for _ in range(15):
+                elements = driver.find_elements(By.CLASS_NAME,"full-specifications__specifications-single-card__sub-list")
+                for element in elements:
+                    soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
+                    
+                label, content  = convert_soup_to_dict(soup)
+                original_label = label
+                while label in dict_spec:
+                    # 현재 item_name에서 *의 개수를 세어 그 개수에 따라 새로운 item_name 생성
+                    asterisk_count = label.count('*')
+                    label = f"{original_label}{'*' * (asterisk_count + 1)}"
+                    
+                dict_spec[label] = content
                 
-    def _extract_model_info(self, model):
-        """
-        Extract additional information from the model name.
-        """
-        dict_info = {}
-        dict_info["year"] = model.split("-")[1][-1]
-        dict_info["series"] = model.split("-")[1][2:]
-        dict_info["size"] = model.split("-")[1][:2]
-        dict_info["grade"] = model.split("-")[0]
+                
+                ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
-        year_mapping = {
-            'L': "2023",
-            'K': "2022",
-            'J': "2021",
-            # Add additional mappings as needed
-        }
-
+            return dict_spec
+        
+        dict_spec = {}
+        CustomException(message=f"error_extract_global_specs: {url}")
         try:
-            dict_info["year"] = year_mapping.get(dict_info.get("year"))
-        except:
-            dict_info["year"] = None
-
-        return dict_info
-
-    def _soup_to_dict(self, soup):
-        """
-        Convert BeautifulSoup soup to dictionary.
-        """
-        try:
-            h4_tag = soup.find('h4').text.strip()
-            p_tag = soup.find('p').text.strip()
-        except :
-            try:
-                h4_tag = soup.find('h4').text.strip()
-                p_tag = ""
-            except Exception as e:
-                print("Parser error", e)
-                h4_tag = "Parser error"
-                p_tag = "Parser error"
-        return {h4_tag: p_tag}
+            driver = set_driver(url)
+            if self.tracking_log:
+                stamp_today = self.file_manager.get_datetime_info(include_time=False)
+                stamp_url = self.file_manager.get_name_from_url(url)
+                driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_0_model_{stamp_today}.png")
+                
+            find_spec_tab(driver)   
+            dict_spec= extract_specs(driver)
+            
+            if self.tracking_log:
+                driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_4_end_{stamp_today}.png")
+                print(f"Received information from {url}")
+            return dict_spec
+        except CustomException as e:
+            pass
+        finally:
+            driver.quit()
+                

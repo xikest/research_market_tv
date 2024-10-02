@@ -40,7 +40,9 @@ class DataCleaner:
 
     def get_df_cleaned(self):
         if self.df is not None:
-            df = self.df.set_index(["year", "series", "display type"]).drop(
+            df = self.df
+            df["display type"] = df["display type"].str.replace(r'display|4k ', '', regex=True)
+            df = df.set_index(["year", "series", "display type"]).drop(
                 ["model", "size", "grade"], axis=1)
             df = df.fillna("-")
             return df

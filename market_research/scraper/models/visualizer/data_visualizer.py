@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-import matplotlib.pyplot as plt
+import numpy as np
 import plotly.graph_objs as go
 import seaborn as sns
 from .data_cleaner import DataCleaner
@@ -22,7 +22,7 @@ class DataVisualizer(BaseVisualizer):
             self.dc = DataCleaner(df)
 
 
-    def price_map(self, data=None, return_data=False):
+    def price_map(self, data=None, return_data=False, return_fig=False):
         # 데이터 준비
         if data is not None and isinstance(data, pd.DataFrame):   
             data =  data
@@ -30,16 +30,18 @@ class DataVisualizer(BaseVisualizer):
             data = self.dc.get_price_df().copy()
             
         years = data['year'].unique()
+        years = sorted(years)
         
         series_idx = data[['series', 'display type', 'year']].drop_duplicates()
-        series_idx = series_idx.sort_values(by=['year',  'series'])
+        series_idx = series_idx.sort_values(by=['year',  'series'], ascending=True)
         all_series_dict = {}
         for year in series_idx.year.unique():
             df_year = series_idx[series_idx['year']==year]
             all_series_dict[year] = {key: value for key, value in zip(df_year['series'], df_year['display type'])}
 
         colors = ['#636EFA', '#00CC96', '#EF553B', '#CCFFFF', '#FFCCFF', '#FFFFCC']
-        color_map = {year: colors[i] for i, year in enumerate(years)}
+        color_map = {year: colors[i % len(colors)] for i, year in enumerate(years)}
+
 
         markers = ['circle', 'square', 'diamond', 'pentagon', 'star', 'hexagon', 'cross', 'octagon', 'bowtie', 'hourglass', 'x',
                 'triangle-up', 'triangle-down', 'triangle-left', 'triangle-right',
@@ -142,16 +144,21 @@ class DataVisualizer(BaseVisualizer):
                 traceorder='reversed' 
             )
         )
-        fig.write_html(self.output_folder/f"{self.plot_name}_price_map.html")
-        fig.show()
+        fig.write_html(self.output_folder/f"{self.plot_name}_pricemap.html")
+        
+        
+        if return_fig:
+            return fig
+        else:
+            fig.show()
         if return_data:
             data['series'] = data['series'].map(lambda x: f'{self.plot_name}_{x}')
             return data
 
 
 
-    def heatmap_spec(self, col_selected:list=None, display_types:str=None, save_plot_name=None, cmap="Blues", figsize=(8, 8),
-                     cbar=False):
+
+    def heatmap_spec(self, col_selected:list=None, display_types:str=None, cmap="Blues", return_fig=False):
         """
         # YlGnBu
         # GnBu
@@ -196,24 +203,54 @@ class DataVisualizer(BaseVisualizer):
             data_df = data_df[condition]
         data_df = data_df.mask(data_df == '-', 0)
         # data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
-        data_df = data_df.map(lambda x: 1 if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
+        
+        data_df = data_df[data_df.columns[::-1]]
+        
+        mask_data = data_df.reset_index().copy()
+        data_df = data_df.map(lambda x: 1 if isinstance(x, str) else x)
         idx_names = data_df.index.names
         
 
         ## 중복 제거
         data_df['row_sum'] = data_df.sum(axis=1)
         data_df = data_df.reset_index().sort_values(by = idx_names + ['row_sum'], ascending=False).drop_duplicates(subset=idx_names).drop(['row_sum'], axis=1)
+        mask_data = mask_data.loc[data_df.index, :]
+
         data_df = data_df.set_index(idx_names)
         data_df = data_df.sort_index(ascending=True)
         self.data_df = data_df
+        heatmap_data = data_df.T
+        
+        mask_data = mask_data.replace(0, '').set_index(idx_names).sort_index(ascending=True).T
+        x_labels = ['-'.join(map(str, idx)) for idx in heatmap_data.columns]
+        fig = go.Figure(data=go.Heatmap(
+            z=heatmap_data.values,  # 데이터
+            x=x_labels,  # x축 레이블
+            y=heatmap_data.index,    # y축 레이블
+            colorscale=cmap,         # 색상 스케일
+            showscale=False,
+            zmax=1,                  # 최대값 설정
+            hoverinfo='text',        # 호버 정보 설정
+            hovertemplate='<b>%{customdata}</b><extra></extra>',
+            customdata=mask_data.values
+            ))
 
-        # Use plt.subplots to get the axis for colorbar
-        fig, ax = plt.subplots(figsize=figsize)
-        sns.heatmap(data_df.T, cmap=cmap, cbar=cbar, ax=ax, vmax=1)
-        plt.xticks(rotation=90)
-        plt.title(f"{self.plot_name} spec")
-        if save_plot_name is None:
-            save_plot_name = f"heatmap_for_{self.plot_name}_spec.png"
-        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
-        plt.show()
+        # 그래프 제목 및 레이아웃 설정
+        fig.update_layout(
+            title=f"{self.plot_name} spec",
+            xaxis=dict(title='',tickangle=90),
+            yaxis=dict(title='',tickangle=0),
+            width=800,  # 그래프 너비
+            height=800  # 그래프 높이
+        )
+
+        # 그래프 저장
+        fig.write_html(self.output_folder/f"{self.plot_name}_heatmap.html")
+
+
+        # 그래프 반환 여부에 따라 처리
+        if return_fig:
+            return fig
+        else:
+            fig.show()  # 그래프 보여주기

@@ -20,13 +20,13 @@ class ModelScraper_pjp(Scraper):
         self.file_manager = FileManager
 
 
-    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
+    def fetch_model_data(self, format_df: bool = True, show_visit:bool=False):
         models_dict = {}
         specs_dict = {}
-        url_model_dict = self._get_model_series(step=1000)
+        url_model_dict = self._get_series_urls(step=1000)
         print("collecting models")
         for model, url in tqdm(url_model_dict.items()):
-            specs_dict.update(self._get_spec_series(url=url,step=3000))
+            specs_dict.update(self._extract_models_from_series(url=url,step=3000))
         print("collecting spec")
         visit_url_dict = {}
         cnt_loop=2
@@ -34,7 +34,7 @@ class ModelScraper_pjp(Scraper):
             for model, url in tqdm(specs_dict.items()):
                 try:
                     visit_url_dict[model] = url
-                    modelspec = self._get_spec(model = model, url=url)
+                    modelspec = self._extract_model_details(model = model, url=url)
                     models_dict[model] = modelspec
                 except Exception as e:
                     if cnt == cnt_loop - 1 :
@@ -53,10 +53,7 @@ class ModelScraper_pjp(Scraper):
         else:
             return models_dict
 
-
-    ###=====================get info main page====================================##
-
-    def _get_model_series(self, url: str = "https://panasonic.jp/viera/products.html#4k_oled", step: int=200) -> dict:
+    def _get_series_urls(self, url: str = "https://panasonic.jp/viera/products.html#4k_oled", step: int=200) -> dict:
         """
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
@@ -95,8 +92,7 @@ class ModelScraper_pjp(Scraper):
         return model_dict
 
 
-
-    def _get_spec_series(self, url: str = "https://panasonic.jp/viera/products/mz2500.html", step: int=200) -> dict:
+    def _extract_models_from_series(self, url: str = "https://panasonic.jp/viera/products/mz2500.html", step: int=200) -> dict:
         """
         스크롤 다운이 되어야 전체 웹페이지가 로딩되어, 스크롤은 selenium, page parcing은 BS4로 진행
         """
@@ -132,7 +128,7 @@ class ModelScraper_pjp(Scraper):
         # print(f"number of total Series: {len(series_dict)}")
         return series_dict
 
-    def _get_spec(self, model='model', url: str = "https://panasonic.jp/viera/p-db/TH-65MZ2500_spec.html") -> list:
+    def _extract_model_details(self, model='model', url: str = "https://panasonic.jp/viera/p-db/TH-65MZ2500_spec.html") -> list:
         spec_dict = OrderedDict()
 
         dictNote = {}
@@ -163,9 +159,9 @@ class ModelScraper_pjp(Scraper):
                             value = cells[0].get_text(strip=True)
                             key = key.replace(value, "")
 
-                            key = self._extract_foot(key)
-                            value = self._extract_foot(value)
-                            # value = self._extract_product_info(value)
+                            key = self._parse_model_name(key)
+                            value = self._parse_model_name(value)
+                            # value = self._extract_global_specs(value)
                             spec_dict[key] = value
                     # print(spec_dict)
                     # ## 노트 추출
@@ -197,11 +193,11 @@ class ModelScraper_pjp(Scraper):
                         value_element = row.find('td', class_='SpecificationsTable__TableValue -isSelected')
                         if subhead_element:
                             key = subhead_element.get_text(strip=True)
-                            key = self._extract_foot(key)
+                            key = self._parse_model_name(key)
                         if value_element and key:
                             value = value_element.get_text(strip=True)
-                            # value = self._extract_foot(value)
-                            spec_dict[key] = self._extract_product_info(value)
+                            # value = self._parse_model_name(value)
+                            spec_dict[key] = self._extract_global_specs(value)
                     break  # BS4로 성공적으로 스크래핑했을 경우 반복문 탈출
                 else:
                     raise Exception("Table not found")
@@ -224,30 +220,7 @@ class ModelScraper_pjp(Scraper):
         # print(spec_dict)
         return spec_dict
 
-    # def _split_models(self, dictModels):
-    #     dictNewModels = {}
-    #     dictModelsSplited = dictModels.get('型')
-    #     if isinstance(dictModelsSplited, dict):
-    #         for model in dictModelsSplited.keys():
-    #             dictNewModel = {}
-    #             for k, v in dictModels.items():
-    #                 try:
-    #                     value = v.get(model)
-    #                     dictNewModel[k] = value
-    #                 except:
-    #                     dictNewModel[k] = v
-    #             dictNewModels[model] = dictNewModel
-    #     elif isinstance(dictModelsSplited, str):
-    #         url = dictModels.get('url')
-    #         model = url.split("/products/")[1].split("/")[0]
-    #         dictNewModels[model] = dictModels
-    #     else:
-    #         # Handle other cases if needed
-    #         pass
-    #     return dictNewModels
-    #
-
-    def _extract_product_info(self, text):
+    def _extract_global_specs(self, text):
         if "【" in text:
             listText = text.split("【")
             listText = [text.split("】") for text in listText]
@@ -256,33 +229,8 @@ class ModelScraper_pjp(Scraper):
         else:
             return text
 
-
-
-    def _extract_foot(self, text):
+    def _parse_model_name(self, text):
         footMarks = ["※" + str(i) for i in reversed(range(1, 30))]
         for footMark in footMarks:
             text = text.replace(footMark, "")
         return text
-    #
-    # def _extract_info(self, model):
-    #     dictInfo = {}
-    #     dictInfo["year"] = model.split("-")[1][-1]
-    #     dictInfo["series"] = model.split("-")[1][2:]
-    #     dictInfo["size"] = model.split("-")[1][:2]
-    #     dictInfo["grade"] = model.split("-")[0]
-    #
-    #     year_mapping = {
-    #         "N": 2025,
-    #         "M": 2024,
-    #         'L': 2023,
-    #         'K': 2022,
-    #         'J': 2021,
-    #         # 추가적인 알파벳과 연도 대응 관계를 추가할 수 있음
-    #     }
-    #
-    #     # 알파벳과 대응하는 연도가 없을 경우 기본값으로 설정할 연도를 지정
-    #     try:
-    #         dictInfo["year"] = year_mapping.get(dictInfo.get("year"))
-    #     except:
-    #         dictInfo["year"] = ""
-    #     return dictInfo
