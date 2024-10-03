@@ -334,6 +334,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             pass
         finally:
             driver.quit()
+            
     @staticmethod         
     def extract_info_from_model(model: str)->dict:
         dict_info = {}
@@ -344,9 +345,9 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         dict_info["model"] = model.split("-")[1]
         
         year_mapping = {
-            'L': "2023",
-            'K': "2022",
-            'J': "2021",
+            'l': "2023",
+            'k': "2022",
+            'j': "2021",
         }
 
         try:

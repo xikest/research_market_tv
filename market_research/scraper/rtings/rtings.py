@@ -178,7 +178,7 @@ class Rtings(Scraper, Rvisualizer):
         
         dict_extractors = {"sony":Specscraper_s,
                            "lg":Specscraper_l,
-                           "sse":Specscraper_se}
+                           "samsung":Specscraper_se}
         extractor = None
         
         url = url.lower()
@@ -189,10 +189,10 @@ class Rtings(Scraper, Rvisualizer):
         driver.quit()
         
         soup = BeautifulSoup(page_source, 'html.parser')
-        title = soup.title.string
+        title = soup.title.string.lower()
         maker = title.split(" ")[0].strip().lower()
-        product = title.replace(maker, "").split("Review")[0]
-        models = title.replace(maker, "").split("Review")[1].split(")")[0].replace("(","")
+        product = title.replace(maker, "").split("review")[0]
+        models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
         models_list = models.split(",")
         
         for key in dict_extractors.keys():
@@ -260,4 +260,5 @@ class Rtings(Scraper, Rvisualizer):
                     results_df[k] = v
             measurement_list.append(results_df)
         measurement_df = pd.concat(measurement_list, ignore_index=True)
+        measurement_df.to_json(self.output_folder / "measurement_data.json", orient='records', lines=True)
         return measurement_df

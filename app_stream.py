@@ -49,6 +49,7 @@ def loading_rtings(selected_multi_makers):
 
 def display_indicators():
     st.sidebar.subheader("Like this project? Buy me a coffee!☕️")
+    st.sidebar.write("updated: 1st Oct.")
     selected_maker = st.sidebar.selectbox("", makers).lower()
 
         

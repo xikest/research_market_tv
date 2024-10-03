@@ -323,9 +323,9 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
         dict_info["year"], model = extract_year_and_model(model)
         dict_info["series"] = model
         
-        if "qn" in model or "kq" in model:         
+        if "qn" in dict_info["grade"] or "kq" in dict_info["grade"]:         
             dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], None)
-        elif "un" in model :
+        elif "un" in dict_info["grade"] :
             dict_info["year"] = year_mapping.get('un').get(dict_info["year"], None)
         else:
             dict_info["year"] = None

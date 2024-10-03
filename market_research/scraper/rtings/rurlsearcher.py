@@ -34,8 +34,35 @@ class Rurlsearcher(Scraper):
                     'XR-85Z9K', 'KD-32W830K', 'KD-55X77CL', 'KD-65X77CL', 'KD-75X77CL',
                     'KD-85X77CL', 'KD-43X77L', 'KD-50X77L', 'KD-55X77L', 'KD-65X77L',
                     'KD-75X77L', 'KD-85X77L','bravia3',]
+        },
+        "lge": {
+            "oled": ['lg g4', 'lg c4', 'lg b4', 
+                     'lg g3', 'lg c3', 'lg b3',
+                 
+            ],
+            "mini_led": ['lg qned90t 2024', 'lg qned85 2024'
+              
+            ],
+            "lcd": ['lg ut7570 2024',]
+        },
+        "sse": {
+            "oled": ['s95d', 's90d',  
+                     's95c', 's90c', 
+                 
+            ],
+            "mini_led": ['qn95d', 'qn90d',
+                         'qn95c', 'qn90c']
+              
         }
+        
+        
         }
+     
+     
+     
+     
+     
+     
      
         self.model_url_preset = {"sony":
             {
