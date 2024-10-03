@@ -6,11 +6,11 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, CustomException
+from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
 
-class ModelScraper_s(Scraper, DataVisualizer):
+class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
                  verbose: bool = False, wait_time=1, demo_mode:bool=False):
@@ -191,26 +191,7 @@ class ModelScraper_s(Scraper, DataVisualizer):
                     prices_dict['price_gap'] = float('nan')
             return prices_dict
          
-        def extract_info_from_model(model: str)->dict:
-            dict_info = {}
-            dict_info["year"] = model.split("-")[1][-1]
-            dict_info["series"] = model.split("-")[1][2:]
-            dict_info["size"] = model.split("-")[1][:2]
-            dict_info["grade"] = model.split("-")[0]
-            dict_info["model"] = model.split("-")[1]
-            
-            year_mapping = {
-                'L': "2023",
-                'K': "2022",
-                'J': "2021",
-            }
 
-            try:
-                dict_info["year"] = year_mapping.get(dict_info.get("year"))
-            except:
-                dict_info["year"] = "2024"
-
-            return dict_info
         
         dict_info = {}
         CustomException(message=f"error_extract_model_details: {url}")
@@ -223,7 +204,7 @@ class ModelScraper_s(Scraper, DataVisualizer):
             dict_info.update(extract_model(driver))
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
-            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            dict_info.update(ModelScraper_s.extract_info_from_model(dict_info.get("model")))
             
             if self.tracking_log:
                 self._dir_model = f"{self.log_dir}/{dict_info['model']}"
@@ -353,4 +334,24 @@ class ModelScraper_s(Scraper, DataVisualizer):
             pass
         finally:
             driver.quit()
-                
+    @staticmethod         
+    def extract_info_from_model(model: str)->dict:
+        dict_info = {}
+        dict_info["year"] = model.split("-")[1][-1]
+        dict_info["series"] = model.split("-")[1][2:]
+        dict_info["size"] = model.split("-")[1][:2]
+        dict_info["grade"] = model.split("-")[0]
+        dict_info["model"] = model.split("-")[1]
+        
+        year_mapping = {
+            'L': "2023",
+            'K': "2022",
+            'J': "2021",
+        }
+
+        try:
+            dict_info["year"] = year_mapping.get(dict_info.get("year"))
+        except:
+            dict_info["year"] = "2024"
+
+        return dict_info

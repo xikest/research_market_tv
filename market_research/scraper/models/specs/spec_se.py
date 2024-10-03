@@ -5,10 +5,10 @@ from tqdm import tqdm
 import re
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, CustomException
+from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
-class ModelScraper_se(Scraper, DataVisualizer):
+class ModelScraper_se(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sse_model_info_web", intput_folder_path="input", output_folder_path="results",
                  verbose: bool = False, wait_time=2, demo_mode:bool=False):
@@ -180,65 +180,7 @@ class ModelScraper_se(Scraper, DataVisualizer):
                 dict_info["price"] = None
             return prices_dict
             
-        def extract_info_from_model(model: str)->dict:
-        
-            def extract_grade_and_model(model: str):
-                grade = model[:2] 
-                model=  model[2:]    
-                return grade, model
-                
-            def extract_size_and_model(model: str):
-                match = re.match(r'\d+', model)
-                if match:
-                    leading_number = match.group()  # 앞의 숫자 부분
-                    rest = re.sub(r'^\d+', '', model)   # 숫자 제거 후 나머지 부분
-                    return leading_number, rest
-                else:
-                    return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
 
-            def extract_year_and_model(model: str):
-            
-                match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
-                if match:
-                    year = match.group(2) if len(match.group(2)) <= 1 else match.group(2)[0]
-                    model = match.group(1)  
-                    return year, model+year
-                else:
-                    return None, model    
-
-
-            dict_info = {}
-            model = model.lower()  # 대소문자 구분 제거
-            model = model[:-4]
-            dict_info = {}
-            year_mapping = {'qn':
-                                {
-                                't': "2021",    
-                                'b': "2022",
-                                'c': "2023",
-                                'd': "2024",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026"},
-                            'un':{ 
-                                'c': "2023",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026",
-                                }
-                            }
-            dict_info["grade"], model = extract_grade_and_model(model) 
-            dict_info["size"], model = extract_size_and_model(model)
-            dict_info["year"], model = extract_year_and_model(model)
-            dict_info["series"] = model
-            
-            if "qn" in model or "kq" in model:         
-                dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], None)
-            elif "un" in model :
-                dict_info["year"] = year_mapping.get('un').get(dict_info["year"], None)
-            else:
-                dict_info["year"] = None
-            return dict_info
         
         dict_info = {}
         CustomException(message=f"error_extract_model_details: {url}")
@@ -252,7 +194,7 @@ class ModelScraper_se(Scraper, DataVisualizer):
             dict_info.update(extract_model(driver))
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
-            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            dict_info.update(ModelScraper_se.extract_info_from_model(dict_info.get("model")))
                 
             if self.tracking_log:
                 self._dir_model = f"{self.log_dir}/{dict_info['model']}"
@@ -328,4 +270,63 @@ class ModelScraper_se(Scraper, DataVisualizer):
         finally:
             driver.quit()
                 
-                
+    @staticmethod       
+    def extract_info_from_model(model: str)->dict:
+    
+        def extract_grade_and_model(model: str):
+            grade = model[:2] 
+            model=  model[2:]    
+            return grade, model
+            
+        def extract_size_and_model(model: str):
+            match = re.match(r'\d+', model)
+            if match:
+                leading_number = match.group()  # 앞의 숫자 부분
+                rest = re.sub(r'^\d+', '', model)   # 숫자 제거 후 나머지 부분
+                return leading_number, rest
+            else:
+                return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
+
+        def extract_year_and_model(model: str):
+        
+            match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
+            if match:
+                year = match.group(2) if len(match.group(2)) <= 1 else match.group(2)[0]
+                model = match.group(1)  
+                return year, model+year
+            else:
+                return None, model    
+
+
+        dict_info = {}
+        model = model.lower()  # 대소문자 구분 제거
+        model = model[:-4]
+        dict_info = {}
+        year_mapping = {'qn':
+                            {
+                            't': "2021",    
+                            'b': "2022",
+                            'c': "2023",
+                            'd': "2024",
+                            'd': "2024",
+                            'e': "2025",
+                            'f': "2026"},
+                        'un':{ 
+                            'c': "2023",
+                            'd': "2024",
+                            'e': "2025",
+                            'f': "2026",
+                            }
+                        }
+        dict_info["grade"], model = extract_grade_and_model(model) 
+        dict_info["size"], model = extract_size_and_model(model)
+        dict_info["year"], model = extract_year_and_model(model)
+        dict_info["series"] = model
+        
+        if "qn" in model or "kq" in model:         
+            dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], None)
+        elif "un" in model :
+            dict_info["year"] = year_mapping.get('un').get(dict_info["year"], None)
+        else:
+            dict_info["year"] = None
+        return dict_info

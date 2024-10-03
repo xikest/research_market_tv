@@ -36,17 +36,14 @@ class Rurlsearcher(Scraper):
                     'KD-75X77L', 'KD-85X77L','bravia3',]
         }
         }
-
+     
         self.model_url_preset = {"sony":
             {
+                
                 "oled": [
                     'https://www.rtings.com/tv/reviews/sony/a90k-oled',
                     'https://www.rtings.com/tv/reviews/sony/a80l-a80cl-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a90j-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a95k-oled',
                     'https://www.rtings.com/tv/reviews/sony/a95l-oled',
-                    'https://www.rtings.com/tv/reviews/lg/g3-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a80k-a80ck-oled',
                     'https://www.rtings.com/tv/reviews/sony/bravia-8-oled'
                 ],
                 "mini_led": [
@@ -59,14 +56,33 @@ class Rurlsearcher(Scraper):
                     'https://www.rtings.com/tv/reviews/sony/x90l-x90cl',
                     'https://www.rtings.com/tv/reviews/sony/x77l-x77cl',
                     'https://www.rtings.com/tv/reviews/sony/x85k',
-                    'https://www.rtings.com/tv/reviews/sony/a95l-oled',
-                    'https://www.rtings.com/tv/reviews/sony/x90k-x90ck',
                     'https://www.rtings.com/tv/reviews/sony/x95k',
                     'https://www.rtings.com/tv/reviews/sony/x80k-x80ck',
                     'https://www.rtings.com/tv/reviews/sony/bravia-3'
                 ]
+            },
+            "lge":
+            {
+                "oled": [
+                        'https://www.rtings.com/tv/reviews/lg/g4-oled',
+                        'https://www.rtings.com/tv/reviews/lg/c4-oled',
+                        'https://www.rtings.com/tv/reviews/lg/b4-oled'
+                ],
+                "mini_led": [
+                    'https://www.rtings.com/tv/reviews/lg/qned90t',
+                    'https://www.rtings.com/tv/reviews/lg/qned85'
+                ],
+                "lcd": [
+                    'https://www.rtings.com/tv/reviews/lg/ut7570-ut75-ut7590'
+                ]
             }
         }
+        
+
+
+
+
+
 
     def get_model_from_dictionary(self, maker: str = "sony", key_mode=False):
         if key_mode:
@@ -75,8 +91,8 @@ class Rurlsearcher(Scraper):
 
     def get_url_from_model_preset(self, maker: str = "sony", key_mode=False):
         if key_mode:
-            return self.model_dictionary.keys()
-        return self.model_dictionary.get(maker.lower())
+            return self.model_url_preset.keys()
+        return self.model_url_preset.get(maker.lower())
 
     def get_urls_from_web(self, keywords: list = None) -> list:
         urls_set = set()

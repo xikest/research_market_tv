@@ -3,9 +3,11 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
-from market_research.scraper._scraper_scheme import Scraper
 from tools.file import FileManager
-class ModelScraper_p(Scraper):
+from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
+from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
+
+class ModelScraper_p(Scraper, Modeler, DataVisualizer):
 
     def __init__(self, enable_headless=True,
                  export_prefix="pana_model_info_web", intput_folder_path="input", output_folder_path="results",

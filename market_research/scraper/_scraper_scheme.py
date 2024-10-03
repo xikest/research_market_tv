@@ -69,7 +69,9 @@ class Scraper(ABC):
             return wrapper
         return decorator
 
-       
+
+class Modeler(ABC):
+
     @abstractmethod
     def _fetch_model_data(self, demo_mode: bool = False) -> pd.DataFrame:
         """

@@ -6,12 +6,12 @@ from tqdm import tqdm
 import re
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, CustomException
+from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
 
 
 
-class ModelScraper_l(Scraper, DataVisualizer):
+class ModelScraper_l(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="lge_model_info_web", intput_folder_path="input", output_folder_path="results",
                  verbose: bool = False, wait_time=2, demo_mode:bool=False):
@@ -174,79 +174,7 @@ class ModelScraper_l(Scraper, DataVisualizer):
                 
             return {"description": description}
         
-        def extract_info_from_model(model: str)->dict:
-            model = model.lower()  # 대소문자 구분 제거
-            dict_info = {}
 
-            # 연도 매핑
-            year_mapping = {'oled':
-                                {'1': "2021",
-                                '2': "2022",
-                                '3': "2023",
-                                '4': "2024",
-                                '5': "2025",
-                                '6': "2026"},
-                            'qned':
-                                {'p': "2021",
-                                'q': "2022",
-                                'r': "2023",
-                                'u': "2024"},
-                            'u':{ 
-                                'p': "2021",
-                                'q': "2022",
-                                'r': "2023",
-                                't': "2024",}
-                            }
-
-
-            
-            # "oled"가 포함된 모델 처리
-            if "oled" in model:
-                model = model[:-3].replace("oled", "")
-                dict_info["grade"] = "oled"
-                dict_info["year"] = model[-1]
-                dict_info["series"] = model[-2:-1]
-                dict_info["size"] = model[:-2]
-                dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
-            
-            # "qned" 또는 "nano"가 포함된 모델 처리
-            elif "qned" in model or "nano" in model:
-                model = model[:-1] #마지막자리 삭제
-                if "qned" in model:
-                    model_split = model.split("qned")
-                    dict_info["grade"] = "qned"
-                else:
-                    model_split = model.split("nano")
-                    dict_info["grade"] = "nano"
-                dict_info["size"] = model_split[0]
-                model = model_split[-1]
-                dict_info["year"] = model[-1]
-                dict_info["series"] = model[:-2]
-                dict_info["year"] = year_mapping.get('qned').get(dict_info.get("year"), None)
-                dict_info
-            
-            # "lx"가 포함된 모델 처리
-            elif "lx" in model:
-                model_split = model.split("lx")
-                dict_info["grade"] = "flexble"
-                dict_info["size"] = model_split[0]
-                model = model_split[-1]
-                dict_info["year"] = model[0]
-                dict_info["series"] = model[1]
-                dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
-            
-            # "u"가 포함된 모델 처리
-            elif "u" in model:
-                model = model[:-3]
-                model_split = model.split("u")
-                dict_info["grade"] = "u"
-                dict_info["size"] = model_split[0]
-                model = model_split[-1]
-                dict_info["year"] = model[0]
-                dict_info["series"] = model[1:]
-                dict_info["year"] =  year_mapping.get('u').get(dict_info.get("year"), None)
-
-            return dict_info
         
         dict_info = {}
         if self.tracking_log: print(" Connecting to", url)
@@ -257,7 +185,7 @@ class ModelScraper_l(Scraper, DataVisualizer):
         dict_info.update(extract_model(soup))
         dict_info.update(extract_prices(soup))
         dict_info.update(extract_description(soup))
-        dict_info.update(extract_info_from_model(dict_info.get("model")))
+        dict_info.update(ModelScraper_l.extract_info_from_model(dict_info.get("model")))
            
         if self.tracking_log:
             self._dir_model = f"{self.log_dir}/{dict_info.get('model')}"
@@ -328,3 +256,78 @@ class ModelScraper_l(Scraper, DataVisualizer):
             pass
         finally:
             driver.quit()
+            
+    @staticmethod
+    def extract_info_from_model(model: str)->dict:
+        model = model.lower()  # 대소문자 구분 제거
+        dict_info = {}
+
+        # 연도 매핑
+        year_mapping = {'oled':
+                            {'1': "2021",
+                            '2': "2022",
+                            '3': "2023",
+                            '4': "2024",
+                            '5': "2025",
+                            '6': "2026"},
+                        'qned':
+                            {'p': "2021",
+                            'q': "2022",
+                            'r': "2023",
+                            'u': "2024"},
+                        'u':{ 
+                            'p': "2021",
+                            'q': "2022",
+                            'r': "2023",
+                            't': "2024",}
+                        }
+
+
+        
+        # "oled"가 포함된 모델 처리
+        if "oled" in model:
+            model = model[:-3].replace("oled", "")
+            dict_info["grade"] = "oled"
+            dict_info["year"] = model[-1]
+            dict_info["series"] = model[-2:-1]
+            dict_info["size"] = model[:-2]
+            dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
+        
+        # "qned" 또는 "nano"가 포함된 모델 처리
+        elif "qned" in model or "nano" in model:
+            model = model[:-1] #마지막자리 삭제
+            if "qned" in model:
+                model_split = model.split("qned")
+                dict_info["grade"] = "qned"
+            else:
+                model_split = model.split("nano")
+                dict_info["grade"] = "nano"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[-1]
+            dict_info["series"] = model[:-2]
+            dict_info["year"] = year_mapping.get('qned').get(dict_info.get("year"), None)
+            dict_info
+        
+        # "lx"가 포함된 모델 처리
+        elif "lx" in model:
+            model_split = model.split("lx")
+            dict_info["grade"] = "flexble"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[0]
+            dict_info["series"] = model[1]
+            dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
+        
+        # "u"가 포함된 모델 처리
+        elif "u" in model:
+            model = model[:-3]
+            model_split = model.split("u")
+            dict_info["grade"] = "u"
+            dict_info["size"] = model_split[0]
+            model = model_split[-1]
+            dict_info["year"] = model[0]
+            dict_info["series"] = model[1:]
+            dict_info["year"] =  year_mapping.get('u').get(dict_info.get("year"), None)
+
+        return dict_info

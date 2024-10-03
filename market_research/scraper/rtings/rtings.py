@@ -5,26 +5,35 @@ import pandas as pd
 import re
 from tqdm import tqdm
 from tools.file import FileManager
+from market_research.scraper import Specscraper_l, Specscraper_s, Specscraper_se
 from market_research.scraper._scraper_scheme import Scraper
+from market_research.scraper.rtings.rvisualizer import Rvisualizer
 
-class Rtings(Scraper):
+class Rtings(Scraper, Rvisualizer):
     def __init__(self, enable_headless = True,
                          export_prefix= "rtings",
                          intput_folder_path = "input",
                          output_folder_path = "results", verbose:bool=False, wait_time=1):
 
-        super().__init__(enable_headless = enable_headless,
+        Scraper.__init__(self, enable_headless = enable_headless,
                          export_prefix= export_prefix,
                          intput_folder_path = intput_folder_path,
                          output_folder_path = output_folder_path)
                              
         self.verbose = verbose
         self.wait_time = wait_time
+        pass
+        
+
+        
+
+
     def get_data(self, urls:list, export_excel=True):
         score_df= pd.DataFrame()
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
         url = None
+    
         try:
             for url in tqdm(urls):
                 if self.verbose:
@@ -32,13 +41,13 @@ class Rtings(Scraper):
                 df = self._get_score(url, format_df=True)
                 score_df = pd.concat([score_df, df], axis=0)
 
-                # 저장할 데이터 경로
                 df = self._get_measurement_reuslts(url)
                 measurement_df = pd.concat([measurement_df, df], axis=0)
 
                 df = self._get_commetns(url, format_df=True)
                 comments_df = pd.concat([comments_df, df], axis=0)
-
+                
+            measurement_df.to_json(f'measurement_data.json', orient='records', lines=True)    
             if export_excel:
                 FileManager.df_to_excel(score_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_xlsx_name, sheet_name="measurement", mode='a')
@@ -52,6 +61,7 @@ class Rtings(Scraper):
                 "measurement":measurement_df,
                 "comments":comments_df
         }
+        
         
 
     def _get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
@@ -165,31 +175,38 @@ class Rtings(Scraper):
             return comments_dict
 
     def _get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
-
-        driver = self.web_driver.get_chrome()
-        maker = url.split("/")[-2]
-        product = url.split("/")[-1]
+        
+        dict_extractors = {"sony":Specscraper_s,
+                           "lg":Specscraper_l,
+                           "sse":Specscraper_se}
+        extractor = None
+        
         url = url.lower()
+        driver = self.web_driver.get_chrome()
         driver.get(url)
         time.sleep(self.wait_time)
         page_source = driver.page_source
         driver.quit()
         
         soup = BeautifulSoup(page_source, 'html.parser')
+        title = soup.title.string
+        maker = title.split(" ")[0].strip().lower()
+        product = title.replace(maker, "").split("Review")[0]
+        models = title.replace(maker, "").split("Review")[1].split(")")[0].replace("(","")
+        models_list = models.split(",")
         
-    
+        for key in dict_extractors.keys():
+            if maker in key:
+                extractor = dict_extractors.get(key)
 
-        # # product_page-category 텍스트 찾기
-        # product_category = test_group.find('a', class_='e-anchor').get_text(strip=True)
-        # print(f"product_category: {product_category}")
-        # 딕셔너리 초기화
+            
+
         results_list = []
         category = ""
 
         test_groups = soup.find_all('div', class_='test_group e-simple_grid-item-2-pad')
         for test_group in test_groups:
             # test_group-category 텍스트 찾기
-            # category = test_group.find('div', class_='test_group-category').get_text(strip=True)
             header_element = test_group.find('div', class_='test_group-header')
             category_element = header_element.find('div', class_='test_group-category')
             if category_element:
@@ -212,6 +229,8 @@ class Rtings(Scraper):
 
         results_df = pd.DataFrame(results_list,
                                   columns=["maker", "product", "category", "scores_header", "label", "result_value"])
+        
+        
         # scores_header_list 생성 및 수정
         scores_header_list = results_df.scores_header.map(lambda x: x.split("_"))
 
@@ -232,6 +251,13 @@ class Rtings(Scraper):
         results_df = results_df[["maker", "product", "category", "header", "score", "label", "result_value"]]
         # 결과 확인
 
-        # print(results_df.head())
-
-        return results_df
+        measurement_list = []
+        for model in models_list:
+            results_df['model'] = model
+            if extractor is not None:
+                dict_model = extractor.extract_info_from_model(model)  
+                for k, v in dict_model.items():
+                    results_df[k] = v
+            measurement_list.append(results_df)
+        measurement_df = pd.concat(measurement_list, ignore_index=True)
+        return measurement_df

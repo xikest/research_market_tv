@@ -7,14 +7,14 @@ from typing import Optional, Union
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from market_research.scraper._visualization_scheme import BaseVisualizer
-
+import plotly.graph_objects as go  
 
 class Rvisualizer(BaseVisualizer):
 
     def __init__(self, df, output_folder_path="results"):
         super().__init__(output_folder_path=output_folder_path)
         self.output_folder_path =output_folder_path
-        self.df = df.copy()
+        self.df = df.copy()        
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
         self.title_units_dict = {
@@ -226,43 +226,6 @@ class Rvisualizer(BaseVisualizer):
         plt.savefig(save_plot_name)
         plt.show()
 
-    # def plot_lines(self, column, swap_mode=True, ylims: list = None,
-    #                yticks: list = None, save_plot_name:str=None):
-    #
-    #     df = self._get_data(column)
-    #     mode_dict = self._plot_mode(column, swap_mode)
-    #     col_y = mode_dict.get("col_y")
-    #     col_x = mode_dict.get("col_x")
-    #     col_color = mode_dict.get("col_facet")
-    #
-    #     suffix = self.title_units_dict.get(col_y)
-    #
-    #     if suffix is not None:
-    #         sup_title = f"{col_y} ({suffix}) by {col_x}"
-    #     else:
-    #         sup_title = f"{col_y} by {col_x}"
-    #
-    #     if col_color is not None:
-    #         fig = px.line(df, x=col_x, y=col_y, color=col_color, title=sup_title, line_shape='linear',
-    #                       color_discrete_sequence=px.colors.qualitative.Vivid)
-    #     else:
-    #         fig = px.line(df, x=col_x, y=col_y, title=None, line_shape='linear',
-    #                       color_discrete_sequence=px.colors.qualitative.Vivid)
-    #
-    #     fig.update_layout(width=1000, height=500, template='plotly_white', margin=dict(l=10, r=10, b=10, t=40))
-    #     if yticks is not None:
-    #         tickvals = [float(y_tick) for y_tick in yticks]
-    #         ticktext = [str(y_tick) for y_tick in yticks]
-    #         fig.update_yaxes(tickvals=tickvals, ticktext=ticktext)
-    #     if ylims is not None:
-    #         fig.update_yaxes(range=ylims)
-    #
-    #     if save_plot_name is None:
-    #         file_name = re.sub(r'\([^)]*\)', '', sup_title)
-    #         save_plot_name = f"plot_for_{file_name}.png"
-    #     # fig.write_image(save_plot_name)
-    #     fig.show()
-
 
     def _plot_mode(self, column, swap_mode):
         col_y = column
@@ -282,29 +245,155 @@ class Rvisualizer(BaseVisualizer):
                 "col_x": col_x,
                 "col_facet": col_facet}
 
-
-
-    def heatmap_scores(self, cmap="cividis", cbar=True, annot=True, save_plot_name:str=None , figsize=(8,10)):
-        col_socres = ["maker", "product", "category", "header", "score"]
+    def radar_scores(self, return_fig: bool = False):
+        col_socres = ["maker", "year", "series", "category", "header", "score"]
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         data_df["score"] = data_df["score"].map(lambda x: float(x))
-        data_df["product"] = data_df["product"].map(lambda x: x.replace("-oled", ""))
-        data_df = data_df.pivot(index=["maker", "product"], columns=["category", "header"], values='score')
+        data_df = data_df.pivot(index=["maker", "year", "series"], columns=["category", "header"], values='score')
+        data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
+        data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
+
+        data_df = data_df.loc[
+            ['Black Uniformity', 'Contrast', 'SDR Brightness', 'HDR Brightness',
+            'Color Volume', 'Color Gamut', 'Viewing Angle', 'Reflections',
+            'Pre Calibration', 'Gray Uniformity', 'Response Time',
+            'HDR Native Gradient', 'PQ EOTF Tracking'], :
+        ]
+
+        # 초기 연도로 설정
+        initial_year = data_df.columns.get_level_values(1).unique()[0]
+
+        # Plotly Figure 생성
+        fig = go.Figure()
+
+        # 각 연도별로 시리즈 추가
+        years = data_df.columns.get_level_values(1).unique()
+
+        for year in years:
+            for series in data_df.xs(year, level=1, axis=1).columns.get_level_values(1).unique():
+                data_series = data_df.xs((series, year), level=(2, 1), axis=1)
+                values = data_series.mean(axis=1).values.flatten()
+                values = np.concatenate((values, [values[0]]))  
+                theta = data_df.index.tolist() + [data_df.index[0]]
+
+                fill_color = f'rgba({np.random.randint(0, 255)}, {np.random.randint(0, 255)}, {np.random.randint(0, 255)}, 0.25)'
+
+                fig.add_trace(go.Scatterpolar(
+                    r=values,
+                    theta=theta,
+                    fill='toself',
+                    fillcolor=fill_color,  # 랜덤 색상
+                    name=f"{series} ({year})",
+                    mode='lines',
+                    line=dict(color=fill_color, width=2),
+                    visible='legendonly' if year != initial_year else True  # 초기 연도만 표시
+                ))
+
+        # 드롭다운 메뉴 추가
+        buttons = []
+        for year in years:
+            buttons.append(
+                dict(
+                    label=str(year),
+                    method='update',
+                    args=[{'visible': [year == y for y in years]}]  # 선택한 연도에 해당하는 시리즈만 표시
+                )
+            )
+
+        # 레이아웃 업데이트
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=False,
+                    showline=False,
+                    range=[0, 10],
+                ),
+                angularaxis=dict(
+                    visible=True,
+                    showline=True,
+                    linecolor='gray',
+                    linewidth=0.5,
+                )
+            ),
+            updatemenus=[
+                dict(
+                    active=0,
+                    buttons=buttons,
+                    direction='down',
+                    showactive=True,
+                    x=0.1,
+                    xanchor='left',
+                    y=1.1,
+                    yanchor='top',
+                )
+            ],
+            showlegend=True,
+            legend=dict(
+                x=1.4,
+                y=0.5,
+                traceorder='normal',
+                font=dict(size=12, family='Arial, sans-serif'),
+            ),
+            width=1000,
+            height=800,
+            font=dict(size=10, family='Arial, sans-serif', weight='bold'),
+            margin=dict(l=80, r=200, t=50, b=50),
+        )
+
+        fig.write_html(self.output_folder/f"radar_plot.html")
+        if return_fig:
+            return fig
+        else:
+            fig.show()  # 그래프 보여주기
+ 
+    def heatmap_scores(self, cmap="cividis"):
+        col_socres = ["maker","year", "series", "category", "header", "score"]
+        data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
+        data_df["score"] = data_df["score"].map(lambda x: float(x))
+        # data_df["product"] = data_df["product"].map(lambda x: x.replace("-oled", ""))
+        data_df = data_df.pivot(index=["maker","year", "series"], columns=["category", "header"], values='score')
         # data_df = data_df.T.reset_index().sort_index(axis=1).drop("category", axis=1).set_index("header")
         data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
         data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
-        plt.figure(figsize=figsize)
-        sns.heatmap(data_df, annot=annot, cmap=cmap, cbar=cbar, vmin=0, vmax=10, yticklabels=data_df.index)
-        title = "Rtings Score heatmap"
-        plt.title(title)
-        if save_plot_name is None:
-            save_plot_name = f"plot_for_{title}.png"
-        plt.savefig(self.output_folder/save_plot_name, bbox_inches='tight')
-        plt.show()
+    
 
+        x_labels = ['-'.join(map(str, idx)) for idx in data_df.columns]
+        fig = go.Figure(data=go.Heatmap(
+            z=data_df.values,  # 데이터 값
+            x=x_labels,  # x축 레이블
+            y=data_df.index,    # y축 레이블
+            colorscale=cmap,     # 색상 맵
+            showscale=False,
+            zmin=0,              # 최소 값
+            zmax=10,             # 최대 값
+            text=data_df.values, # 각 셀의 텍스트로 데이터 값 표시
+            texttemplate="%{text:.1f}",  # 텍스트 형식 지정
+            hoverinfo='none'     # 호버 시 텍스트 정보 표시 안 함
+        ))
+
+        # 제목 설정
+        fig.update_layout(
+            title='Rtings Score heatmap',
+            xaxis=dict(tickangle=90),
+            yaxis=dict(tickangle=0),
+            # width=1000,  # 그래프 너비
+            height=1200,   # 그래프 높이
+            font=dict(size=16, family='Arial, sans-serif', weight='bold'),
+            margin=dict(l=300, r=20, t=40, b=300), 
+        )
+
+        # fig.write_html(self.output_folder/f"{self.plot_name}_heatmap.html")
+        
+        fig.show()
+                
+        # if return_fig:
+        #     return fig
+        # else:
+        #     fig.show()  # 그래프 보여주기
+        
 
     def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
-        sns.set(style="whitegrid")
+        sns.set_theme(style="whitegrid")
         ddf = self.df.copy()
         ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
         ddf['maker_product'] = ddf['maker'] + '_' + ddf['product']
