@@ -289,7 +289,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             model = model[:-3].replace("oled", "")
             dict_info["grade"] = "oled"
             dict_info["year"] = model[-1]
-            dict_info["series"] = model[-2:-1]
+            dict_info["series"] = model[-2:]
             dict_info["size"] = model[:-2]
             dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
         
@@ -305,7 +305,8 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             dict_info["size"] = model_split[0]
             model = model_split[-1]
             dict_info["year"] = model[-1]
-            dict_info["series"] = model[:-2]
+            dict_info["series"] = model
+            # dict_info["series"] = model[:-2]
             dict_info["year"] = year_mapping.get('qned').get(dict_info.get("year"), None)
             dict_info
         
@@ -314,9 +315,10 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             model_split = model.split("lx")
             dict_info["grade"] = "flexble"
             dict_info["size"] = model_split[0]
+            dict_info["series"] = model
             model = model_split[-1]
             dict_info["year"] = model[0]
-            dict_info["series"] = model[1]
+            # dict_info["series"] = model[1]
             dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
         
         # "u"가 포함된 모델 처리

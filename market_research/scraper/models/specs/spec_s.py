@@ -29,7 +29,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         DataVisualizer.__init__(self, df = self._data, plot_name='sony')
         pass
     
-    def _fetch_model_data(self, demo_mode:bool=False, temporary_year_marking: bool = True) -> pd.DataFrame:
+    def _fetch_model_data(self, demo_mode:bool=False) -> pd.DataFrame:
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
@@ -54,8 +54,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            if temporary_year_marking:
-                df_models['year'] = df_models['year'].fillna("2024")  # 임시
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         
@@ -338,11 +336,13 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     @staticmethod         
     def extract_info_from_model(model: str)->dict:
         dict_info = {}
+        model = model.lower()
+        dict_info["model"] = model
         dict_info["year"] = model.split("-")[1][-1]
         dict_info["series"] = model.split("-")[1][2:]
         dict_info["size"] = model.split("-")[1][:2]
         dict_info["grade"] = model.split("-")[0]
-        dict_info["model"] = model.split("-")[1]
+        
         
         year_mapping = {
             'l': "2023",
@@ -350,9 +350,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             'j': "2021",
         }
 
-        try:
-            dict_info["year"] = year_mapping.get(dict_info.get("year"))
-        except:
-            dict_info["year"] = "2024"
+        dict_info["year"] = year_mapping.get(dict_info.get("year"), "2024")
 
         return dict_info

@@ -253,12 +253,17 @@ class Rtings(Scraper, Rvisualizer):
 
         measurement_list = []
         for model in models_list:
-            results_df['model'] = model
+            model = model.strip()
+    
+            temp_df = results_df.copy()
+            temp_df['model'] = model
+            
             if extractor is not None:
-                dict_model = extractor.extract_info_from_model(model)  
+                dict_model = extractor.extract_info_from_model(model)
                 for k, v in dict_model.items():
-                    results_df[k] = v
-            measurement_list.append(results_df)
+                    temp_df[k] = v
+            measurement_list.append(temp_df)
+
         measurement_df = pd.concat(measurement_list, ignore_index=True)
         measurement_df.to_json(self.output_folder / "measurement_data.json", orient='records', lines=True)
         return measurement_df
