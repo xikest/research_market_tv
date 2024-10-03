@@ -1,82 +1,92 @@
 import streamlit as st
-
+import pandas as pd
 from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
 from market_research.scraper import Rvisualizer
-import pandas as pd
-# 페이지 레이아웃 설정
+
+
+
 st.set_page_config(layout="wide")
+maker_class = {
+        "sony": Specscraper_s,
+        "lg": Specscraper_l,
+        "samsung": Specscraper_se,
+    }
+makers = ["SONY", "LG", "SAMSUNG"]
 
 @st.cache_data
-def loading_data(indicator_type):
-    indicator_class = {
-        "SONY": Specscraper_s,
-        "LGE": Specscraper_l,
-        "SSE": Specscraper_se,
-    }
+def loading_heatmap(selected_maker):
+    selected_class = maker_class.get(selected_maker)
+    fig = selected_class(demo_mode=True).heatmap_spec(return_fig=True)   
+    return fig
 
-    data_class = indicator_class.get(indicator_type)(demo_mode=True)
-    return data_class
+@st.cache_data
+def loading_pricemap(selected_maker):
+    selected_class = maker_class.get(selected_maker)
+    fig = selected_class(demo_mode=True).price_map(return_fig=True)  
+    return fig
+
 
 @st.cache_data
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "SONY": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
-        "LGE": None,
-        "SSE": None,
+        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
+        "lg": None,
+        "samsung": None,
     }
     
     calendar_url = calendar_dict.get(indicator_type)
     return calendar_url
     
 @st.cache_data
-def loading_rtings(indicator_type):
-    measurement_data = None
-    data_dict = {
-        "SONY": 'sony_measurement_data.json',
-        "LGE": 'lge_measurement_data.json',
-        "SSE": None,
-    }
-    # indicator_type에 따라 URL 반환
-
-    json_path = data_dict.get(indicator_type, None)
-    if json_path is not None:
-        measurement_data = pd.read_json(json_path, orient='records', lines=True)
-    
-    return measurement_data
+def loading_rtings(selected_multi_makers):
+    json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/measurement_data.json'
+    measurement_data = pd.read_json(json_path, orient='records', lines=True)
+    fig = Rvisualizer(measurement_data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
+    return fig
 
 def display_indicators():
-    st.sidebar.subheader("Dash Board")
-       
-    selected_maker = st.sidebar.radio("Select Maker", ["SONY", "LGE", "SSE"])
-    data_class = loading_data(selected_maker)
-    calendar_url = loading_calendar(selected_maker)
-    measurement_data = loading_rtings(selected_maker)
-    
-    
+    st.sidebar.subheader("Like this project? Buy me a coffee!☕️")
+    selected_maker = st.sidebar.selectbox("", makers).lower()
+
+        
     col1, col2, col3 = st.columns([2, 2, 1])
+    
     with col1:
-        fig = data_class.heatmap_spec(return_fig=True)   
-        fig.update_layout(width=700, height=700, title='heat map for spec')  
-        st.plotly_chart(fig, use_container_width=False)
+        st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
+        fig = loading_heatmap(selected_maker)
+        fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
+        st.plotly_chart(fig, use_container_width=True)
         
     with col2:
-        if measurement_data is not None:
-            fig = Rvisualizer(measurement_data).radar_scores(return_fig=True)   
-            fig.update_layout(width=700, height=700, title='radar plot for score')  
-            st.plotly_chart(fig, use_container_width=False)
-    with col3:
-
-        st.components.v1.iframe(calendar_url, width=400, height=400)
         
-
-    st.divider()  # 행과 칼럼을 시각적으로 구분하는 수평선 추가
-
-    with st.container(): 
-        fig = data_class.price_map(return_fig=True)  
-        fig.update_layout(width=500, height=500, title='price map')
+        selected_multi_makers = st.multiselect("", makers, placeholder='Radar Scores', label_visibility='hidden')
+        if not selected_multi_makers: 
+            selected_multi_makers =  selected_maker
+        else:
+            selected_multi_makers = list(map(str.lower, selected_multi_makers))
+        fig = loading_rtings(selected_multi_makers)
+        fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with col3:
+        calendar_url = loading_calendar(selected_maker)
+        if calendar_url is not None:
+            st.components.v1.iframe(calendar_url, width=400, height=600)
+        else:
+            st.markdown(f"<h3 style='text-align: center;'>{'No information'}</h3>", unsafe_allow_html=True)
+            
+    # st.markdown("---")
+    with st.container():   
+        fig = loading_pricemap(selected_maker)
+        fig.update_layout(
+            width=500,
+            height=380,
+            title='price map',
+             margin=dict(t=20, b=0)
+        )
         st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":

@@ -11,10 +11,15 @@ import plotly.graph_objects as go
 
 class Rvisualizer(BaseVisualizer):
 
-    def __init__(self, df, output_folder_path="results"):
+    def __init__(self, df:None, output_folder_path="results", maker_filter=None):
         super().__init__(output_folder_path=output_folder_path)
         self.output_folder_path =output_folder_path
-        self.df = df.copy()        
+        
+        if df is None:
+            json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/measurement_data.json'
+            self.df = pd.read_json(json_path, orient='records', lines=True)
+        else:
+            self.df = df.copy()        
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
         self.title_units_dict = {
@@ -34,12 +39,25 @@ class Rvisualizer(BaseVisualizer):
             "Variable Refresh Rate": "Hz",
             "Viewing Angle": "°"
         }
-        self._initialize_data()
+        self.df = self._initialize_data(self.df)
+        
+        if maker_filter is not None:
+            if isinstance(maker_filter, str):
+                maker_filter = [maker_filter]
+            
+            filtered_mask = self.df['maker'].isin(maker_filter)
+            if filtered_mask.sum() > 0:
+                self.df = self.df[filtered_mask]
 
-    def _initialize_data(self):
-        self.df.loc[self.df['label'] == '1,000 cd/m² DCI P3 Coverage ITP', 'header'] = 'Color Volume(ITP)'
-        self.df.loc[self.df['label'] == '10,000 cd/m² Rec 2020 Coverage ITP', 'header'] = 'Color Volume(ITP)'
-        self.df.loc[self.df['label'] == 'Contrast', 'label'] = 'Contrast_'
+
+    def _initialize_data(self, df):
+        
+        def retrim(ds: pd.Series, mark: str = ","):
+            return ds.str.replace(mark, "")
+        
+        df.loc[df['label'] == '1,000 cd/m² DCI P3 Coverage ITP', 'header'] = 'Color Volume(ITP)'
+        df.loc[df['label'] == '10,000 cd/m² Rec 2020 Coverage ITP', 'header'] = 'Color Volume(ITP)'
+        df.loc[df['label'] == 'Contrast', 'label'] = 'Contrast_'
         label_dict = {'1,000 cd/m² DCI P3 Coverage ITP': "DCI",
                       '10,000 cd/m² Rec 2020 Coverage ITP': "BT2020",
                       'Blue Luminance': "Blue",
@@ -53,66 +71,73 @@ class Rvisualizer(BaseVisualizer):
         value_dict = {"N/A": "0", "Inf ": "1000000"}
 
         for target, label in label_dict.items():
-            self.df.loc[:, "label"] = self.df.label.map(lambda x: x.replace(target, label))
+            df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
         for target, value in value_dict.items():
-            self.df.loc[:, "result_value"] = self.df.result_value.map(lambda x: x.replace(target, value))
+            df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
 
         trim_marks = ["cd/m²", ",", "%", "°", "K", "ms", "Hz", "dB", ": 1"]
         for trim_mark in trim_marks:
             try:
-                self.df.loc[:, "result_value"] = self._retrim(self.df["result_value"], trim_mark)
+                df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
             except:
                 pass
 
-        self.df = self.df[(self.df['category'] != 'Sound Quality') & (self.df['category'] != 'Smart Features') & (self.df['category'] != 'Inputs')]
-        self.df = self.df[~self.df.score.isin([""])]  # score가 있는 데이터만 사용
-        self.df['result_value'] = self.df['result_value'].astype(float)
-        self.df["score"] = self.df.score.astype(float)
+        df = df[(df['category'] != 'Sound Quality') & (df['category'] != 'Smart Features') & (df['category'] != 'Inputs')]
+        df = df[~df.score.isin([""])]  # score가 있는 데이터만 사용
+        df['result_value'] = df['result_value'].astype(float)
+        df["score"] = df.score.astype(float)
+        return df
 
 
-    def _get_data(self, column):
-        data_df = self.data_detail_dict.get(column)
 
-        if data_df is None:
-            data_df = self._set_data_detail(column)
-            self.data_detail_dict.update({column: data_df})
-            data_df = self.data_detail_dict.get(column)
-        return data_df
 
-    def _set_data_detail(self, column: str = None):
-        self._target_column = column
-        data_df = self.df[self.df["header"] == column]
-        data_df = data_df.sort_values(["maker", "product", "label"], ascending=False)
-        data_df = data_df.pivot(index=["maker", "product"], columns="label", values='result_value')
-        data_df.columns = data_df.columns.map(lambda x: str(x))
-        data_df = data_df.reset_index()
-        data_df.loc[:, 'model'] = data_df['maker'] + '_' + data_df['product']
-        data_df = data_df.drop(["maker", "product"], axis=1)
 
-        data_df = data_df.melt(id_vars=['model'], var_name='label', value_name=column)
 
-        if "brightness" in column.lower():
-            data_df = self._brightness_trim(data_df)
 
-        return data_df
 
-    def _retrim(self, ds: pd.Series, mark: str = ","):
-        return ds.str.replace(mark, "")
-
-    def _brightness_trim(self, df):
-        df_peak = df[df['label'].str.contains("Window") & df['label'].str.contains("Peak")]
-        df_peak.loc[:, "label"] = df_peak["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
-
-        df_peak = df_peak.sort_values(["model", "label"], ascending=True)
-        df_peak["label"] = df_peak.label.map(lambda x: str(x) + "%")
-        df_peak = df_peak.rename(columns={"label": "APL"})
-        return df_peak
 
     def plotsns_facet_bar(self, column: str, col_wrap=3, height=4, facet_yticks: Optional[Union[dict, list]] = None,
                           facet_ylims: Optional[Union[dict, list]] = None, show_annot=True,
                           swap_mode: bool = False, save_plot_name:str=None):
+        def get_data(column):
+            
+            def set_data_detail(column: str = None):
+                
+                def brightness_trim(df):
+                    df_peak = df[df['label'].str.contains("Window") & df['label'].str.contains("Peak")]
+                    df_peak.loc[:, "label"] = df_peak["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
 
-        df = self._get_data(column)
+                    df_peak = df_peak.sort_values(["model", "label"], ascending=True)
+                    df_peak["label"] = df_peak.label.map(lambda x: str(x) + "%")
+                    df_peak = df_peak.rename(columns={"label": "APL"})
+                    return df_peak
+                
+                self._target_column = column
+                data_df = self.df[self.df["header"] == column]
+                data_df = data_df.sort_values(["maker", "product", "label"], ascending=False)
+                data_df = data_df.pivot(index=["maker", "product"], columns="label", values='result_value')
+                data_df.columns = data_df.columns.map(lambda x: str(x))
+                data_df = data_df.reset_index()
+                data_df.loc[:, 'model'] = data_df['maker'] + '_' + data_df['product']
+                data_df = data_df.drop(["maker", "product"], axis=1)
+
+                data_df = data_df.melt(id_vars=['model'], var_name='label', value_name=column)
+
+                if "brightness" in column.lower():
+                    data_df = brightness_trim(data_df)
+
+                return data_df
+            
+            data_df = self.data_detail_dict.get(column)
+
+            if data_df is None:
+                data_df = set_data_detail(column)
+                self.data_detail_dict.update({column: data_df})
+                data_df = self.data_detail_dict.get(column)
+            return data_df
+
+
+        df = get_data(column)
         mode_dict = self._plot_mode(column, swap_mode)
         col_y = mode_dict.get("col_y")
         col_x = mode_dict.get("col_x")
@@ -245,13 +270,18 @@ class Rvisualizer(BaseVisualizer):
                 "col_x": col_x,
                 "col_facet": col_facet}
 
+
+
     def radar_scores(self, return_fig: bool = False):
         col_socres = ["maker", "year", "series", "category", "header", "score"]
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
+        
+        data_df['year'] = data_df['year'].astype(int).astype(str)
         data_df["score"] = data_df["score"].map(lambda x: float(x))
         data_df = data_df.pivot(index=["maker", "year", "series"], columns=["category", "header"], values='score')
         data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
-        data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
+        data_df = data_df.sort_index(axis='columns', level=[0, 1, 2], ascending=[True, False, False])
+
 
         data_df = data_df.loc[
             ['Black Uniformity', 'Contrast', 'SDR Brightness', 'HDR Brightness',
@@ -260,47 +290,71 @@ class Rvisualizer(BaseVisualizer):
             'HDR Native Gradient', 'PQ EOTF Tracking'], :
         ]
 
-        # 초기 연도로 설정
-        initial_year = data_df.columns.get_level_values(1).unique()[0]
-
         # Plotly Figure 생성
         fig = go.Figure()
 
-        # 각 연도별로 시리즈 추가
         years = data_df.columns.get_level_values(1).unique()
+        years = sorted(years, reverse=True)
+        series_group = data_df.columns.get_level_values(2).unique()
+        
 
-        for year in years:
-            for series in data_df.xs(year, level=1, axis=1).columns.get_level_values(1).unique():
-                data_series = data_df.xs((series, year), level=(2, 1), axis=1)
+        for series in series_group:
+                data_series = data_df.xs((series), level=(2), axis=1)
+                year = data_series.columns.get_level_values(1).unique().item()
+                maker = data_series.columns.get_level_values(0).unique().item()
+
                 values = data_series.mean(axis=1).values.flatten()
-                values = np.concatenate((values, [values[0]]))  
+                values = np.concatenate((values, [values[0]]))
                 theta = data_df.index.tolist() + [data_df.index[0]]
-
                 fill_color = f'rgba({np.random.randint(0, 255)}, {np.random.randint(0, 255)}, {np.random.randint(0, 255)}, 0.25)'
 
                 fig.add_trace(go.Scatterpolar(
                     r=values,
                     theta=theta,
                     fill='toself',
-                    fillcolor=fill_color,  # 랜덤 색상
-                    name=f"{series} ({year})",
+                    fillcolor=fill_color,
+                    name=f"{maker} {series}({year})",  # Series 이름에 연도 포함
                     mode='lines',
                     line=dict(color=fill_color, width=2),
-                    visible='legendonly' if year != initial_year else True  # 초기 연도만 표시
+                    visible= True  
                 ))
 
-        # 드롭다운 메뉴 추가
-        buttons = []
-        for year in years:
-            buttons.append(
+
+        year_dropdown = dict(
+            active=0,  
+            buttons=[
                 dict(
-                    label=str(year),
+                    label='All',  
                     method='update',
-                    args=[{'visible': [year == y for y in years]}]  # 선택한 연도에 해당하는 시리즈만 표시
+                    args=[
+                        {'visible': [True] * len(fig.data)}
+                    ]
                 )
-            )
+            ] + [
+                dict(
+                    label=year,
+                    method='update',
+                    args=[
+                        {'visible': [year in trace.name for trace in fig.data]}
+                    ]
+                ) for year in years
+            ]
+        )
+    
 
         # 레이아웃 업데이트
+        fig.update_layout(
+            updatemenus=[{
+                'buttons': year_dropdown['buttons'],
+                'direction': 'down',
+                'showactive': True,
+                'x': 0,  # 가로 위치 (0~1)
+                'y': 1.0,  # 세로 위치 (0~1) - 값을 조정하여 메뉴 위치 조정
+                'yanchor': 'bottom'  # 기준점 설정
+            }]
+        )
+
+        # 레이아웃 설정
         fig.update_layout(
             polar=dict(
                 radialaxis=dict(
@@ -315,21 +369,9 @@ class Rvisualizer(BaseVisualizer):
                     linewidth=0.5,
                 )
             ),
-            updatemenus=[
-                dict(
-                    active=0,
-                    buttons=buttons,
-                    direction='down',
-                    showactive=True,
-                    x=0.1,
-                    xanchor='left',
-                    y=1.1,
-                    yanchor='top',
-                )
-            ],
             showlegend=True,
             legend=dict(
-                x=1.4,
+                x=1.3,
                 y=0.5,
                 traceorder='normal',
                 font=dict(size=12, family='Arial, sans-serif'),
@@ -337,17 +379,20 @@ class Rvisualizer(BaseVisualizer):
             width=1000,
             height=800,
             font=dict(size=10, family='Arial, sans-serif', weight='bold'),
-            margin=dict(l=80, r=200, t=50, b=50),
+            margin=dict(l=80, r=100, t=10, b=10),
         )
 
-        fig.write_html(self.output_folder/f"radar_plot.html")
+        fig.write_html(self.output_folder / "radar_plot.html")
         if return_fig:
             return fig
         else:
             fig.show()  # 그래프 보여주기
+
+
  
     def heatmap_scores(self, cmap="cividis"):
         col_socres = ["maker","year", "series", "category", "header", "score"]
+        
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         data_df["score"] = data_df["score"].map(lambda x: float(x))
         # data_df["product"] = data_df["product"].map(lambda x: x.replace("-oled", ""))
