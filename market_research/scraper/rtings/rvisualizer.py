@@ -8,10 +8,12 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from market_research.scraper._visualization_scheme import BaseVisualizer
 import plotly.graph_objects as go  
+import plotly.express as px
+import streamlit as st
 
 class Rvisualizer(BaseVisualizer):
 
-    def __init__(self, df:None, output_folder_path="results", maker_filter=None):
+    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", maker_filter=None):
         super().__init__(output_folder_path=output_folder_path)
         self.output_folder_path =output_folder_path
         
@@ -19,7 +21,8 @@ class Rvisualizer(BaseVisualizer):
             json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/measurement_data.json'
             self.df = pd.read_json(json_path, orient='records', lines=True)
         else:
-            self.df = df.copy()        
+            self.df = df.copy()   
+        
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
         self.title_units_dict = {
@@ -39,6 +42,8 @@ class Rvisualizer(BaseVisualizer):
             "Variable Refresh Rate": "Hz",
             "Viewing Angle": "°"
         }
+        
+        import streamlit as st
         self.df = self._initialize_data(self.df)
         
         if maker_filter is not None:
@@ -55,37 +60,40 @@ class Rvisualizer(BaseVisualizer):
         def retrim(ds: pd.Series, mark: str = ","):
             return ds.str.replace(mark, "")
         
-        df.loc[df['label'] == '1,000 cd/m² DCI P3 Coverage ITP', 'header'] = 'Color Volume(ITP)'
-        df.loc[df['label'] == '10,000 cd/m² Rec 2020 Coverage ITP', 'header'] = 'Color Volume(ITP)'
-        df.loc[df['label'] == 'Contrast', 'label'] = 'Contrast_'
-        label_dict = {'1,000 cd/m² DCI P3 Coverage ITP': "DCI",
-                      '10,000 cd/m² Rec 2020 Coverage ITP': "BT2020",
-                      'Blue Luminance': "Blue",
-                      'Cyan Luminance': "Cyan",
-                      'Green Luminance': "Green",
-                      'Magenta Luminance': "Magenta",
-                      'Red Luminance': "Red",
-                      'White Luminance': "White",
-                      'Yellow Luminance': "Yellow"}
+        try:
+            df.loc[df['label'] == '1,000 cd/m² DCI P3 Coverage ITP', 'header'] = 'Color Volume(ITP)'
+            df.loc[df['label'] == '10,000 cd/m² Rec 2020 Coverage ITP', 'header'] = 'Color Volume(ITP)'
+            df.loc[df['label'] == 'Contrast', 'label'] = 'Contrast_'
+            label_dict = {'1,000 cd/m² DCI P3 Coverage ITP': "DCI",
+                        '10,000 cd/m² Rec 2020 Coverage ITP': "BT2020",
+                        'Blue Luminance': "Blue",
+                        'Cyan Luminance': "Cyan",
+                        'Green Luminance': "Green",
+                        'Magenta Luminance': "Magenta",
+                        'Red Luminance': "Red",
+                        'White Luminance': "White",
+                        'Yellow Luminance': "Yellow"}
 
-        value_dict = {"N/A": "0", "Inf ": "1000000"}
+            value_dict = {"N/A": "0", "Inf ": "1000000"}
 
-        for target, label in label_dict.items():
-            df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
-        for target, value in value_dict.items():
-            df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
+            for target, label in label_dict.items():
+                df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
+            for target, value in value_dict.items():
+                df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
 
-        trim_marks = ["cd/m²", ",", "%", "°", "K", "ms", "Hz", "dB", ": 1"]
-        for trim_mark in trim_marks:
-            try:
-                df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
-            except:
-                pass
+            trim_marks = ["cd/m²", ",", "%", "°", "K", "ms", "Hz", "dB", ": 1"]
+            for trim_mark in trim_marks:
+                try:
+                    df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
+                except:
+                    pass
 
-        df = df[(df['category'] != 'Sound Quality') & (df['category'] != 'Smart Features') & (df['category'] != 'Inputs')]
-        df = df[~df.score.isin([""])]  # score가 있는 데이터만 사용
-        df['result_value'] = df['result_value'].astype(float)
-        df["score"] = df.score.astype(float)
+            df = df[(df['category'] != 'Sound Quality') & (df['category'] != 'Smart Features') & (df['category'] != 'Inputs')]
+            df = df[~df.score.isin([""])]  # score가 있는 데이터만 사용
+            df['result_value'] = df['result_value'].astype(float)
+            df["score"] = df.score.astype(float)
+        except:
+            pass
         return df
 
 
@@ -273,24 +281,60 @@ class Rvisualizer(BaseVisualizer):
 
 
     def radar_scores(self, return_fig: bool = False):
-        col_socres = ["maker", "year", "series", "category", "header", "score"]
-        data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         
-        data_df['year'] = data_df['year'].astype(int).astype(str)
-        data_df["score"] = data_df["score"].map(lambda x: float(x))
-        data_df = data_df.pivot(index=["maker", "year", "series"], columns=["category", "header"], values='score')
-        data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
-        data_df = data_df.sort_index(axis='columns', level=[0, 1, 2], ascending=[True, False, False])
+        def rgba_with_opacity(color, opacity=0.3):
+            hex_color = color.lstrip('#')
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+            return f'rgba({r}, {g}, {b}, {opacity})'
+
+        
+        def get_measurement_data(df):
+            col_socres = ["maker", "year", "series", "category", "header", "score"]
+            data_df = df[col_socres].drop_duplicates().replace("", np.nan).dropna()
+            
+            data_df['year'] = data_df['year'].astype(int).astype(str)
+            data_df["score"] = data_df["score"].map(lambda x: float(x))
+            data_df = data_df.pivot(index=["maker", "year", "series"], columns=["category", "header"], values='score')
+            data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
+            data_df = data_df.sort_index(axis='columns', level=[0, 1, 2], ascending=[True, False, False])
 
 
-        data_df = data_df.loc[
-            ['Black Uniformity', 'Contrast', 'SDR Brightness', 'HDR Brightness',
-            'Color Volume', 'Color Gamut', 'Viewing Angle', 'Reflections',
-            'Pre Calibration', 'Gray Uniformity', 'Response Time',
-            'HDR Native Gradient', 'PQ EOTF Tracking'], :
-        ]
+            data_df = data_df.loc[
+                ['Black Uniformity', 'Contrast', 'SDR Brightness', 'HDR Brightness',
+                'Color Volume', 'Color Gamut', 'Viewing Angle', 'Reflections',
+                'Pre Calibration', 'Gray Uniformity', 'Response Time',
+                'HDR Native Gradient', 'PQ EOTF Tracking'], :
+            ]
+            return data_df
+        
+        def get_scores_data(df):
+            col_socres = ["maker", "year", "series", "category", "score"]
+            data_df = df[col_socres].drop_duplicates().replace("", np.nan).dropna()
 
-        # Plotly Figure 생성
+            data_df['year'] = data_df['year'].astype(int).astype(str)
+            data_df["score"] = data_df["score"].map(lambda x: float(x))
+            data_df = data_df.pivot(index=["maker", "year", "series"], columns=["category"], values='score')
+            data_df = data_df.T.sort_index(axis='columns', level=[0, 1, 2], ascending=[True, False, False])
+            return data_df
+        
+        
+        ##data
+        ##columns:"maker", "year", "series" ; multi columns
+        ##index: header
+        ## value: only keep one column
+
+        # Plotly Figure 
+    
+        try:
+            data_df = get_measurement_data(self.df)
+        except:
+            try:
+                data_df = get_scores_data(self.df)
+            except ValueError as e:
+                print(e)
+                
+    
+    
         fig = go.Figure()
 
         years = data_df.columns.get_level_values(1).unique()
@@ -298,26 +342,38 @@ class Rvisualizer(BaseVisualizer):
         series_group = data_df.columns.get_level_values(2).unique()
         
 
-        for series in series_group:
-                data_series = data_df.xs((series), level=(2), axis=1)
-                year = data_series.columns.get_level_values(1).unique().item()
-                maker = data_series.columns.get_level_values(0).unique().item()
+        color_map = px.colors.qualitative.Plotly  # Plotly 색상 맵 사용
+        
+        
+        
+        for idx, series in enumerate(series_group):
+            data_series = data_df.xs((series), level=(2), axis=1)
+            year = data_series.columns.get_level_values(1).unique().item()
+            maker = data_series.columns.get_level_values(0).unique().item()
+            
+            try:
+                suffix = f": {data_series.loc['Mixed Usage'].item()}"
+            except:
+                suffix = ""
+                        
 
-                values = data_series.mean(axis=1).values.flatten()
-                values = np.concatenate((values, [values[0]]))
-                theta = data_df.index.tolist() + [data_df.index[0]]
-                fill_color = f'rgba({np.random.randint(0, 255)}, {np.random.randint(0, 255)}, {np.random.randint(0, 255)}, 0.25)'
-
-                fig.add_trace(go.Scatterpolar(
-                    r=values,
-                    theta=theta,
-                    fill='toself',
-                    fillcolor=fill_color,
-                    name=f"{maker} {series}({year})",  # Series 이름에 연도 포함
-                    mode='lines',
-                    line=dict(color=fill_color, width=2),
-                    visible= True  
-                ))
+            values = data_series.mean(axis=1).values.flatten()
+            values = np.concatenate((values, [values[0]]))
+            theta = data_df.index.tolist() + [data_df.index[0]]
+            
+            # 불연속 색상 맵에서 색상 선택
+            line_color = color_map[idx % len(color_map)]  # 색상 맵의 색상 순환
+            fill_color = rgba_with_opacity(line_color,opacity=0.1)
+            fig.add_trace(go.Scatterpolar(
+                r=values,
+                theta=theta,
+                fill='toself',
+                fillcolor=fill_color,
+                name=f"{maker} {series}({year}){suffix}",  # Series 이름에 연도 포함
+                mode='lines',
+                line=dict(color=line_color, width=2),
+                visible= True  
+            ))
 
 
         year_dropdown = dict(
@@ -390,7 +446,7 @@ class Rvisualizer(BaseVisualizer):
 
 
  
-    def heatmap_scores(self, cmap="cividis"):
+    def heatmap_scores(self, cmap="cividis", return_fig:bool=False):
         col_socres = ["maker","year", "series", "category", "header", "score"]
         
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
@@ -427,14 +483,12 @@ class Rvisualizer(BaseVisualizer):
             margin=dict(l=300, r=20, t=40, b=300), 
         )
 
-        # fig.write_html(self.output_folder/f"{self.plot_name}_heatmap.html")
-        
-        fig.show()
-                
-        # if return_fig:
-        #     return fig
-        # else:
-        #     fig.show()  # 그래프 보여주기
+        fig.write_html(self.output_folder/f"heatmap.html")
+                        
+        if return_fig:
+            return fig
+        else:
+            fig.show()  # 그래프 보여주기
         
 
     def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):

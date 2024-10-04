@@ -38,13 +38,13 @@ class Rtings(Scraper, Rvisualizer):
             for url in tqdm(urls):
                 if self.verbose:
                     print(f"connecting to {url}")
-                df = self._get_score(url, format_df=True)
+                df = self._get_score(url)
                 score_df = pd.concat([score_df, df], axis=0)
 
                 df = self._get_measurement_reuslts(url)
                 measurement_df = pd.concat([measurement_df, df], axis=0)
 
-                df = self._get_commetns(url, format_df=True)
+                df = self._get_commetns(url)
                 comments_df = pd.concat([comments_df, df], axis=0)
                 
             measurement_df.to_json(f'measurement_data.json', orient='records', lines=True)    
@@ -64,58 +64,71 @@ class Rtings(Scraper, Rvisualizer):
         
         
 
-    def _get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True) :
-        """
-        return type
-        -> dict|pd.DataFrame
-        """
-
-        driver = self.web_driver.get_chrome()
-        maker = url.split("/")[-2]
-        model = url.split("/")[-1]
+    def _get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled") :
+        
+        dict_extractors = {"sony":Specscraper_s,
+                           "lg":Specscraper_l,
+                           "samsung":Specscraper_se}
+        extractor = None
         url = url.lower()
-        # 웹 페이지 로드
+        driver = self.web_driver.get_chrome()
         driver.get(url)
         time.sleep(self.wait_time)
+        page_source = driver.page_source        
+        soup = BeautifulSoup(page_source, 'html.parser')
+        title = soup.title.string.lower()
+        maker = title.split(" ")[0].strip().lower()
+        product = title.replace(maker, "").split("review")[0]
+        models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
+        models_list = models.split(",")
+        for key in dict_extractors.keys():
+            if maker in key:
+                extractor = dict_extractors.get(key)
+        
 
         # scorecard-row-content 클래스를 가진 요소들을 선택
         elements = driver.find_elements(By.CLASS_NAME, "scorecard-row-content")
-        maker_dict = {}
         try:
             score_dict = {}
             for element in elements:
-                label = element.find_element(By.CLASS_NAME, 'scorecard-row-name').text.strip()
+                score_type = element.find_element(By.CLASS_NAME, 'scorecard-row-name').text.strip()
                 score = element.find_element(By.CLASS_NAME, 'e-score_box-value ').text.strip()
-                score_dict[label] = score
-
-            # WebDriver 종료
-            driver.quit()
-
-            model_dict = {model:score_dict}
-            maker_dict = {maker:model_dict}
+                score_dict[score_type] = score
 
             rows = []
-            # 딕셔너리를 순회하며 데이터프레임 행으로 추가
-            for maker, models in maker_dict.items():
-                for model, scores in models.items():
-                    for score_type, score in scores.items():
-                        rows.append({'Maker': maker, 'Model': model, 'Score Type': score_type, 'Score': score})
+            for score_type, score in score_dict.items():
+                rows.append({'category': score_type, 'score': score})
             scores_df = pd.DataFrame(rows)
-            scores_dict = scores_df.to_dict()
-            if format_df:
-                return scores_df
-            else:
-                return scores_dict
-
+            scores_df['product'] = product
+            scores_df['maker'] = maker
+   
+            
+            scores_list = []
+            for model in models_list:
+                model = model.strip()
+        
+            temp_df = scores_df.copy()
+            temp_df['model'] = model
+            
+            if extractor is not None:
+                dict_model = extractor.extract_info_from_model(model)
+                for k, v in dict_model.items():
+                    temp_df[k] = v
+            scores_list.append(temp_df)
+            scores_df = pd.concat(scores_list, ignore_index=True)
+            
+            scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
+            return scores_df
         except Exception as e:
             if self.verbose:
                 print(f"get specification error: {e}")
-            # WebDriver 종료
+        finally:
             driver.quit()
+            
 
 
 
-    def _get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", format_df=True, min_sentence_length = 0):
+    def _get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", min_sentence_length = 0):
         """
         return dict or DataFrame
 
@@ -160,19 +173,15 @@ class Rtings(Scraper, Rvisualizer):
                         comments_list.append(
                             {'idx': idx, 'maker': maker, 'product': product, 'sentences': comment_text})
                 comments_df = pd.DataFrame(comments_list).set_index("idx")
-                comments_dict = comments_df.to_dict()
             finally:
                 driver.quit()
         except:
             if self.verbose:
                 print("no comment")
             comments_df = pd.DataFrame([{'idx': 0, 'maker': maker, 'product': product, 'sentences': "No data"}]).set_index("idx")
-            comments_dict = comments_df.to_dict()
 
-        if format_df:
-            return comments_df
-        else:
-            return comments_dict
+        return comments_df
+
 
     def _get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
         
@@ -198,8 +207,6 @@ class Rtings(Scraper, Rvisualizer):
         for key in dict_extractors.keys():
             if maker in key:
                 extractor = dict_extractors.get(key)
-
-            
 
         results_list = []
         category = ""
@@ -265,5 +272,5 @@ class Rtings(Scraper, Rvisualizer):
             measurement_list.append(temp_df)
 
         measurement_df = pd.concat(measurement_list, ignore_index=True)
-        measurement_df.to_json(self.output_folder / "measurement_data.json", orient='records', lines=True)
+        measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
         return measurement_df
