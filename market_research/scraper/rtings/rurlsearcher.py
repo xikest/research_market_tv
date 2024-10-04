@@ -21,29 +21,28 @@ class Rurlsearcher(Scraper):
 
     def get_keywords_for_search(self, maker: str = None, category: str = None):
         src_dict = self._get_search_src()['keywords']
-        keywords_list = []
+        keywords = []
 
         for maker_key, category_dict in src_dict.items():
             if maker is None or maker_key == maker:
                 for category_key, keyword_list in category_dict.items():
                     if category is None or category_key == category:
-                        keywords_list.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
+                        keywords.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
         
-        return keywords_list
-    
+        return keywords
     
     
     def get_urls_for_search(self, maker: str = None, category: str = None):
         src = self._get_search_src()
         src_dict = src['urls']
-        urls_list = []
+        urls = []
         for maker_key, category_dict in src_dict.items():
             if maker is None or maker_key == maker:
-                for category_key, keyword_list in category_dict.items():
+                for category_key, url_list in category_dict.items():
                     if category is None or category_key == category:
-                        urls_list.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
+                        urls.extend(url_list)
         
-        return urls_list
+        return urls
 
     def get_urls_from_web(self, keywords: list = None) -> list:
         urls_set = set()

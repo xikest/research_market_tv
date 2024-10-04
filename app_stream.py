@@ -41,22 +41,24 @@ def loading_calendar(indicator_type):
     return calendar_url
     
 # @st.cache_data
-def loading_rtings(selected_multi_makers, data_src='measurement'):
+def loading_rtings(data_src='measurement'):
     if data_src == 'measurement':
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
     elif data_src == 'scores':
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
-    try:
-        fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
-    except:
-        fig = None
-    return fig
+    return data
+
 
 def display_indicators():
-    st.sidebar.subheader("Like this project? Buy me a coffee!☕️")
-    st.sidebar.write("updated: 1st Oct.")
+    
+
     selected_maker = st.sidebar.selectbox("", makers).lower()
+    st.sidebar.write("updated: 1st Oct.")
+    with st.sidebar.expander("Hi 😎", expanded=False):
+    # 여기에 사이드바의 내용을 추가하세요.
+        st.subheader("Like this project? ")
+        st.subheader("Buy me a coffee!☕️")
     for _ in range(30):
         st.sidebar.write("")
     # 달력 URL 로드
@@ -67,7 +69,8 @@ def display_indicators():
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
 
         
-    col1, col2, col3 = st.columns([1, 1, 1])
+        
+    col1, col2 = st.columns([2, 3])
     
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
@@ -83,17 +86,10 @@ def display_indicators():
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab1, tab2 = st.tabs(["Total", "Detail"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Scores Total", "Scores Detail", "Heatmap", "PCA"])
         with tab1:
-            fig = loading_rtings(selected_multi_makers=selected_multi_makers, data_src = 'scores')
-            if fig != None:
-                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No information")
-        with tab2:
-           
-            fig = loading_rtings(selected_multi_makers=selected_multi_makers, data_src = 'measurement')
+            data = loading_rtings('scores')
+            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
             if fig != None:
                 fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                 st.plotly_chart(fig, use_container_width=True)
@@ -101,8 +97,33 @@ def display_indicators():
                 st.write("No information")
 
             
-    with col3:
-            st.write("..")
+        with tab2:
+            data = loading_rtings( 'measurement')
+            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
+            if fig != None:
+                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.write("No information")
+            
+        with tab3:
+            data = loading_rtings('measurement')
+            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).heatmap_scores(return_fig=True)   
+            if fig != None:
+                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.write("No information")
+        
+        with tab4:
+            data = loading_rtings('measurement')
+            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).plot_pca(return_fig=True)   
+            if fig != None:
+                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.write("No information")
+
             
             
     with st.container():   

@@ -37,13 +37,15 @@ class Rtings(Scraper, Rvisualizer):
                 if self.verbose:
                     print(f"connecting to {url}")
                 df = self._get_score(url)
-                scores_df = pd.concat([scores_df, df], axis=0)
+                scores_df = pd.merge(scores_df.T, df.T, left_index=True, right_index=True, how='outer').T
+
 
                 df = self._get_measurement_reuslts(url)
-                measurement_df = pd.concat([measurement_df, df], axis=0)
+                measurement_df = pd.merge(measurement_df.T, df.T, left_index=True, right_index=True, how='outer').T
 
                 df = self._get_commetns(url)
-                comments_df = pd.concat([comments_df, df], axis=0)
+                comments_df = pd.merge(comments_df.T, df.T, left_index=True, right_index=True, how='outer').T
+                # comments_df = pd.concat([comments_df, df], axis=0)
 
             scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
             measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)

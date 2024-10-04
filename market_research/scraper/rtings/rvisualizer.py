@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from market_research.scraper._visualization_scheme import BaseVisualizer
 import plotly.graph_objects as go  
 import plotly.express as px
+import plotly.colors as colors
 import streamlit as st
 
 class Rvisualizer(BaseVisualizer):
@@ -23,8 +24,18 @@ class Rvisualizer(BaseVisualizer):
         else:
             self.df = df.copy()   
         
+        self.font='Arial, sans-serif'
+        self.fontsize= 10
         self.data_detail_dict: dict = {}
         self.data_detail_df = None
+        self.measurement_select_col = ['Pre Calibration',
+                                       'PQ EOTF Tracking','HDR Native Gradient',
+                                        'Response Time','Gray Uniformity', 
+                                        'Reflections','Viewing Angle', 
+                                        'Color Volume', 'Color Gamut',
+                                        'Black Uniformity', 'Contrast',
+                                        'SDR Brightness', 'HDR Brightness']
+        
         self.title_units_dict = {
             "HDR Brightness": "cd/m²",
             "SDR Brightness": "cd/m²",
@@ -202,7 +213,7 @@ class Rvisualizer(BaseVisualizer):
                     if height_val >= 10000:
                         annot_text = f'{height_val / 1000:.1f}K'
                     ax.annotate(annot_text, (p.get_x() + p.get_width() / 2., height_val), ha='center', va='center',
-                                xytext=(0, 1), textcoords='offset points', fontsize=8)
+                                xytext=(0, 1), textcoords='offset points', fontsize=self.fontsize)
                 ax.yaxis.set_ticks([])
         sns.despine()
         plt.tight_layout()
@@ -212,8 +223,6 @@ class Rvisualizer(BaseVisualizer):
             save_plot_name = f"plot_for_{file_name}.png"
         plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
         plt.show()
-
-    import matplotlib.pyplot as plt
 
     def plot_lines(self, column, swap_mode=True, ylims: list = None,
                    yticks: list = None, save_plot_name: str = None):
@@ -299,12 +308,7 @@ class Rvisualizer(BaseVisualizer):
             data_df = data_df.sort_index(axis='columns', level=[0, 1, 2], ascending=[True, False, False])
 
 
-            data_df = data_df.loc[
-                ['Black Uniformity', 'Contrast', 'SDR Brightness', 'HDR Brightness',
-                'Color Volume', 'Color Gamut', 'Viewing Angle', 'Reflections',
-                'Pre Calibration', 'Gray Uniformity', 'Response Time',
-                'HDR Native Gradient', 'PQ EOTF Tracking'], :
-            ]
+            data_df = data_df.loc[self.measurement_select_col, :]
             return data_df
         
         def get_scores_data(df):
@@ -430,11 +434,11 @@ class Rvisualizer(BaseVisualizer):
                 x=1.3,
                 y=0.5,
                 traceorder='normal',
-                font=dict(size=12, family='Arial, sans-serif'),
+                font=dict(size=self.fontsize, family=self.font),
             ),
             width=1000,
             height=800,
-            font=dict(size=10, family='Arial, sans-serif', weight='bold'),
+            font=dict(size=self.fontsize, family=self.font, weight='bold'),
             margin=dict(l=80, r=100, t=10, b=10),
         )
 
@@ -446,41 +450,84 @@ class Rvisualizer(BaseVisualizer):
 
 
  
-    def heatmap_scores(self, cmap="cividis", return_fig:bool=False):
+    def heatmap_scores(self, colorscale="cividis", return_fig:bool=False):
         col_socres = ["maker","year", "series", "category", "header", "score"]
-        
         data_df = self.df[col_socres].drop_duplicates().replace("", np.nan).dropna()
         data_df["score"] = data_df["score"].map(lambda x: float(x))
-        # data_df["product"] = data_df["product"].map(lambda x: x.replace("-oled", ""))
         data_df = data_df.pivot(index=["maker","year", "series"], columns=["category", "header"], values='score')
-        # data_df = data_df.T.reset_index().sort_index(axis=1).drop("category", axis=1).set_index("header")
         data_df = data_df.T.reset_index().sort_index(axis=1, level=0).drop("category", axis=1).set_index("header")
-        data_df = data_df.sort_index(axis=1, level=[0, 1])  # Sort the index levels
-    
-
-        x_labels = ['-'.join(map(str, idx)) for idx in data_df.columns]
-        fig = go.Figure(data=go.Heatmap(
-            z=data_df.values,  # 데이터 값
-            x=x_labels,  # x축 레이블
-            y=data_df.index,    # y축 레이블
-            colorscale=cmap,     # 색상 맵
+        data_df = data_df.loc[self.measurement_select_col,:]
+        
+        fig = go.Figure()
+        
+        x_labels = ['-'.join(map(str, idx)) for idx in data_df.columns]    
+        # Heatmap 추가
+        fig.add_trace(go.Heatmap(
+            z=data_df.values,
+            x=x_labels,
+            y=data_df.index,
+            colorscale=colorscale,
             showscale=False,
-            zmin=0,              # 최소 값
-            zmax=10,             # 최대 값
-            text=data_df.values, # 각 셀의 텍스트로 데이터 값 표시
-            texttemplate="%{text:.1f}",  # 텍스트 형식 지정
-            hoverinfo='none'     # 호버 시 텍스트 정보 표시 안 함
-        ))
+            zmin=0,
+            zmax=10,
+            text=data_df.values,
+            texttemplate="%{text:.1f}",
+            hoverinfo='none',
+        )) 
+        
+        years = sorted(data_df.columns.get_level_values(1).unique(), reverse=True)
 
-        # 제목 설정
+        year_dropdown = {
+            'buttons': [
+                dict(
+                    label='All',  
+                    method='update',
+                    args=[
+                        {
+                            'z': [data_df.values],
+                            'x': [['-'.join(map(str, idx)) for idx in data_df.columns]] ,
+                            'y': [data_df.index],
+                            'text': [data_df.values],
+                        },
+                    ]
+                )
+            ] 
+            +
+            [
+                dict(
+                    label=str(year),
+                    method='update',
+                    args=[
+                        {
+                            'z': [data_df.xs(year, level=1, axis=1).values],
+                            'x': [['-'.join(map(str, idx)) for idx in data_df.xs(year, level=1, axis=1).columns]],
+                            'y': [data_df.index],
+                             'text': [data_df.xs(year, level=1, axis=1).values]
+                        },
+                    ]
+                ) for year in years
+            ]
+        }
+
         fig.update_layout(
-            title='Rtings Score heatmap',
+            updatemenus=[dict(
+                type="dropdown",
+                buttons=year_dropdown['buttons'],
+                direction="down",
+                showactive=True,
+                x=-0.2,  
+                y=1.02, 
+                xanchor='left',  
+                yanchor='bottom',  
+            )],
+            
+            xaxis_showgrid=False,
             xaxis=dict(tickangle=90),
             yaxis=dict(tickangle=0),
-            # width=1000,  # 그래프 너비
-            height=1200,   # 그래프 높이
-            font=dict(size=16, family='Arial, sans-serif', weight='bold'),
-            margin=dict(l=300, r=20, t=40, b=300), 
+            width=1000,  # 그래프 너비
+            height=1000,   # 그래프 높이
+            font=dict(size=self.fontsize, family=self.font, weight='bold'),
+            margin=dict(l=100, r=20, t=40, b=500), 
         )
 
         fig.write_html(self.output_folder/f"heatmap.html")
@@ -491,9 +538,11 @@ class Rvisualizer(BaseVisualizer):
             fig.show()  # 그래프 보여주기
         
 
-    def plot_pca(self, figsize=(10, 6), title="Principal component", palette="RdYlBu", save_plot_name:str=None):
+    def plot_pca(self, palette="RdYlBu", return_fig:bool = False):
         sns.set_theme(style="whitegrid")
         ddf = self.df.copy()
+
+    
         ddf['category_header_label'] = ddf['category'] + '_' + ddf['header'] + '_' + ddf['label']
         ddf['maker_product'] = ddf['maker'] + '_' + ddf['product']
         ddf = ddf.drop(["category", "header", "label", "score", "maker", "product"], axis=1)[
@@ -502,11 +551,12 @@ class Rvisualizer(BaseVisualizer):
         ddf_pivot = ddf.pivot_table(index=['maker_product'], columns=['category_header_label'],
                                     values=['result_value'],
                                     aggfunc={'result_value': 'first'})
+        
         scaler = StandardScaler()
         X_numeric_scaled = scaler.fit_transform(ddf_pivot)
     
-        pca = PCA(n_components=0.8)  # Set explained variance threshold to 0.8
-        X_pca = pca.fit_transform(X_numeric_scaled)
+        pca = PCA(n_components=2)  # Set explained variance threshold to 0.8
+        pca.fit_transform(X_numeric_scaled)
     
         label_pc = [f"PC{i + 1}: {var*100:.2f}%" for i, var in enumerate(pca.explained_variance_ratio_)]
 
@@ -524,18 +574,70 @@ class Rvisualizer(BaseVisualizer):
         pca_result_by_header_df = pca_result_by_header_df.sort_values(by=label_pc[0], ascending=False)
         pca_result_long_df = pd.melt(pca_result_by_header_df, id_vars=["header"], var_name="Principal Component",
                                      value_name="loading")
+
+
+        palette = colors.qualitative.Plotly
+        fig = go.Figure()
+
+        # 각 주성분에 대해 바 추가
+        for i, principal_component in enumerate(pca_result_long_df['Principal Component'].unique()):
+            df_component = pca_result_long_df[pca_result_long_df['Principal Component'] == principal_component]
+            
+            filtered_df = df_component[df_component['header'].isin(self.measurement_select_col)]
+            
+            fig.add_trace(go.Bar(
+                x=filtered_df['loading'].round(1),
+                y=filtered_df['header'],
+                name=principal_component,
+                orientation='h',  # 수평 막대 그래프
+                hoverinfo='x',  # 호버 정보 설정
+                # text=filtered_df['loading'],  # 로딩 값 표시
+                textposition='auto',  # 텍스트 위치 설정
+                marker=dict(color=palette[i])  # 색상 팔레트 적용
+            ))
+
+        # 그래프 레이아웃 설정
+        fig.update_layout(
+            barmode='group',  # 그룹 모드로 설정
+            width=500,  # 그래프 폭 설정
+            height=500  # 그래프 높이 설정
+)
+
+        fig.update_xaxes(title='', range=[-1, 1])
+        fig.update_yaxes(title='')
+
+
+        fig.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.0,
+                xanchor="center",
+                x=0
+            ),
+            width=800,
+            height=500,
+            margin=dict(l=20, r=20, t=20, b=50), 
+        )
+        fig.write_html(self.output_folder/f"plot_pca.html")
+                        
+        if return_fig:
+            return fig
+        else:
+            fig.show()  # 그래프 보여주기
+            return pca_result_df
     
-        # 그래프 생성
-        plt.figure(figsize=figsize)
-        sns.barplot(x="loading", y="header", hue="Principal Component", data=pca_result_long_df, palette=palette)
-        plt.xlim(-1, 1)
-        plt.title(label=title, y=1.1)
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=False, ncol=3)
+        # # 그래프 생성
+        # plt.figure(figsize=figsize)
+        # sns.barplot(x="loading", y="header", hue="Principal Component", data=pca_result_long_df, palette=palette)
+        # plt.xlim(-1, 1)
+        # plt.title(label=title, y=1.1)
+        # plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=False, ncol=3)
     
-        plt.tight_layout()
-        sns.despine()
-        if save_plot_name is None:
-            save_plot_name = f"plot_pca_for_{title}.png"
-        plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
-        plt.show()
+        # plt.tight_layout()
+        # sns.despine()
+        # if save_plot_name is None:
+        #     save_plot_name = f"plot_pca_for_{title}.png"
+        # plt.savefig(self.output_folder / save_plot_name, bbox_inches='tight')
+        # plt.show()
 
