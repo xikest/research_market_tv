@@ -25,11 +25,9 @@ class Rtings(Scraper, Rvisualizer):
         pass
         
 
-        
-
 
     def get_data(self, urls:list, export_excel=True):
-        score_df= pd.DataFrame()
+        scores_df= pd.DataFrame()
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
         url = None
@@ -39,17 +37,18 @@ class Rtings(Scraper, Rvisualizer):
                 if self.verbose:
                     print(f"connecting to {url}")
                 df = self._get_score(url)
-                score_df = pd.concat([score_df, df], axis=0)
+                scores_df = pd.concat([scores_df, df], axis=0)
 
                 df = self._get_measurement_reuslts(url)
                 measurement_df = pd.concat([measurement_df, df], axis=0)
 
                 df = self._get_commetns(url)
                 comments_df = pd.concat([comments_df, df], axis=0)
-                
-            measurement_df.to_json(f'measurement_data.json', orient='records', lines=True)    
+
+            scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
+            measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
             if export_excel:
-                FileManager.df_to_excel(score_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
+                FileManager.df_to_excel(scores_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
                 FileManager.df_to_excel(measurement_df, file_name=self.output_xlsx_name, sheet_name="measurement", mode='a')
                 FileManager.df_to_excel(comments_df, file_name=self.output_xlsx_name, sheet_name="comments", mode='a')
         except Exception as e:
@@ -57,7 +56,7 @@ class Rtings(Scraper, Rvisualizer):
                 print(f"fail {url}")
                 print(e)
         return {
-            "scores":score_df,
+            "scores":scores_df,
                 "measurement":measurement_df,
                 "comments":comments_df
         }
@@ -117,7 +116,7 @@ class Rtings(Scraper, Rvisualizer):
             scores_list.append(temp_df)
             scores_df = pd.concat(scores_list, ignore_index=True)
             
-            scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
+            
             return scores_df
         except Exception as e:
             if self.verbose:
@@ -272,5 +271,5 @@ class Rtings(Scraper, Rvisualizer):
             measurement_list.append(temp_df)
 
         measurement_df = pd.concat(measurement_list, ignore_index=True)
-        measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
+
         return measurement_df

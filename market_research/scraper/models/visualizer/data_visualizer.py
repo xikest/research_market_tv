@@ -3,7 +3,6 @@ from tools.file import FileManager
 import plotly.graph_objs as go
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
-import streamlit as st
 import requests
 
 class DataVisualizer(BaseVisualizer):

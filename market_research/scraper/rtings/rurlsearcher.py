@@ -4,122 +4,46 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
-
+import requests
 
 class Rurlsearcher(Scraper):
     def __init__(self, enable_headless=True):
         super().__init__(enable_headless=enable_headless)
         self.wait_time = 2
-        self.model_dictionary = {"sony": {
-            "oled": [
-                'XR-77A95L', 'XR-65A75L', 'XR-65A95K', 'XR-65A90J', 'XR-65A80CL',
-                'XR-77A80CL', 'XR-77A80K', 'XR-65A80CK', 'XR-42A90K', 'XR-55A80CL',
-                'XR-83A80CL', 'XR-55A80CK', 'XR-65A80K', 'XR-83A90J', 'XR-48A90K',
-                'XR-77A80L', 'XR-55A95K', 'XR-77A80CK', 'XR-55A80L', 'XR-55A80K',
-                'XR-55A95L', 'XR-65A95L', 'XR-55A75L', 'XR-65A80L', 'XR-83A80L',
-                'XR-55A90J', 'bravia8'
-            ],
-            "mini_led": [
-                'XR-65X93CL', 'XR-75X93CL', 'XR-75X93L', 'XR-85X93L', 'XR-85X95L',
-                'XR-65X93L', 'bravia7', 'bravia9'
-            ],
-            "lcd": ['XR-55X90CK', 'XR-65X90CK', 'XR-75X90CK', 'XR-85X90CK',
-                    'KD-55X80CK', 'KD-65X80CK', 'KD-75X80CK', 'KD-85X80CK',
-                    'KD-43X85K', 'KD-50X85K', 'KD-55X85K', 'KD-65X85K', 'KD-75X85K',
-                    'KD-85X85K', 'XR-55X90CL', 'XR-65X90CL', 'XR-75X90CL',
-                    'XR-85X90CL', 'XR-65X95K', 'XR-75X95K', 'XR-85X95K', 'XR-55X90K',
-                    'XR-65X90K', 'XR-75X90K', 'XR-85X90K', 'XR-55X90L', 'XR-65X90L',
-                    'XR-75X90L', 'XR-85X90L', 'XR-98X90L', 'KD-43X80K', 'KD-50X80K',
-                    'KD-55X80K', 'KD-65X80K', 'KD-75X80K', 'KD-85X80K', 'XR-75Z9K',
-                    'XR-85Z9K', 'KD-32W830K', 'KD-55X77CL', 'KD-65X77CL', 'KD-75X77CL',
-                    'KD-85X77CL', 'KD-43X77L', 'KD-50X77L', 'KD-55X77L', 'KD-65X77L',
-                    'KD-75X77L', 'KD-85X77L','bravia3',]
-        },
-        "lge": {
-            "oled": ['lg g4', 'lg c4', 'lg b4', 
-                     'lg g3', 'lg c3', 'lg b3',
-                 
-            ],
-            "mini_led": ['lg qned90t 2024', 'lg qned85 2024'
-              
-            ],
-            "lcd": ['lg ut7570 2024',]
-        },
-        "sse": {
-            "oled": ['s95d', 's90d',  
-                     's95c', 's90c', 
-                 
-            ],
-            "mini_led": ['qn95d', 'qn90d',
-                         'qn95c', 'qn90c']
-              
-        }
-        
-        
-        }
-     
-     
-     
-     
-     
-     
-     
-        self.model_url_preset = {"sony":
-            {
-                
-                "oled": [
-                    'https://www.rtings.com/tv/reviews/sony/a90k-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a80l-a80cl-oled',
-                    'https://www.rtings.com/tv/reviews/sony/a95l-oled',
-                    'https://www.rtings.com/tv/reviews/sony/bravia-8-oled'
-                ],
-                "mini_led": [
-                    'https://www.rtings.com/tv/reviews/sony/bravia-9-qled',
-                    'https://www.rtings.com/tv/reviews/sony/bravia-7-qled',
-                    'https://www.rtings.com/tv/reviews/sony/x95l',
-                    'https://www.rtings.com/tv/reviews/sony/x93l-x93cl'
-                ],
-                "lcd": [
-                    'https://www.rtings.com/tv/reviews/sony/x90l-x90cl',
-                    'https://www.rtings.com/tv/reviews/sony/x77l-x77cl',
-                    'https://www.rtings.com/tv/reviews/sony/x85k',
-                    'https://www.rtings.com/tv/reviews/sony/x95k',
-                    'https://www.rtings.com/tv/reviews/sony/x80k-x80ck',
-                    'https://www.rtings.com/tv/reviews/sony/bravia-3'
-                ]
-            },
-            "lge":
-            {
-                "oled": [
-                        'https://www.rtings.com/tv/reviews/lg/g4-oled',
-                        'https://www.rtings.com/tv/reviews/lg/c4-oled',
-                        'https://www.rtings.com/tv/reviews/lg/b4-oled'
-                ],
-                "mini_led": [
-                    'https://www.rtings.com/tv/reviews/lg/qned90t',
-                    'https://www.rtings.com/tv/reviews/lg/qned85'
-                ],
-                "lcd": [
-                    'https://www.rtings.com/tv/reviews/lg/ut7570-ut75-ut7590'
-                ]
-            }
-        }
         
 
+    def _get_search_src(self):
+        file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_keywords.json"
+        response = requests.get(file_path)
+        data = response.json()
+        return data
+        
 
+    def get_keywords_for_search(self, maker: str = None, category: str = None):
+        src_dict = self._get_search_src()['keywords']
+        keywords_list = []
 
-
-
-
-    def get_model_from_dictionary(self, maker: str = "sony", key_mode=False):
-        if key_mode:
-            return self.model_dictionary.keys()
-        return self.model_dictionary.get(maker.lower())
-
-    def get_url_from_model_preset(self, maker: str = "sony", key_mode=False):
-        if key_mode:
-            return self.model_url_preset.keys()
-        return self.model_url_preset.get(maker.lower())
+        for maker_key, category_dict in src_dict.items():
+            if maker is None or maker_key == maker:
+                for category_key, keyword_list in category_dict.items():
+                    if category is None or category_key == category:
+                        keywords_list.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
+        
+        return keywords_list
+    
+    
+    
+    def get_urls_for_search(self, maker: str = None, category: str = None):
+        src = self._get_search_src()
+        src_dict = src['urls']
+        urls_list = []
+        for maker_key, category_dict in src_dict.items():
+            if maker is None or maker_key == maker:
+                for category_key, keyword_list in category_dict.items():
+                    if category is None or category_key == category:
+                        urls_list.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
+        
+        return urls_list
 
     def get_urls_from_web(self, keywords: list = None) -> list:
         urls_set = set()
