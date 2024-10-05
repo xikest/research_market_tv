@@ -25,9 +25,6 @@ class DataCleaner:
         self.df = self.df.map(transform_text)
         self.df.columns = [transform_text(x) for x in self.df.columns]
         self.df[["series","display type" ]] = self.df[["series","display type" ]].sort_values(by=["series","display type"]).ffill()
-    
-
-
 
     def get_price_df(self):
             df = self.df[

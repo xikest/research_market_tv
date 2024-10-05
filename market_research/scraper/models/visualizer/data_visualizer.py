@@ -4,15 +4,15 @@ import plotly.graph_objs as go
 from .data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
 import requests
+import plotly.io as pio
+
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", plot_name=""):
+    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", maker=""):
         
-        """
-        cleaning_mask에 삭제할 column의 키워드를 리스트로 전달하세요.
-        기본 값으로는 사전 정의된 값을 사용합니다.
-        """
-        self.plot_name = plot_name
+        pio.templates.default='ggplot2'
+        
+        self.maker = maker
         super().__init__(output_folder_path = output_folder_path)
         FileManager.make_dir(output_folder_path)
         
@@ -105,6 +105,7 @@ class DataVisualizer(BaseVisualizer):
             ))
 
 
+
         size_categories = sorted(data['size'].unique())
         ticks_below_3000 = list(range(0, 3001, 500))
         ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
@@ -142,55 +143,36 @@ class DataVisualizer(BaseVisualizer):
                 traceorder='reversed' 
             )
         )
-        fig.write_html(self.output_folder/f"{self.plot_name}_pricemap.html")
-        
+        fig.write_html(self.output_folder/f"{self.maker}_pricemap.html")
         
         if return_fig:
             return fig
         else:
             fig.show()
         if return_data:
-            data['series'] = data['series'].map(lambda x: f'{self.plot_name}_{x}')
+            data['series'] = data['series'].map(lambda x: f'{self.maker}_{x}')
             return data
 
 
-
-
     def heatmap_spec(self, col_selected:list=None, display_types:str=None, cmap="Blues", return_fig=False):
-        """
-        # YlGnBu
-        # GnBu
-        # Oranges
-        # viridis
-        # plasma
-        # cividis
-        # inferno
-        # magma
-        # coolwarm
-        # Blues
-        """
-        
-       
         if col_selected is None:
             try:
                 file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/col_heatmap.json"
                 response = requests.get(file_path)
                 data = response.json()
-                col_selected = data[self.plot_name]
+                col_selected = data.get(self.maker)
             except Exception as e:
-                print(e)
-        elif isinstance(col_selected, list):
-            col_selected = col_selected
-            col_selected =[c.lower() for c in col_selected]
-        else:
-            raise ValueError
+                    print(e)
+        else:   
+            if isinstance(col_selected, list):
+                col_selected = col_selected
+                col_selected =[c.lower() for c in col_selected]
+            else:
+                raise ValueError
         
-
         data_df = self.dc.get_df_cleaned().copy()
-
         available_columns = [col for col in col_selected if col in data_df.columns]
         missing_columns = [col for col in col_selected if col not in data_df.columns]
-        # Print missing columns
         if missing_columns:
             print("The following columns are missing from the DataFrame:")
             for col in missing_columns:
@@ -201,7 +183,6 @@ class DataVisualizer(BaseVisualizer):
             condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
             data_df = data_df[condition]
         data_df = data_df.mask(data_df == '-', 0)
-        # data_df = data_df.map(lambda x: len(x.split(",")) if isinstance(x, str) else x)
         data_df = data_df.fillna(0)
         
         data_df = data_df[data_df.columns[::-1]]
@@ -210,8 +191,6 @@ class DataVisualizer(BaseVisualizer):
         data_df = data_df.map(lambda x: 1 if isinstance(x, str) else x)
         idx_names = data_df.index.names
         
-
-        ## 중복 제거
         data_df['row_sum'] = data_df.sum(axis=1)
         data_df = data_df.reset_index().sort_values(by = idx_names + ['row_sum'], ascending=False).drop_duplicates(subset=idx_names).drop(['row_sum'], axis=1)
         mask_data = mask_data.loc[data_df.index, :]
@@ -237,14 +216,14 @@ class DataVisualizer(BaseVisualizer):
 
         # 그래프 제목 및 레이아웃 설정
         fig.update_layout(
-            title=f"{self.plot_name} spec",
+            title=f"{self.maker} spec",
             xaxis=dict(title='',tickangle=90),
             yaxis=dict(title='',tickangle=0),
             width=800,  # 그래프 너비
             height=800  # 그래프 높이
         )
 
-        fig.write_html(self.output_folder/f"{self.plot_name}_heatmap.html")
+        fig.write_html(self.output_folder/f"{self.maker}_heatmap.html")
 
         if return_fig:
             return fig

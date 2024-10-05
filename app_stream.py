@@ -1,32 +1,34 @@
 import streamlit as st
 import pandas as pd
-from market_research.scraper import Specscraper_s
-from market_research.scraper import Specscraper_l
-from market_research.scraper import Specscraper_se
+from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
-
-
+from io import BytesIO
 
 st.set_page_config(layout="wide")
-maker_class = {
-        "sony": Specscraper_s,
-        "lg": Specscraper_l,
-        "samsung": Specscraper_se,
-    }
+web_data = {
+        "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
+        "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
+        "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
 makers = ["SONY", "LG", "SAMSUNG"]
 
+def to_excel(df):
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl', mode='w') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+    processed_data = output.getvalue()
+    return processed_data
+
 @st.cache_data
-def loading_heatmap(selected_maker):
-    selected_class = maker_class.get(selected_maker)
-    fig = selected_class(demo_mode=True).heatmap_spec(return_fig=True)   
-    return fig
+def loading_webdata(selected_maker):
+    selected_json = web_data.get(selected_maker)
+    selected_data = pd.read_json(selected_json, orient='records', lines=True)
+    return selected_data
 
 @st.cache_data
 def loading_pricemap(selected_maker):
-    selected_class = maker_class.get(selected_maker)
-    fig = selected_class(demo_mode=True).price_map(return_fig=True)  
-    return fig
-
+    selected_json = web_data.get(selected_maker)
+    selected_data = pd.read_json(selected_json, orient='records', lines=True)
+    return selected_data
 
 @st.cache_data
 def loading_calendar(indicator_type):
@@ -34,9 +36,7 @@ def loading_calendar(indicator_type):
     calendar_dict = {
         "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
         "lg": None,
-        "samsung": None,
-    }
-    
+        "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
     return calendar_url
     
@@ -47,18 +47,22 @@ def loading_rtings(data_src='measurement'):
     elif data_src == 'scores':
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
-    return data
-
+    return {data_src: data}
 
 def display_indicators():
-    
-
     selected_maker = st.sidebar.selectbox("", makers).lower()
-    st.sidebar.write("updated: 1st Oct.")
+    st.sidebar.download_button(
+        label="DOWNLOAD DATA",
+        data=to_excel(loading_webdata(selected_maker)),
+        file_name=f'{selected_maker}_web_sepcs_241001.xlsx',
+        mime='application/vnd.ms-excel',
+        use_container_width=True)
+    
+    st.sidebar.write("Updated: 1st Oct.")
     with st.sidebar.expander("Hi 😎", expanded=False):
-    # 여기에 사이드바의 내용을 추가하세요.
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️")
+             
     for _ in range(30):
         st.sidebar.write("")
     # 달력 URL 로드
@@ -68,16 +72,17 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
 
-        
-        
     col1, col2 = st.columns([2, 3])
     
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
-        fig = loading_heatmap(selected_maker)
+        data = loading_webdata(selected_maker)
+
+        fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
         fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
         st.plotly_chart(fig, use_container_width=True)
-        
+    
+
     with col2:
         selected_multi_makers = st.multiselect("", makers, placeholder='Radar Scores', 
                                                 key='key_for_scores', label_visibility='hidden')
@@ -86,54 +91,69 @@ def display_indicators():
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab1, tab2, tab3, tab4 = st.tabs(["Scores Total", "Scores Detail", "Heatmap", "PCA"])
-        with tab1:
+        tab_name = [
+                    "Total", 
+                    "Scores", 
+                    "Heatmap", 
+                    "Detail", 
+                    "PCA"]
+        tabs = st.tabs(tab_name)
+                
+        with tabs[0]:
             data = loading_rtings('scores')
-            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
+            fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
             if fig != None:
                 fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write("No information")
 
-            
-        with tab2:
+        with tabs[1]:
             data = loading_rtings( 'measurement')
-            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).radar_scores(return_fig=True)   
+            fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
             if fig != None:
                 fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write("No information")
             
-        with tab3:
+        with tabs[2]:
             data = loading_rtings('measurement')
-            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).heatmap_scores(return_fig=True)   
+            fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
             if fig != None:
                 fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write("No information")
-        
-        with tab4:
+                
+        with tabs[3]:
+            sub_category = Rvisualizer.get_measurement_selection()
+            sub_tabs = st.tabs(sub_category)
+            for i, category in enumerate(sub_category):
+                with sub_tabs[i]:
+                    data = loading_rtings('measurement')
+                    fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
+                    if fig != None:
+                        fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+        with tabs[4]:
             data = loading_rtings('measurement')
-            fig = Rvisualizer(df = data,  maker_filter=selected_multi_makers).plot_pca(return_fig=True)   
+            fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
             if fig != None:
                 fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.write("No information")
-
-            
+                st.write("No information")            
             
     with st.container():   
-        fig = loading_pricemap(selected_maker)
+        data = loading_pricemap(selected_maker)
+        fig = DataVisualizer(data, maker=selected_maker).price_map(return_fig=True)  
         fig.update_layout(
             width=500,
             height=380,
             title='price map',
-             margin=dict(t=20, b=0)
-        )
+             margin=dict(t=20, b=0))
         st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
