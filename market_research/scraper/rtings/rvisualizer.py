@@ -182,6 +182,7 @@ class Rvisualizer(BaseVisualizer):
                         y=year_data['result_value'],
                         name=f"{category} ({year})", 
                         marker=dict(color=colors[i % len(colors)])),
+                        hovertemplate='%{x}<br>%{y}<extra></extra>'  
                     row=row, col=col 
                 )
 
@@ -193,7 +194,7 @@ class Rvisualizer(BaseVisualizer):
             for col in range(2, len(categories) + 1): 
                 fig.update_yaxes(matches=None, row=1, col=col)
 
-        # 년 드롭다운 추가
+
         years = sorted(df_cat['year'].unique(), reverse=True)
         year_dropdown = dict(
             active=0,  
