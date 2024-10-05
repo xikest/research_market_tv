@@ -79,7 +79,7 @@ def display_indicators():
         data = loading_webdata(selected_maker)
 
         fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-        fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
+        fig.update_layout(width=500, height=650, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
         st.plotly_chart(fig, use_container_width=True)
     
 
@@ -91,61 +91,63 @@ def display_indicators():
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab_name = [
-                    "Total", 
-                    "Scores", 
-                    "Heatmap", 
-                    "Detail", 
-                    "PCA"]
+        tab_name = [ "Scores", 
+                    "Detail"]
         tabs = st.tabs(tab_name)
                 
         with tabs[0]:
-            data = loading_rtings('scores')
-            fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-            if fig != None:
-                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No information")
+            sub_tabs = st.tabs(["Total", "Sub", "PCA"])
 
-        with tabs[1]:
-            data = loading_rtings( 'measurement')
-            fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-            if fig != None:
-                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No information")
-            
-        with tabs[2]:
-            data = loading_rtings('measurement')
-            fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
-            if fig != None:
-                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No information")
+            with sub_tabs[0]:
+                data = loading_rtings('scores')
+                fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                if fig != None:
+                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No information")
+                    
+            with sub_tabs[1]:
+                data = loading_rtings( 'measurement')
+                fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                if fig != None:
+                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No information")
+                    
+            with sub_tabs[2]:
+                data = loading_rtings('measurement')
+                fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
+                if fig != None:
+                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No information")            
                 
-        with tabs[3]:
+                
+        with tabs[1]:
             sub_category = Rvisualizer.get_measurement_selection()
-            sub_tabs = st.tabs(sub_category)
-            for i, category in enumerate(sub_category):
+            sub_tabs = st.tabs(['Heat map']+sub_category)
+            
+            with sub_tabs[0]:
+                data = loading_rtings('measurement')
+                fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
+                if fig != None:
+                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No information")
+            
+
+            for i, category in enumerate(sub_category, start=1):
                 with sub_tabs[i]:
                     data = loading_rtings('measurement')
                     fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
                     if fig != None:
                         fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
                         st.plotly_chart(fig, use_container_width=True)
-                        
-        with tabs[4]:
-            data = loading_rtings('measurement')
-            fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
-            if fig != None:
-                fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("No information")            
-            
+
     with st.container():   
         data = loading_pricemap(selected_maker)
         fig = DataVisualizer(data, maker=selected_maker).price_map(return_fig=True)  
