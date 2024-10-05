@@ -181,8 +181,10 @@ class Rvisualizer(BaseVisualizer):
                         x=year_data['series'] + ' (' + year_data['year'].astype(str)+')',
                         y=year_data['result_value'],
                         name=f"{category} ({year})", 
-                        marker=dict(color=colors[i % len(colors)])),
-                        hovertemplate='%{x}<br>%{y}<extra></extra>'  
+                        marker=dict(color=colors[i % len(colors)]),
+                        hovertemplate='%{y}, %{x}<extra></extra>'
+                        ),
+                        
                     row=row, col=col 
                 )
 
