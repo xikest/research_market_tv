@@ -91,12 +91,12 @@ def display_indicators():
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab_name = [ "Scores", 
-                    "Detail"]
+        tab_name = [ "Primary ", 
+                    "Secondary"]
         tabs = st.tabs(tab_name)
                 
         with tabs[0]:
-            sub_tabs = st.tabs(["Total", "Sub", "PCA"])
+            sub_tabs = st.tabs(["Total", "Sub", "Heat map","PCA"])
 
             with sub_tabs[0]:
                 data = loading_rtings('scores')
@@ -118,6 +118,15 @@ def display_indicators():
                     
             with sub_tabs[2]:
                 data = loading_rtings('measurement')
+                fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
+                if fig != None:
+                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("No information")
+                    
+            with sub_tabs[3]:
+                data = loading_rtings('measurement')
                 fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
                 if fig != None:
                     fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
@@ -128,19 +137,9 @@ def display_indicators():
                 
         with tabs[1]:
             sub_category = Rvisualizer.get_measurement_selection()
-            sub_tabs = st.tabs(['Heat map']+sub_category)
+            sub_tabs = st.tabs(sub_category)
             
-            with sub_tabs[0]:
-                data = loading_rtings('measurement')
-                fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
-                if fig != None:
-                    fig.update_layout(width=600, height=500, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.write("No information")
-            
-
-            for i, category in enumerate(sub_category, start=1):
+            for i, category in enumerate(sub_category):
                 with sub_tabs[i]:
                     data = loading_rtings('measurement')
                     fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
