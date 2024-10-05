@@ -24,7 +24,7 @@
     "features for playstation5 auto hdr tone mapping",
     "multi-view"
   ],
-  "lge": [
+  "lg": [
     "brightness booster",
     "100% color volume",
     "100% color fidelity",
@@ -41,7 +41,7 @@
     "g-sync compatible (nvidia)",
     "game optimizer"
   ],
-  "sse":[
+  "samsung":[
     "color",
     "anti reflection",
     "hdr (high dynamic range)",
