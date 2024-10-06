@@ -1,7 +1,7 @@
 이 프로젝트는 웹사이트에서 제품 모델 사양을 가져오고 분석하는 기능을 제공합니다.
 
 ## 데모 사이트
-> [market](https://mktretv.streamlit.app/)
+> [market visualizer](https://mktretv.streamlit.app/)
 
 ## Function Notebook
 이 프로젝트는 웹사이트에서 제품 정보를 수집하고 분석 합니다.
