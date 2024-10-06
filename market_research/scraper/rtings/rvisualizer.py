@@ -95,7 +95,6 @@ class Rvisualizer(BaseVisualizer):
             return dataset
         
         
-        
         super().__init__(output_folder_path=output_folder_path)
         pio.templates.default='ggplot2'
         self.dataset = initialize_data(data, maker_filter, Rvisualizer.get_measurement_selection())

@@ -76,7 +76,7 @@ class Rtings(Scraper, Rvisualizer):
         time.sleep(self.wait_time)
         page_source = driver.page_source        
         soup = BeautifulSoup(page_source, 'html.parser')
-        title = soup.title.string.lower()
+        title = soup.title.string.lower().replace("\u200b", "")
         maker = title.split(" ")[0].strip().lower()
         product = title.replace(maker, "").split("review")[0]
         models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
@@ -111,7 +111,7 @@ class Rtings(Scraper, Rvisualizer):
             if extractor is not None:
                 dict_model = extractor.extract_info_from_model(model)
                 for k, v in dict_model.items():
-                    temp_df[k] = v.replace("\u200b", "")
+                    temp_df[k] = v
             scores_list.append(temp_df)
             scores_df = pd.concat(scores_list, ignore_index=True)
             return scores_df
@@ -192,7 +192,7 @@ class Rtings(Scraper, Rvisualizer):
         driver.quit()
         
         soup = BeautifulSoup(page_source, 'html.parser')
-        title = soup.title.string.lower()
+        title = soup.title.string.lower().replace("\u200b", "")
         maker = title.split(" ")[0].strip().lower()
         product = title.replace(maker, "").split("review")[0]
         models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
@@ -262,7 +262,7 @@ class Rtings(Scraper, Rvisualizer):
             if extractor is not None:
                 dict_model = extractor.extract_info_from_model(model)
                 for k, v in dict_model.items():
-                    temp_df[k] = v.replace("\u200b", "")
+                    temp_df[k] = v
             measurement_list.append(temp_df)
         measurement_df = pd.concat(measurement_list, ignore_index=True)
         return measurement_df
