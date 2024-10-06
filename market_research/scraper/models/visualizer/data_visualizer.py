@@ -162,7 +162,7 @@ class DataVisualizer(BaseVisualizer):
                 data = response.json()
                 col_selected = data.get(self.maker)
             except Exception as e:
-                    print(e)
+                print(e)
         else:   
             if isinstance(col_selected, list):
                 col_selected = col_selected

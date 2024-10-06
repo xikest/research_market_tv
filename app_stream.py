@@ -11,6 +11,7 @@ web_data = {
         "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
 makers = ["SONY", "LG", "SAMSUNG"]
 
+
 def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl', mode='w') as writer:
@@ -34,7 +35,7 @@ def loading_pricemap(selected_maker):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
+        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',   
         "lg": None,
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)

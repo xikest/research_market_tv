@@ -37,15 +37,14 @@ class Rtings(Scraper, Rvisualizer):
                 if self.verbose:
                     print(f"connecting to {url}")
                 df = self._get_score(url)
-                scores_df = pd.merge(scores_df.T, df.T, left_index=True, right_index=True, how='outer').T
-
+                scores_df = pd.concat([scores_df, df], axis=0)
 
                 df = self._get_measurement_reuslts(url)
-                measurement_df = pd.merge(measurement_df.T, df.T, left_index=True, right_index=True, how='outer').T
+                measurement_df =pd.concat([measurement_df, df], axis=0)
 
                 df = self._get_commetns(url)
-                comments_df = pd.merge(comments_df.T, df.T, left_index=True, right_index=True, how='outer').T
-                # comments_df = pd.concat([comments_df, df], axis=0)
+                comments_df = pd.concat([measurement_df, df], axis=0)
+
 
             scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
             measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
@@ -102,8 +101,6 @@ class Rtings(Scraper, Rvisualizer):
             scores_df = pd.DataFrame(rows)
             scores_df['product'] = product
             scores_df['maker'] = maker
-   
-            
             scores_list = []
             for model in models_list:
                 model = model.strip()
@@ -114,11 +111,9 @@ class Rtings(Scraper, Rvisualizer):
             if extractor is not None:
                 dict_model = extractor.extract_info_from_model(model)
                 for k, v in dict_model.items():
-                    temp_df[k] = v
+                    temp_df[k] = v.replace("\u200b", "")
             scores_list.append(temp_df)
             scores_df = pd.concat(scores_list, ignore_index=True)
-            
-            
             return scores_df
         except Exception as e:
             if self.verbose:
@@ -126,8 +121,6 @@ class Rtings(Scraper, Rvisualizer):
         finally:
             driver.quit()
             
-
-
 
     def _get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", min_sentence_length = 0):
         """
@@ -269,9 +262,7 @@ class Rtings(Scraper, Rvisualizer):
             if extractor is not None:
                 dict_model = extractor.extract_info_from_model(model)
                 for k, v in dict_model.items():
-                    temp_df[k] = v
+                    temp_df[k] = v.replace("\u200b", "")
             measurement_list.append(temp_df)
-
         measurement_df = pd.concat(measurement_list, ignore_index=True)
-
         return measurement_df

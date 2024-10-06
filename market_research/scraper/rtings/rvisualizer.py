@@ -8,7 +8,7 @@ import plotly.express as px
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.colors as colors
-
+import streamlit as st
 
 class Rvisualizer(BaseVisualizer):
 
@@ -244,7 +244,6 @@ class Rvisualizer(BaseVisualizer):
             return f'rgba({r}, {g}, {b}, {opacity})'
 
         data_df = self.dataset.get('heatmap').copy()
- 
         fig = go.Figure()
 
         years = data_df.columns.get_level_values(1).unique()
@@ -255,7 +254,10 @@ class Rvisualizer(BaseVisualizer):
         for idx, series in enumerate(series_group):
             data_series = data_df.xs((series), level=(2), axis=1)
             year = data_series.columns.get_level_values(1).unique().item()
+            
             maker = data_series.columns.get_level_values(0).unique().item()
+            
+
             
             try:
                 suffix = f": {data_series.loc['Mixed Usage'].item()}"
