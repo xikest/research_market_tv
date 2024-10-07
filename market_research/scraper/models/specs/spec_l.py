@@ -27,7 +27,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             FileManager.make_dir(self.log_dir)
             
         self._data = self._fetch_model_data(demo_mode=demo_mode)    
-        DataVisualizer.__init__(self, df = self._data, plot_name='lge')
+        DataVisualizer.__init__(self, df = self._data, maker='lge')
         pass
 
     def _fetch_model_data(self, demo_mode:bool=False) -> pd.DataFrame:
@@ -50,7 +50,9 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                     dict_spec = self._extract_global_specs(url=url)
                     dict_models[key].update(dict_spec)
                 except Exception as e:
-                    pass
+                    if self.tracking_log:
+                        print(f"fail to collect: {url}")
+                        print(e)
             return dict_models
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
@@ -219,7 +221,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             return None 
         
 
-        def extract_specs(driver) -> dict:
+        def extract_spec_detail(driver) -> dict:
             dict_spec = {}
             spec_elements = driver.find_elements(By.CSS_SELECTOR, '.MuiBox-root.css-1nnt9ji')
             for spec_element in spec_elements:
@@ -249,7 +251,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                 driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_0_model_{stamp_today}.png")                
             find_spec_tab(driver)   
             if self.tracking_log: driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_1_element_all_specs_{stamp_today}.png")
-            dict_spec = extract_specs(driver)
+            dict_spec = extract_spec_detail(driver)
             if self.tracking_log: print(f"Received information from {url}")
             return dict_spec
         except CustomException as e:

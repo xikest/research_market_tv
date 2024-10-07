@@ -8,7 +8,7 @@ import plotly.io as pio
 
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df:pd.DataFrame=None, output_folder_path="results", maker=""):
+    def __init__(self, df:pd.DataFrame=None, maker="", output_folder_path="results"):
         
         pio.templates.default='ggplot2'
         

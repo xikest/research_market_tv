@@ -104,6 +104,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             finally:
                 driver.quit()
                 
+                            
         url_series = find_series_urls(url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
         print("The website scan has been completed.")
         print(f"total series: {len(url_series)}")
@@ -119,7 +120,13 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                                                'custom-variant-selector__body')
             except:
                 pass
- 
+                # try:
+                #     elements = driver.find_element(By.XPATH,
+                #                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                # except:
+                #     elements = driver.find_element(By.XPATH,
+                #                                             '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
+                    
             url_elements = elements.find_elements(By.TAG_NAME, 'a')
             
             for url_element in url_elements:
@@ -206,7 +213,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         finally:
             driver.quit()
     
-    
     @Scraper.try_loop(5)
     def _extract_global_specs(self, url: str) -> dict:
         def set_driver(url):
@@ -214,32 +220,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             driver.get(url=url)
             time.sleep(self.wait_time)
             return driver
-   
-        def find_emphasize_text(driver) -> None:
-            print("sdsds")
-            see_more_features = driver.find_element(By.CLASS_NAME, 'see_more_features_button.container')
-            self.web_driver.move_element_to_center(see_more_features)
-            see_more_features.click()
-            time.sleep(self.wait_time)
-            
-        def extract_emphasize_text(driver) -> dict:
-            picture_element = driver.find_element(By.XPATH, '//*[@id="PDPFeaturesLink"]/app-custom-product-features/div/div[7]/app-contentful-container')
-            html_content = picture_element.get_attribute('innerHTML')
-            soup = BeautifulSoup(html_content, 'html.parser')
-            h2_tags = soup.find_all('h2')
-            text_list = []
-            for h2 in h2_tags:
-                text = h2.text.strip()
-                if text.lower() == 'all features':
-                    pass
-                text_list.append(text)   
-            text_dict = {}
-            text_dict['head'] = text_list[0]
-            for i, text in enumerate(text_list[1:]):
-                text_dict[f'text{i}']
-            print(text_dict)
-            return text_dict
-
    
         def find_spec_tab(driver) -> None:
             
@@ -292,8 +272,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             if self.tracking_log:driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
             
             return None
-
-        def extract_specs(driver) -> dict:
+            
+        def extract_specs_detail(driver) -> dict:
             def convert_soup_to_dict(soup):
                 """
                 Convert BeautifulSoup soup to dictionary.
@@ -341,11 +321,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 stamp_url = self.file_manager.get_name_from_url(url)
                 driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_0_model_{stamp_today}.png")
                 
-            find_emphasize_text(driver)
-            dict_spec.update(extract_emphasize_text(driver))
-            
             find_spec_tab(driver)   
-            dict_spec.update(extract_specs(driver))
+            dict_spec= extract_specs_detail(driver)
             
             if self.tracking_log:
                 driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_4_end_{stamp_today}.png")
