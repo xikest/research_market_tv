@@ -96,7 +96,7 @@ def display_indicators():
         
             with st.container(): 
                 fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-                fig.update_layout(width=500, height=500, title='Heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
+                fig.update_layout(width=500, height=500, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
                 st.plotly_chart(fig, use_container_width=True)            
                 
             with st.container(): 
