@@ -26,11 +26,12 @@ class DataVisualizer(BaseVisualizer):
             data =  data
         else:
             data = self.dc.get_price_df().copy()
-            
+        data = data.dropna(subset=['price'])  #
+        
         years = data['year'].unique()
         years = sorted(years)
         
-        series_idx = data[['series', 'display type', 'year']].drop_duplicates()
+        series_idx = data[['series', 'display type', 'year']]
         series_idx = series_idx.sort_values(by=['year',  'series'], ascending=True)
         all_series_dict = {}
         for year in series_idx.year.unique():
@@ -105,7 +106,6 @@ class DataVisualizer(BaseVisualizer):
             ))
 
 
-
         size_categories = sorted(data['size'].unique())
         ticks_below_3000 = list(range(0, 3001, 500))
         ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
@@ -162,6 +162,11 @@ class DataVisualizer(BaseVisualizer):
                 data = response.json()
                 col_selected = data.get(self.maker)
             except Exception as e:
+                file_path = "col_heatmap.json"
+                with open(file_path, 'r') as file:
+                    import json
+                    data = json.load(file)
+                col_selected = data.get(self.maker)
                 print(e)
         else:   
             if isinstance(col_selected, list):
@@ -203,24 +208,23 @@ class DataVisualizer(BaseVisualizer):
         mask_data = mask_data.replace(0, '').set_index(idx_names).sort_index(ascending=True).T
         x_labels = ['-'.join(map(str, idx)) for idx in heatmap_data.columns]
         fig = go.Figure(data=go.Heatmap(
-            z=heatmap_data.values,  # 데이터
-            x=x_labels,  # x축 레이블
-            y=heatmap_data.index,    # y축 레이블
-            colorscale=cmap,         # 색상 스케일
+            z=heatmap_data.values,  
+            x=x_labels,  
+            y=heatmap_data.index,   
+            colorscale=cmap,         
             showscale=False,
-            zmax=1,                  # 최대값 설정
-            hoverinfo='text',        # 호버 정보 설정
+            zmax=1,                  
+            hoverinfo='text',        
             hovertemplate='<b>%{customdata}</b><extra></extra>',
             customdata=mask_data.values
             ))
 
-        # 그래프 제목 및 레이아웃 설정
         fig.update_layout(
             title=f"{self.maker} spec",
             xaxis=dict(title='',tickangle=90),
             yaxis=dict(title='',tickangle=0),
-            width=800,  # 그래프 너비
-            height=800  # 그래프 높이
+            width=800,  
+            height=800  
         )
 
         fig.write_html(self.output_folder/f"{self.maker}_heatmap.html")
@@ -228,5 +232,75 @@ class DataVisualizer(BaseVisualizer):
         if return_fig:
             return fig
         else:
-            fig.show()  # 그래프 보여주기
+            fig.show()  
            
+
+    def plot_headertxt(self, data=None, return_fig=False):
+        if data is not None and isinstance(data, pd.DataFrame):   
+            data = data
+        else:
+            data = self.dc.get_price_df().copy()
+
+        data['year'] = data['year'].astype('str')
+        data = data.sort_values(by=['year', 'series'], ascending=[False, True]).reset_index(drop=True)
+        data = data[['year', 'series', 'text0']].drop_duplicates(subset=['text0'], keep='last').dropna()
+        marker_size = 16  
+
+        fig = go.Figure()
+
+        for _, group in data.groupby('year'):
+            fig.add_trace(go.Scatter(
+                x=[group['year'].iloc[0]] * len(group),  
+                y=group['series'].str.upper(),  
+                mode="markers+text",
+                text=group['text0'].str.capitalize(), 
+                textposition="middle right",  
+                marker=dict(size=marker_size),  
+                hovertext=group['series'].str.upper(), 
+                hoverinfo="text",
+                textfont=dict(size=16),  
+                name=group['year'].iloc[0] 
+            ))
+            
+        # 최대 연도 구하기
+        min_year = data['year'].astype(int).min()
+        dummy_years = [str(min_year + i + 1) for i in range(6)]
+
+        # 더미 연도 추가
+        for year in dummy_years:
+            fig.add_trace(go.Scatter(
+                x=[year] * 1, 
+                y=[None],  
+                mode='markers',  
+                marker=dict(size=marker_size),  
+                showlegend=False  
+            ))
+            
+        # 레이아웃 업데이트
+        fig.update_layout(
+            xaxis=dict(
+                showgrid=False,
+                visible=False,
+                categoryorder='array',  # 카테고리 순서 설정
+                categoryarray=list(reversed(sorted(data['year'].unique())))  # 연도를 역순으로 설정
+            ),
+            yaxis=dict(showgrid=False),
+            showlegend=True,
+            height=600,
+            width=800,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(color='black'),
+            legend=dict(
+                orientation="h",    
+                yanchor="top",      
+                xanchor="center",   
+                x=0.5,              
+                y=0               
+            )
+        )
+        
+        if return_fig:
+            return fig
+
+        fig.show()

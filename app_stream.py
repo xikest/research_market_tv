@@ -2,21 +2,56 @@ import streamlit as st
 import pandas as pd
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
+from market_research.ir import SONY_IR
+from market_research.analysis import TextAnalysis
 from io import BytesIO
+import plotly.subplots as sp
+import nltk
+import plotly.subplots as sp
+import streamlit as st
+
 
 st.set_page_config(layout="wide")
-web_data = {
-        "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
-        "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
-        "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+
 makers = ["SONY", "LG", "SAMSUNG"]
+
+
+
+@st.cache_data
+def set_nltk():
+    nltk.download('punkt_tab')
+    nltk.download('stopwords')
+    nltk.download('averaged_perceptron_tagger')
+
 
 @st.cache_data
 def loading_webdata(selected_maker):
+    web_data = {
+            "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
+            "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
+            "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+
     selected_json = web_data.get(selected_maker)
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
+    selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
 
+@st.cache_data
+def load_ir_data(selected_maker=None):
+    ir_class_dict = {
+            "sony": SONY_IR,
+            "lg": None,
+            "samsung":  None}
+    ir_class= ir_class_dict.get(selected_maker)
+    
+    if ir_class is not None:
+        ir_class = ir_class()
+        comments_dict, files_path_dict = ir_class.get_ir_script()
+        cleaning_words = ir_class.cleaning_words
+        return comments_dict, cleaning_words, files_path_dict
+    else: 
+        return None
+    
 
 @st.cache_data
 def loading_calendar(indicator_type):
@@ -36,6 +71,8 @@ def loading_rtings(data_src='measurement'):
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
+
+
 
 def download_data():
     def to_excel(df_dict):
@@ -78,20 +115,61 @@ def display_indicators():
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
+        sub_tabs = st.tabs(["Specification","Header", "IR"])
+        with sub_tabs[0]:
         
-        with st.container(): 
-            fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-            fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
-            st.plotly_chart(fig, use_container_width=True)            
-            
-        with st.container(): 
-            fig = DataVisualizer(data, maker=selected_maker).price_map(return_fig=True)  
-            fig.update_layout(
-                width=500,
-                height=400,
-                title='price map',
-                margin=dict(t=20, b=0))
-            st.plotly_chart(fig, use_container_width=True)     
+            with st.container(): 
+                fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
+                fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
+                st.plotly_chart(fig, use_container_width=True)            
+                
+            with st.container(): 
+                fig = DataVisualizer(data, maker=selected_maker).price_map(return_fig=True)  
+                fig.update_layout(
+                    width=500,
+                    height=400,
+                    title='price map',
+                    margin=dict(t=20, b=0))
+                st.plotly_chart(fig, use_container_width=True)
+        with sub_tabs[1]:
+            with st.container():              
+                fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
+                fig.update_layout(
+                    width=500,
+                    height=800,
+                    title='header',
+                    margin=dict(t=20, b=0))
+                st.plotly_chart(fig, use_container_width=True)
+        with sub_tabs[2]:
+            set_nltk()
+            comments_dict, cleaning_words, files_path_dict = load_ir_data(selected_maker)
+            tas = TextAnalysis()
+            if comments_dict is not None:
+                comment_keys = sorted(list(comments_dict.keys()), reverse=True)
+                selected_comment_key = st.selectbox("Select a quarter:", comment_keys)
+                if not selected_comment_key:
+                    selected_comment_key = comment_keys[0]
+                if selected_comment_key:
+                    selected_comment_text = comments_dict[selected_comment_key]
+                    fig = tas.plot_wordcloud(selected_comment_text, cleaning_words)
+                    file_path = files_path_dict[selected_comment_key]
+                    fig.update_layout(
+                                width=500,
+                                height=800,
+                                margin=dict(l=0, r=0, t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    if file_path:
+                        with open(file_path, "rb") as file:
+                            st.download_button(
+                                label=f"Download IR {selected_comment_key}",
+                                data=file,
+                                file_name=file_path.name,
+                                mime="application/pdf",
+                                use_container_width=True)  
+            else:
+                st.write("no application")
+
 
     with col2:
         col2_plot_height = 800
@@ -159,6 +237,8 @@ def display_indicators():
                         st.plotly_chart(fig, use_container_width=True)
 
 
-
 if __name__ == "__main__":
     display_indicators()
+
+
+

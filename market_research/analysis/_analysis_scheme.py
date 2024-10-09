@@ -15,7 +15,7 @@ class Analysis:
         if intput_folder_path is not None:
             self.intput_folder = Path(intput_folder_path)  # 폴더 이름을 지정
             if not self.intput_folder.exists():
-                self.intput_folder.mkdir(parents=True)
+                self.intput_folder.mkdir(parents=True, exist_ok=True)
 
         if output_folder_path is not None:
             self.output_folder = Path(output_folder_path)

@@ -26,7 +26,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             FileManager.make_dir(self.log_dir)
             
         self._data = self._fetch_model_data(demo_mode=demo_mode)    
-        DataVisualizer.__init__(self, df = self._data, plot_name='sony')
+        DataVisualizer.__init__(self, df = self._data, maker='sony')
         pass
     
     def _fetch_model_data(self, demo_mode:bool=False) -> pd.DataFrame:
@@ -54,6 +54,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
+            df_models = df_models.dropna(subset=['price'])
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         
@@ -120,13 +121,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                                                'custom-variant-selector__body')
             except:
                 pass
-                # try:
-                #     elements = driver.find_element(By.XPATH,
-                #                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div[2]/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
-                # except:
-                #     elements = driver.find_element(By.XPATH,
-                #                                             '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/div/div/div[1]/app-custom-product-variants/div/app-custom-variant-selector/div/div[2]')
-                    
+
             url_elements = elements.find_elements(By.TAG_NAME, 'a')
             
             for url_element in url_elements:
@@ -181,22 +176,24 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     price_now = driver.find_element(By.XPATH,
                                                     '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
                     prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
-                    prices_dict['price_original'] = price_now
+                    prices_dict['price_original'] = prices_dict['price'] 
                     prices_dict['price_gap'] = 0.0
                 except:
                     prices_dict['price'] = float('nan')
                     prices_dict['price_original'] = float('nan')
                     prices_dict['price_gap'] = float('nan')
             return prices_dict
-         
-
+        
         
         dict_info = {}
         CustomException(message=f"error_extract_model_details: {url}")
+        if self.tracking_log: print(" Connecting to", url)
+            
         try:
             driver = self.web_driver.get_chrome()
             driver.get(url)
             time.sleep(self.wait_time)
+            
             
             # Extract model
             dict_info.update(extract_model(driver))
@@ -213,6 +210,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         finally:
             driver.quit()
     
+    
     @Scraper.try_loop(5)
     def _extract_global_specs(self, url: str) -> dict:
         def set_driver(url):
@@ -220,7 +218,73 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             driver.get(url=url)
             time.sleep(self.wait_time)
             return driver
-   
+        
+        def find_emphasize_text(driver) -> None:
+            time.sleep(self.wait_time)
+            see_more_features = False
+            for i in range(10):
+                try:
+                    see_more_features = driver.find_element(By.CLASS_NAME, 'see_more_features_button.container')
+                except:
+                    if self.tracking_log:
+                        driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_fine_text_{i}_{stamp_today}.png")
+                    ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
+                    pass
+                
+            self.web_driver.move_element_to_center(see_more_features)
+            see_more_features.click()
+            time.sleep(self.wait_time)
+            
+        def extract_emphasize_text(driver) -> dict:
+            
+            def remove_txt_group(text_list, text_gr = ["picture", "sound", "design", "smart", "gaming", "eco"]):
+                i = 0
+                while i <= len(text_list) - len(text_gr):
+                    if text_list[i:i+len(text_gr)] == text_gr:
+                        del text_list[i:i+len(text_gr)]
+                    else:
+                        i += 1
+                return text_list
+            
+            text_list = []
+            text_dict = {}
+            
+            text_elements = driver.find_elements(By.CLASS_NAME, 'custom-product-features__components')
+            for text_element in text_elements:
+                elements = text_element.find_elements(By.XPATH, ".//h2 | .//p")
+                
+                for elem in elements:
+                    text = elem.text.strip().lower()
+                    if text == '':
+                        continue
+                    text_list.append(text)
+            
+            text_grs = [['sound', 'smart', 'gaming', 'design', 'eco'],
+                        ["picture", "sound", "design", "smart", "gaming", "eco"]]
+            for text_gr in text_grs:        
+                text_list = remove_txt_group(text_list, text_gr)
+    
+            check_inx_dict={'picture':'all features',
+                            "xr picture" :"xr sound",
+                            "picture & sound" : 'all features'}
+            for check_key, check_value in check_inx_dict.items():
+                first_idx = None
+                last_idx = None
+                for i, text in enumerate(text_list):
+                    if text == check_key and last_idx is None:
+                        first_idx = i+1
+                    if text == check_value and first_idx is not None:
+                        last_idx = i  
+                        break  
+                if first_idx is not None and last_idx is not None:
+                  break  
+
+            text_list = text_list[first_idx:last_idx]
+            for i, text in enumerate(text_list):
+                text_dict[f'text{i}'] = text
+            print(text_dict)
+            return text_dict
+        
         def find_spec_tab(driver) -> None:
             
             def find_element_spec(driver) -> None:
@@ -297,23 +361,31 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 elements = driver.find_elements(By.CLASS_NAME,"full-specifications__specifications-single-card__sub-list")
                 for element in elements:
                     soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                    
-                label, content  = convert_soup_to_dict(soup)
-                original_label = label
-                while label in dict_spec:
-                    # 현재 item_name에서 *의 개수를 세어 그 개수에 따라 새로운 item_name 생성
-                    asterisk_count = label.count('*')
-                    label = f"{original_label}{'*' * (asterisk_count + 1)}"
-                    
-                dict_spec[label] = content
-                
-                
+                    label, content  = convert_soup_to_dict(soup)
+                    original_label = label
+                    while label in dict_spec and dict_spec.get(label)!=content:
+                        asterisk_count = label.count('*')
+                        label = f"{original_label}{'*' * (asterisk_count + 1)}"
+                    dict_spec[label] = content
                 ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
             return dict_spec
         
         dict_spec = {}
         CustomException(message=f"error_extract_global_specs: {url}")
+        
+        try:
+            driver = set_driver(url)
+            find_emphasize_text(driver)   
+            dict_spec.update(extract_emphasize_text(driver))
+
+        except CustomException as e:
+            if self.tracking_log:
+                print(f"Failed to get header text from {url}.")
+            pass
+        finally:
+            driver.quit()
+            
         try:
             driver = set_driver(url)
             if self.tracking_log:
@@ -322,16 +394,17 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_0_model_{stamp_today}.png")
                 
             find_spec_tab(driver)   
-            dict_spec= extract_specs_detail(driver)
+            dict_spec.update(extract_specs_detail(driver))
             
             if self.tracking_log:
                 driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_4_end_{stamp_today}.png")
                 print(f"Received information from {url}")
-            return dict_spec
         except CustomException as e:
             pass
         finally:
             driver.quit()
+            
+        return dict_spec
             
     @staticmethod         
     def extract_info_from_model(model: str)->dict:
@@ -342,8 +415,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         dict_info["series"] = model.split("-")[1][2:]
         dict_info["size"] = model.split("-")[1][:2]
         dict_info["grade"] = model.split("-")[0]
-        
-        
+            
         year_mapping = {
             'l': "2023",
             'k': "2022",

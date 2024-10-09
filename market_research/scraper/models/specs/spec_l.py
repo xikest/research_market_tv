@@ -58,6 +58,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
             df_models = df_models.drop(['Series', 'Size'], axis=1)
+            df_models = df_models.dropna(subset=['price'])
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
             
@@ -232,7 +233,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                 if label != '':
                     
                     original_label = label
-                    while label in dict_spec:
+                    while label in dict_spec and dict_spec.get(label)!=content:
                         asterisk_count = label.count('*')
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content

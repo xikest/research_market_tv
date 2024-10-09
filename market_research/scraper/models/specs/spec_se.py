@@ -59,6 +59,7 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
             df_models = pd.DataFrame.from_dict(dict_models).T
             df_models = df_models.drop(['','Series'], axis=1)
             df_models = df_models.rename(columns={'Type':'display type'})
+            df_models = df_models.dropna(subset=['price'])
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
             
@@ -239,10 +240,8 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
                 label = re.sub(r'[\n?]', '', item_name)
                 content = re.sub(r'[\n?]', '', item_value)
                 
-                # 키가 이미 존재하는 경우 처리
                 original_label = label
-                while label in dict_spec:
-                    # 현재 item_name에서 *의 개수를 세어 그 개수에 따라 새로운 item_name 생성
+                while label in dict_spec and dict_spec.get(label)!=content:
                     asterisk_count = label.count('*')
                     label = f"{original_label}{'*' * (asterisk_count + 1)}"
 
