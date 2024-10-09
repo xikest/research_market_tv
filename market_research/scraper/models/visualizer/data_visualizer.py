@@ -242,8 +242,15 @@ class DataVisualizer(BaseVisualizer):
             data = self.dc.get_price_df().copy()
 
         data['year'] = data['year'].astype('str')
+
+
+        
         data = data.sort_values(by=['year', 'series'], ascending=[False, True]).reset_index(drop=True)
-        data = data[['year', 'series', 'text0']].drop_duplicates(subset=['text0'], keep='last').dropna()
+        data = data.groupby(['text0', 'year']).agg({
+            'series': '/ '.join 
+        }).reset_index()
+        
+        # data = data[['year', 'series', 'text0']].drop_duplicates(subset=['text0'], keep='last').dropna()
         marker_size = 16  
 
         fig = go.Figure()

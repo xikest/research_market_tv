@@ -140,6 +140,8 @@ def display_indicators():
                     title='header',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
+                
+                
         with sub_tabs[2]:
             set_nltk()
             comments_dict, cleaning_words, files_path_dict = load_ir_data(selected_maker)

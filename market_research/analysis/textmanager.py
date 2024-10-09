@@ -39,18 +39,31 @@ class TextAnalysis(Analysis):
         return files
 
 
+    def download_pdf(self, url:str):
 
-    def download_pdfs(self, urls:list):
+        try:
+            wget.download(url)
+        except Exception as e:
+            print(f"Error downloading {url}: {str(e)}")
+        return 
+
+
+    def download_pdfs(self, urls:list, mkdir=True) ->list:
+        filepath_list= []
         for url in urls:
             try:
-                filename = os.path.join(self.intput_folder, os.path.basename(url))
-                if not os.path.exists(filename):
-                    wget.download(url, filename)
+                filepath = os.path.join(self.intput_folder, os.path.basename(url))
+                if mkdir and  not os.path.exists(filepath):
+                    wget.download(url, filepath)
+                else:
+                    filepath = wget.download(url)
+                filepath = os.path.join(os.getcwd(), filepath)
+                filepath_list.append(filepath)
             except Exception as e:
                 print(f"Error downloading {url}: {str(e)}")
-
-        print(f"downloaded in '{os.path.join(os.getcwd(), self.intput_folder)}'")
-
+        return filepath_list
+        
+        
     def set_comments(self, comments: list, cleaning_words: list = None) -> None:
         self.comments = comments
         self._prepare_nouns(cleaning_words)

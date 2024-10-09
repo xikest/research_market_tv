@@ -1,3 +1,4 @@
+import os
 from market_research.analysis import TextAnalysis
 
 
@@ -16,8 +17,11 @@ class SONY_IR():
                             # "sale","plan","capacity","growth","demand",
                             "outlook","increase","investment",
                             "example","rate","flow","time","a2","a1","sfh","r","dtc", "statement",
-                            "plan", "tax", "value", "term","capital", "growth","company","group", "service"
-                        ]
+                            "plan", "tax", "value", "term","capital", "growth","company","group", "service",
+                            "risk","profit","minotrity"
+                        ]     
+        
+        
         self.replacement_mapping = {  #사전에 교체하는 단어
                             "games": "game",
                             "plans": "plan",
@@ -58,39 +62,56 @@ class SONY_IR():
                             "targets":"target",
                             "statements":"statement"
                         }
-    
         pass
     
+    
+    
 
 
-    def get_ir_script(self) -> dict:
+    def get_ir_script(self, direct_download=True) -> dict:
+        
+        urls = []
+        filenames = []
+        
         base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/er/pdf/"
         years = range(19, 25)
         quarters = range(1, 5)
-        urls = []
-        filenames = []
+        
         for year in years:
             for quarter in quarters:
                 filename = f"{year}q{quarter}_qa.pdf"
                 url = f"{base_url}{filename}"
                 urls.append(url)
                 filenames.append(filename)
-        files_path = self.tas.read_files_from_inputpath(docs_type="pdf")
-        existing_files = {file_path.name for file_path in files_path}  # 존재하는 파일 이름 세트 생성
-        files_to_download = [url for url, filename in zip(urls, filenames) if filename not in existing_files]
+        
+        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/strategy/pdf"
+        years = range(2020, 2024)
+        for year in years:
+            for quarter in quarters:
+                url = f"{base_url}/{year}/qa_E.pdf"
+                urls.append(url)
+                filenames.append(filename)
+                
+        if direct_download:        
+            files_to_download = [url for url, filename in zip(urls, filenames) if filename not in filenames]     
+        else: 
+            files_path = self.tas.read_files_from_inputpath(docs_type="pdf")
+            existing_files = {file_path.name for file_path in files_path}  # 존재하는 파일 이름 세트 생성
+            files_to_download = [url for url, filename in zip(urls, filenames) if filename not in existing_files]
 
         if files_to_download:
-            self.tas.download_pdfs(files_to_download)
+            filepath_list = self.tas.download_pdfs(files_to_download)
             
         comments_dict = {}
         files_path_dict = {}
-        for file_path in files_path:
-            key = file_path.name.replace(".pdf", "").replace("_qa","").upper()
+        for file_path in filepath_list:
+            key = os.path.basename(file_path).replace(".pdf", "").replace("_qa", "").upper()
             comment = self.tas.pdf_to_text(file_path)
-            for original, replacement in self.replacement_mapping.items():  #복수형 단수로 변경
+            for original, replacement in self.replacement_mapping.items():
                 comment = comment.replace(original, replacement)
             comments_dict[key] = comment
             files_path_dict[key] = file_path
-
+                    
         return comments_dict, files_path_dict
+        
         
