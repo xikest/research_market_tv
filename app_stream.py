@@ -99,7 +99,7 @@ def display_indicators():
                 
             with st.container(): 
                 data_price = pd.DataFrame()
-                toggle = st.radio(" ", (selected_maker.upper(), "All"), horizontal=True)
+                toggle = st.radio(" ", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
                 if toggle == selected_maker.upper():
                     data_price = loading_webdata(selected_maker)
                 elif toggle == "All":
