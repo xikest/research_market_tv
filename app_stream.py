@@ -86,7 +86,12 @@ def display_indicators():
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
-        sub_tabs = st.tabs(["Specification","Header"])
+        
+        if selected_maker == "sony":
+            sub_tabs = st.tabs(["Specification","Header"])
+        else:
+            sub_tabs = st.tabs(["Specification"])
+            
         with sub_tabs[0]:
         
             with st.container(): 
@@ -102,15 +107,17 @@ def display_indicators():
                     title='price map',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
-        with sub_tabs[1]:
-            with st.container():              
-                fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
-                fig.update_layout(
-                    width=500,
-                    height=800,
-                    title='',
-                    margin=dict(t=20, b=0))
-                st.plotly_chart(fig, use_container_width=True)
+        
+        if selected_maker == "sony":
+            with sub_tabs[1]:
+                with st.container():              
+                    fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
+                    fig.update_layout(
+                        width=500,
+                        height=800,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
 
 
     with col2:
