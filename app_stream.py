@@ -124,7 +124,7 @@ def display_indicators():
                 fig.update_layout(
                     width=500,
                     height=800,
-                    title='header',
+                    title='',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
 
