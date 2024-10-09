@@ -2,26 +2,13 @@ import streamlit as st
 import pandas as pd
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
-from market_research.ir import SONY_IR
-from market_research.analysis import TextAnalysis
 from io import BytesIO
-import plotly.subplots as sp
-import nltk
-import plotly.subplots as sp
-import streamlit as st
 
 
 st.set_page_config(layout="wide")
 
 makers = ["SONY", "LG", "SAMSUNG"]
 
-
-
-@st.cache_data
-def set_nltk():
-    nltk.download('punkt_tab')
-    nltk.download('stopwords')
-    nltk.download('averaged_perceptron_tagger')
 
 
 @st.cache_data
@@ -115,7 +102,7 @@ def display_indicators():
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
-        sub_tabs = st.tabs(["Specification","Header", "IR"])
+        sub_tabs = st.tabs(["Specification","Header"])
         with sub_tabs[0]:
         
             with st.container(): 
@@ -140,36 +127,6 @@ def display_indicators():
                     title='header',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
-        with sub_tabs[2]:
-            set_nltk()
-            comments_dict, cleaning_words, files_path_dict = load_ir_data(selected_maker)
-            tas = TextAnalysis()
-            if comments_dict is not None:
-                comment_keys = sorted(list(comments_dict.keys()), reverse=True)
-                selected_comment_key = st.selectbox("Select a quarter:", comment_keys)
-                if not selected_comment_key:
-                    selected_comment_key = comment_keys[0]
-                if selected_comment_key:
-                    selected_comment_text = comments_dict[selected_comment_key]
-                    fig = tas.plot_wordcloud(selected_comment_text, cleaning_words)
-                    file_path = files_path_dict[selected_comment_key]
-                    fig.update_layout(
-                                width=500,
-                                height=800,
-                                margin=dict(l=0, r=0, t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    if file_path:
-                        with open(file_path, "rb") as file:
-                            st.download_button(
-                                label=f"Download IR {selected_comment_key}",
-                                data=file,
-                                file_name=file_path.name,
-                                mime="application/pdf",
-                                use_container_width=True)  
-            else:
-                st.write("no application")
-
 
     with col2:
         col2_plot_height = 800
