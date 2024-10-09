@@ -99,7 +99,7 @@ def display_indicators():
                 
             with st.container(): 
                 data_price = pd.DataFrame()
-                toggle = st.radio("", (selected_maker.upper(), "All"), horizontal=True)
+                toggle = st.radio(" ", (selected_maker.upper(), "All"), horizontal=True)
                 if toggle == selected_maker.upper():
                     data_price = loading_webdata(selected_maker)
                 elif toggle == "All":
@@ -130,7 +130,7 @@ def display_indicators():
 
     with col2:
         col2_plot_height = 800
-        selected_multi_makers = st.multiselect("", makers, placeholder='Radar Scores', 
+        selected_multi_makers = st.multiselect(" ", makers, placeholder='Radar Scores', 
                                                 key='key_for_scores', label_visibility='hidden')
         if not selected_multi_makers: 
             selected_multi_makers =  selected_maker
