@@ -82,7 +82,7 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
         
-    col1, col2 = st.columns([2, 3])
+    col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
@@ -91,7 +91,7 @@ def display_indicators():
         
             with st.container(): 
                 fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-                fig.update_layout(width=500, height=500, title='heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
+                fig.update_layout(width=500, height=500, title='Heat map for spec', margin=dict(t=40, l=30, r=30, b=10))
                 st.plotly_chart(fig, use_container_width=True)            
                 
             with st.container(): 
@@ -175,7 +175,9 @@ def display_indicators():
                     data = loading_rtings('measurement')
                     fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
                     if fig != None:
-                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                        fig.update_layout(width=600, height=col2_plot_height, 
+                                          margin=dict(t=0, r=0, b=20))
+                        
                         st.plotly_chart(fig, use_container_width=True)
 
 

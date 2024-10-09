@@ -42,4 +42,5 @@ class DataCleaner:
             df = df.set_index(["year", "series", "display type"]).drop(
                 ["model", "size", "grade"], axis=1)
             df = df.fillna("-")
+            
             return df

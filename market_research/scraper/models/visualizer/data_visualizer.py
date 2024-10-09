@@ -78,7 +78,8 @@ class DataVisualizer(BaseVisualizer):
                     ),
                     text=data_series['description'],  
                     hoverinfo='text',  
-                    name=f'{series} [{display}]',
+                    name=f'{series.upper()}',
+                    # name=f'{series.upper()} [{display.capitalize()}]',
                     visible='legendonly'  # 사이즈 마커는 기본적으로 숨김
                 ))
 
@@ -132,9 +133,7 @@ class DataVisualizer(BaseVisualizer):
                             data['price'].max()) + 1000],
                 showgrid=True,
                 tickmode='array',  
-                tickvals=tickvals,  
-                # gridcolor='lightgray',  
-                # gridwidth=1  
+                tickvals=tickvals
             ),
             width=1000,
             height= 800,
@@ -206,11 +205,12 @@ class DataVisualizer(BaseVisualizer):
         heatmap_data = data_df.T
         
         mask_data = mask_data.replace(0, '').set_index(idx_names).sort_index(ascending=True).T
-        x_labels = ['-'.join(map(str, idx)) for idx in heatmap_data.columns]
+        x_labels = [f"{str(idx[1]).upper()} ({str(idx[0])})" for idx in heatmap_data.columns]
+
         fig = go.Figure(data=go.Heatmap(
             z=heatmap_data.values,  
             x=x_labels,  
-            y=heatmap_data.index,   
+            y=heatmap_data.index.str.capitalize(),   
             colorscale=cmap,         
             showscale=False,
             zmax=1,                  
@@ -242,15 +242,11 @@ class DataVisualizer(BaseVisualizer):
             data = self.dc.get_price_df().copy()
 
         data['year'] = data['year'].astype('str')
-
-
-        
-        data = data.sort_values(by=['year', 'series'], ascending=[False, True]).reset_index(drop=True)
+        data = data[['year', 'series', 'text0']].drop_duplicates().dropna()
         data = data.groupby(['text0', 'year']).agg({
             'series': '/ '.join 
         }).reset_index()
-        
-        # data = data[['year', 'series', 'text0']].drop_duplicates(subset=['text0'], keep='last').dropna()
+        data = data.sort_values(by=['year', 'series'], ascending=[False, True]).reset_index(drop=True)
         marker_size = 16  
 
         fig = go.Figure()
@@ -271,7 +267,7 @@ class DataVisualizer(BaseVisualizer):
             
         # 최대 연도 구하기
         min_year = data['year'].astype(int).min()
-        dummy_years = [str(min_year + i + 1) for i in range(6)]
+        dummy_years = [str(min_year + i + 1) for i in range(30)]
 
         # 더미 연도 추가
         for year in dummy_years:

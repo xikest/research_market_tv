@@ -275,7 +275,7 @@ class Rvisualizer(BaseVisualizer):
                 theta=theta,
                 fill='toself',
                 fillcolor=fill_color,
-                name=f"{maker} {series}({year}){suffix}",  # Series 이름에 연도 포함
+                name=f"{maker.upper()} {series.upper()}({year}){suffix}",  # Series 이름에 연도 포함
                 mode='lines',
                 line=dict(color=line_color, width=2),
                 visible= True  
@@ -353,7 +353,7 @@ class Rvisualizer(BaseVisualizer):
         data_df = self.dataset.get('heatmap').copy()
                 
         fig = go.Figure()
-        x_labels = ['-'.join(map(str, idx)) for idx in data_df.columns]    
+        x_labels = [f"{str(idx[0]).upper()}-{str(idx[2]).upper()} ({str(idx[1]).upper()})" for idx in data_df.columns]
         # Heatmap 추가
         fig.add_trace(go.Heatmap(
             z=data_df.values,
@@ -377,7 +377,7 @@ class Rvisualizer(BaseVisualizer):
                     args=[
                         {
                             'z': [data_df.values],
-                            'x': [['-'.join(map(str, idx)) for idx in data_df.columns]] ,
+                            'x': [[f"{str(idx[0]).upper()}-{str(idx[2]).upper()} ({str(idx[1]).upper()})" for idx in data_df.columns]],
                             'y': [data_df.index],
                             'text': [data_df.values],
                         },
@@ -392,7 +392,7 @@ class Rvisualizer(BaseVisualizer):
                     args=[
                         {
                             'z': [data_df.xs(year, level=1, axis=1).values],
-                            'x': [['-'.join(map(str, idx)) for idx in data_df.xs(year, level=1, axis=1).columns]],
+                            'x': [[f"{str(idx[0].upper())}-{str(idx[1]).upper()}" for idx in data_df.xs(year, level=1, axis=1).columns]],
                             'y': [data_df.index],
                              'text': [data_df.xs(year, level=1, axis=1).values]
                         },
