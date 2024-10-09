@@ -22,23 +22,7 @@ def loading_webdata(selected_maker):
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
-
-@st.cache_data
-def load_ir_data(selected_maker=None):
-    ir_class_dict = {
-            "sony": SONY_IR,
-            "lg": None,
-            "samsung":  None}
-    ir_class= ir_class_dict.get(selected_maker)
-    
-    if ir_class is not None:
-        ir_class = ir_class()
-        comments_dict, files_path_dict = ir_class.get_ir_script()
-        cleaning_words = ir_class.cleaning_words
-        return comments_dict, cleaning_words, files_path_dict
-    else: 
-        return None
-    
+ 
 
 @st.cache_data
 def loading_calendar(indicator_type):
