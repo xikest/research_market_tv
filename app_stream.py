@@ -2,26 +2,13 @@ import streamlit as st
 import pandas as pd
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
-from market_research.ir import SONY_IR
-from market_research.analysis import TextAnalysis
 from io import BytesIO
-import plotly.subplots as sp
-import nltk
-import plotly.subplots as sp
-import streamlit as st
 
 
 st.set_page_config(layout="wide")
 
 makers = ["SONY", "LG", "SAMSUNG"]
 
-
-
-@st.cache_data
-def set_nltk():
-    nltk.download('punkt_tab')
-    nltk.download('stopwords')
-    nltk.download('averaged_perceptron_tagger')
 
 
 @st.cache_data
@@ -35,23 +22,7 @@ def loading_webdata(selected_maker):
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
-
-@st.cache_data
-def load_ir_data(selected_maker=None):
-    ir_class_dict = {
-            "sony": SONY_IR,
-            "lg": None,
-            "samsung":  None}
-    ir_class= ir_class_dict.get(selected_maker)
-    
-    if ir_class is not None:
-        ir_class = ir_class()
-        comments_dict, files_path_dict = ir_class.get_ir_script()
-        cleaning_words = ir_class.cleaning_words
-        return comments_dict, cleaning_words, files_path_dict
-    else: 
-        return None
-    
+ 
 
 @st.cache_data
 def loading_calendar(indicator_type):
@@ -115,7 +86,7 @@ def display_indicators():
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
-        sub_tabs = st.tabs(["Specification","Header", "IR"])
+        sub_tabs = st.tabs(["Specification","Header"])
         with sub_tabs[0]:
         
             with st.container(): 
@@ -137,9 +108,10 @@ def display_indicators():
                 fig.update_layout(
                     width=500,
                     height=800,
-                    title='header',
+                    title='',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
+<<<<<<< HEAD
                 
                 
         with sub_tabs[2]:
@@ -172,6 +144,8 @@ def display_indicators():
             else:
                 st.write("no application")
 
+=======
+>>>>>>> 9e72f34e0a265c640f7ddf3e8eb18f1f6bb340f9
 
     with col2:
         col2_plot_height = 800
