@@ -111,41 +111,7 @@ def display_indicators():
                     title='',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
-<<<<<<< HEAD
-                
-                
-        with sub_tabs[2]:
-            set_nltk()
-            comments_dict, cleaning_words, files_path_dict = load_ir_data(selected_maker)
-            tas = TextAnalysis()
-            if comments_dict is not None:
-                comment_keys = sorted(list(comments_dict.keys()), reverse=True)
-                selected_comment_key = st.selectbox("Select a quarter:", comment_keys)
-                if not selected_comment_key:
-                    selected_comment_key = comment_keys[0]
-                if selected_comment_key:
-                    selected_comment_text = comments_dict[selected_comment_key]
-                    fig = tas.plot_wordcloud(selected_comment_text, cleaning_words)
-                    file_path = files_path_dict[selected_comment_key]
-                    fig.update_layout(
-                                width=500,
-                                height=800,
-                                margin=dict(l=0, r=0, t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    if file_path:
-                        with open(file_path, "rb") as file:
-                            st.download_button(
-                                label=f"Download IR {selected_comment_key}",
-                                data=file,
-                                file_name=file_path.name,
-                                mime="application/pdf",
-                                use_container_width=True)  
-            else:
-                st.write("no application")
 
-=======
->>>>>>> 9e72f34e0a265c640f7ddf3e8eb18f1f6bb340f9
 
     with col2:
         col2_plot_height = 800
