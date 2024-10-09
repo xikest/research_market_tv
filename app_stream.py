@@ -6,10 +6,7 @@ from io import BytesIO
 
 
 st.set_page_config(layout="wide")
-
 makers = ["SONY", "LG", "SAMSUNG"]
-
-
 
 @st.cache_data
 def loading_webdata(selected_maker):
@@ -17,12 +14,12 @@ def loading_webdata(selected_maker):
             "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
             "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
             "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
-
     selected_json = web_data.get(selected_maker)
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
  
+
 
 @st.cache_data
 def loading_calendar(indicator_type):
@@ -40,6 +37,7 @@ def loading_rtings(data_src='measurement'):
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
     elif data_src == 'scores':
         json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
+
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
@@ -100,14 +98,24 @@ def display_indicators():
                 st.plotly_chart(fig, use_container_width=True)            
                 
             with st.container(): 
-                fig = DataVisualizer(data, maker=selected_maker).price_map(return_fig=True)  
+                data_price = pd.DataFrame()
+                toggle = st.radio("", (selected_maker.upper(), "All"), horizontal=True)
+                if toggle == selected_maker.upper():
+                    data_price = loading_webdata(selected_maker)
+                elif toggle == "All":
+                    for maker in makers:
+                        data_price_selected = loading_webdata(maker.lower())
+                        data_price_selected.columns = data_price_selected.columns.str.lower()
+                        data_price_selected.loc[:, 'series'] = data_price_selected['series'] + f" ({maker})"
+                        data_price = pd.concat([data_price, data_price_selected[["year", "display type", "size", "series", "model","grade", "price", "price_original", "price_gap", "description"]]], axis=0)
+                fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
                 fig.update_layout(
                     width=500,
                     height=400,
-                    title='price map',
+                    title='Price map',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
-        
+
         if selected_maker == "sony":
             with sub_tabs[1]:
                 with st.container():              
