@@ -1,16 +1,16 @@
-## 설치 하기
-chmod +x install_env.sh
-./install_env.sh
-
-chmod +x install_env.sh ; ./install_env.sh
-
 ## 실행하기
 nohup python3 -u get_models.py > get_models.log 2>&1
-nohup python3 -u get_imanalysis.py > get_imanalysis.log 2>&1
 
 
 #실행 중인 쉘 확인 아래는 bot 키워드
 ps -ef|grep bot
 
+
+## 설치 하기
+python3 install_driver.py
+
+
+python3 -m venv bot_venv/app_mkt
+sudo apt install python3.12-venv
 
 pip install -U pandas openpyxl tqdm requests selenium beautifulsoup4 PyMuPDF wordcloud nltk scikit-learn openai matplotlib seaborn opencv-python pytube

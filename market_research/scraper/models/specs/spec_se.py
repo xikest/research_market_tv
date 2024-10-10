@@ -26,7 +26,11 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
         self._data = self._fetch_model_data(demo_mode=demo_mode)    
         DataVisualizer.__init__(self, df = self._data, maker='sse')
         pass
-        
+    
+    @property
+    def data(self):
+        return self._data
+    
     def _fetch_model_data(self, demo_mode:bool=False) -> pd.DataFrame:
     
         

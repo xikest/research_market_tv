@@ -1,14 +1,31 @@
-from market_research.scraper import Specscraper_s, Specscraper_l, Specscraper_sjp, Specscraper_p
+import time
+from datetime import datetime, timedelta
+from market_research.scraper import Specscraper_s
+from market_research.scraper import Specscraper_l
+from market_research.scraper import Specscraper_se
+from .firestoremanager import FirestoreManager
 
+def main():
+    file_path = 'firestore-001.json'
+    firestore_manager = FirestoreManager(file_path)
 
-scraper_s = Specscraper_s(export_prefix="sony_model_info_web")
-df_s_models = scraper_s.get_models_info()
+    one_day = 24 * 60 * 60  # 86400초
 
-scraper_l = Specscraper_l(export_prefix="lge_model_info_web")
-df_l_models = scraper_l.get_models_info()
+    while True:
 
-scraper_sjp = Specscraper_sjp(export_prefix="sony_model_info_web_jp")
-df_sjp_models = scraper_sjp.get_models_info()
+        print(f"작업 시작: {datetime.now()}")
 
-scraper_p = Specscraper_p(export_prefix="pana_model_info_web")
-df_p_models = scraper_p.get_models_info()
+        scraper_s = Specscraper_s()
+        firestore_manager.save_dataframe(scraper_s, 'sony')
+        
+        scraper_l = Specscraper_l()
+        firestore_manager.save_dataframe(scraper_l, 'lg')
+        
+        scraper_se = Specscraper_se()
+        firestore_manager.save_dataframe(scraper_se, 'samsung')
+
+        print(f"작업 완료: {datetime.now()} - 24시간 후에 다시 실행됩니다.")
+        time.sleep(one_day)
+
+if __name__ == "__main__":
+    main()
