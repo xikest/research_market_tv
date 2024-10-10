@@ -170,7 +170,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
                 prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
                 prices_dict['price_original'] = float(price_original.replace('$', '').replace(',', ''))
-                prices_dict['price_gap'] = price_original - price_now
+                prices_dict['price_gap'] = prices_dict['price_original']  - prices_dict['price'] 
             except:
                 try:
                     price_now = driver.find_element(By.XPATH,
