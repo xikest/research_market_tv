@@ -153,13 +153,23 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                 pattern = r'\d{1,3}(?:,\d{3})*(?:\.\d{2})?'
                 prices = [re.search(pattern, part).group() for part in split_price if re.search(pattern, part)]
                 if len(prices) == 3:
-                    prices_dict["price"] = float(prices[0].replace(',', ''))
-                    prices_dict["price_gap"] = float(prices[1].replace(',', ''))
-                    prices_dict["price_original"] = float(prices[2].replace(',', ''))
+                    price_now = float(prices[0].replace(',', ''))
+                    price_gap = round(float(prices[1].replace(',', '')), 1)
+                    price_original = float(prices[2].replace(',', ''))
+                    
+                    prices_dict["price"] = price_now
+                    prices_dict["price_gap"] = price_gap
+                    prices_dict["price_original"] = price_original
                 else:
-                    prices_dict["price"] = float(split_price[-1].replace(',', '')) 
+                    price_now = float(split_price[-1].replace(',', '')) 
+                    prices_dict["price"] = price_now
+                    prices_dict["price_original"] = price_now
+                    prices_dict["price_gap"] = 0.0
             except:
-                prices_dict["price"] = None
+                prices_dict["price"] = float('nan')
+                prices_dict["price_original"] = float('nan')
+                prices_dict["price_gap"] = float('nan')
+                
             return prices_dict
        
         def extract_description(soup)->dict:

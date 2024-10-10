@@ -175,13 +175,22 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
                 split_price = price.text.split('$')
                 prices = split_price
                 if len(prices) > 2:
-                    dict_info["price"] = float(prices[-2].replace(',', ''))
-                    dict_info["price_original"] = float(prices[-1].replace(',', ''))
-                    dict_info["price_gap"] = round(dict_info["price_original"] - dict_info["price"], 1)
+                    
+                    price_now = float(prices[-2].replace(',', ''))
+                    price_original = float(prices[-1].replace(',', ''))
+                    price_gap = price_original - price_now
+                    dict_info["price"] = price_now
+                    dict_info["price_original"] = price_original
+                    dict_info["price_gap"] = round(price_gap, 1)
                 else:
-                    dict_info["price"] = float(prices[-1].replace(',', ''))
+                    price_now = float(prices[-1].replace(',', ''))
+                    dict_info["price"] = price_now
+                    prices_dict['price_original'] = price_now
+                    prices_dict['price_gap'] = 0.0
             except:
-                dict_info["price"] = None
+                prices_dict['price'] = float('nan')
+                prices_dict['price_original'] = float('nan')
+                prices_dict['price_gap'] = float('nan')
             return prices_dict
             
 

@@ -168,15 +168,22 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                                                 '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
                 price_original  = driver.find_element(By.XPATH,
                                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-                prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
-                prices_dict['price_original'] = float(price_original.replace('$', '').replace(',', ''))
-                prices_dict['price_gap'] = price_original - price_now
+                
+                price_now = float(price_now.replace('$', '').replace(',', ''))
+                price_original = float(price_original.replace('$', '').replace(',', ''))
+                price_gap = price_original - price_now
+                
+                prices_dict['price'] = price_now
+                prices_dict['price_original'] = price_original
+                prices_dict['price_gap'] = round(price_gap, 1)
             except:
                 try:
                     price_now = driver.find_element(By.XPATH,
                                                     '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
-                    prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
-                    prices_dict['price_original'] = prices_dict['price'] 
+                    
+                    price_now = float(price_now.replace('$', '').replace(',', ''))
+                    prices_dict['price'] = price_now
+                    prices_dict['price_original'] = price_now
                     prices_dict['price_gap'] = 0.0
                 except:
                     prices_dict['price'] = float('nan')
@@ -282,7 +289,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             text_list = text_list[first_idx:last_idx]
             for i, text in enumerate(text_list):
                 text_dict[f'text{i}'] = text
-            print(text_dict)
             return text_dict
         
         def find_spec_tab(driver) -> None:
