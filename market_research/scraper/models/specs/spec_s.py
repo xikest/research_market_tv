@@ -168,8 +168,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                                                 '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[1]').text
                 price_original  = driver.find_element(By.XPATH,
                                                         '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p[2]').text
-<<<<<<< HEAD
-                
+
                 price_now = float(price_now.replace('$', '').replace(',', ''))
                 price_original = float(price_original.replace('$', '').replace(',', ''))
                 price_gap = price_original - price_now
@@ -177,11 +176,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 prices_dict['price'] = price_now
                 prices_dict['price_original'] = price_original
                 prices_dict['price_gap'] = round(price_gap, 1)
-=======
-                prices_dict['price'] = float(price_now.replace('$', '').replace(',', ''))
-                prices_dict['price_original'] = float(price_original.replace('$', '').replace(',', ''))
-                prices_dict['price_gap'] = prices_dict['price_original']  - prices_dict['price'] 
->>>>>>> d0eed80d764970237f468ac1b3be6192a0d913d2
+
             except:
                 try:
                     price_now = driver.find_element(By.XPATH,
