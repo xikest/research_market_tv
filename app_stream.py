@@ -71,7 +71,7 @@ def display_indicators():
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️")
              
-    for _ in range(10):
+    for _ in range(3):
         st.sidebar.write("")
         
     calendar_url = loading_calendar(selected_maker)
