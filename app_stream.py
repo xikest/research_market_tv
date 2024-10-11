@@ -80,7 +80,7 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
         
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([2,3])
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
