@@ -1,13 +1,14 @@
 import pandas as pd
 import plotly.graph_objects as go
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.tag import pos_tag
 from string import punctuation
 import requests
 import datetime
 import pandas as pd
 import re 
+import spacy
+from string import punctuation
+nlp = spacy.load("en_core_web_sm")
+
 
 class Calendar:
     def __init__(self, API_KEY:str, CALENDAR_ID :str):
@@ -70,19 +71,21 @@ class Calendar:
 
     def create_events_calendar(self, filter_year = 2024, month_interval=10, return_fig=False):
 
-        def preprocess_data(df, month_interval = 10):
-            
+        def preprocess_data(df, month_interval = 10):        
             def preprocess_text(text):
-                tokens = word_tokenize(text.lower())
-                stop_words = set(stopwords.words('english') + list(punctuation))
+                doc = nlp(text.lower())
                 custom_stopwords = {'sony', "'s"}
-                stop_words.update(custom_stopwords)
-                filtered_tokens = [word for word in tokens if word not in stop_words]
-                pos_tokens = pos_tag(filtered_tokens)
-                keywords = [word for word, pos in pos_tokens if pos.startswith('N') or pos.startswith('V')]
+                # 키워드 추출 (명사 및 동사)
+                keywords = [
+                    token.text for token in doc
+                    if token.text not in custom_stopwords and
+                    token.text not in punctuation and
+                    not token.is_stop and
+                    token.pos_ in ['NOUN', 'VERB']
+                ]
                 processed_text = " ".join(keywords)[:10] + "..."
                 return processed_text
-            
+
             for i in range(len(df)):
                 summary_text = df["summary"][i].split(":")[0]
                 cleaned_summary = preprocess_text(summary_text)
