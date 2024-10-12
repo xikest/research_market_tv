@@ -11,11 +11,14 @@ makers = ["SONY", "LG", "SAMSUNG"]
 ONLINE = True
 
 @st.cache_data
-def loading_nltk():
-    nltk.download('punkt')
-    nltk.download('stopwords')
-    nltk.download('averaged_perceptron_tagger')
-    nltk.download('wordnet')
+def loading_nltk():   
+    try:
+        nltk.download('punkt')
+        nltk.download('averaged_perceptron_tagger')
+        nltk.download('stopwords')
+        nltk.download('wordnet')
+    except Exception as e:
+        print(f"Error downloading NLTK resources: {e}")
 
 @st.cache_data
 def loading_webdata(selected_maker):
