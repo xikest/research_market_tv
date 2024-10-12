@@ -28,6 +28,17 @@ def loading_webdata(selected_maker):
     return selected_data
      
 @st.cache_data
+def loading_calendar(indicator_type):
+    calendar_url = None
+    calendar_dict = {
+        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
+        "lg": None,
+        "samsung": None}
+    calendar_url = calendar_dict.get(indicator_type)
+    return calendar_url
+      
+     
+@st.cache_data
 def loading_rtings(data_src='measurement'):
     if ONLINE:
         if data_src == 'measurement':
@@ -71,7 +82,15 @@ def display_indicators():
     with st.sidebar.expander("Hi 😎", expanded=False):
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️")
-
+        
+    for _ in range(3):
+        st.sidebar.write("")
+        
+    calendar_url = loading_calendar(selected_maker)
+    if calendar_url is not None:
+        st.sidebar.markdown(f'<iframe src="{calendar_url}" width="300" height="300" frameborder="0"></iframe>', unsafe_allow_html=True)
+    else:
+        st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
  
     col1, col2 = st.columns([2,3])
     with col1:
