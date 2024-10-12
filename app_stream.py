@@ -10,16 +10,11 @@ makers = ["SONY", "LG", "SAMSUNG"]
 
 @st.cache_data
 def loading_webdata(selected_maker):
-#     web_data = {
-#             "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
-#             "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
-#             "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
-    
     web_data = {
-            "sony": 's_scrape_model_data.json',
-            "lg": 'l_scrape_model_data.json',
-            "samsung": 'se_scrape_model_data.json'}
-    
+            "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
+            "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
+            "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+        
     selected_json = web_data.get(selected_maker)
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
@@ -31,8 +26,7 @@ def loading_webdata(selected_maker):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        # "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
-        "sony": None,
+        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
         "lg": None,
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
@@ -41,11 +35,9 @@ def loading_calendar(indicator_type):
 # @st.cache_data
 def loading_rtings(data_src='measurement'):
     if data_src == 'measurement':
-        # json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
-        json_path = 'rtings_measurement_data.json'  
+        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
     elif data_src == 'scores':
-        json_path = 'rtings_scores_data.json'
-        # json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
+        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
