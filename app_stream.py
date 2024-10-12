@@ -2,46 +2,46 @@ import streamlit as st
 import pandas as pd
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
+from market_research.ir.calendar import Calendar
 from io import BytesIO
 
 
 st.set_page_config(layout="wide")
 makers = ["SONY", "LG", "SAMSUNG"]
+ONLINE = True
 
 @st.cache_data
 def loading_webdata(selected_maker):
-    web_data = {
-            "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
-            "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
-            "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+    if ONLINE:
+        web_data = {
+                "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
+                "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
+                "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+    else:
+        web_data = {
+                "sony": './json/s_scrape_model_data.json',
+                "lg": './json/l_scrape_model_data.json',
+                "samsung": './json/se_scrape_model_data.json'}
         
     selected_json = web_data.get(selected_maker)
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
- 
-
-
-@st.cache_data
-def loading_calendar(indicator_type):
-    calendar_url = None
-    calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
-        "lg": None,
-        "samsung": None}
-    calendar_url = calendar_dict.get(indicator_type)
-    return calendar_url
-    
+     
 # @st.cache_data
 def loading_rtings(data_src='measurement'):
-    if data_src == 'measurement':
-        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
-    elif data_src == 'scores':
-        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
+    if ONLINE:
+        if data_src == 'measurement':
+            json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
+        elif data_src == 'scores':
+            json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
+    else:
+        if data_src == 'measurement':
+            json_path = './json/rtings_measurement_data.json'
+        elif data_src == 'scores':
+            json_path = './json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
-
-
 
 def download_data():
     def to_excel(df_dict):
@@ -70,23 +70,15 @@ def display_indicators():
     with st.sidebar.expander("Hi 😎", expanded=False):
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️")
-             
-    for _ in range(3):
-        st.sidebar.write("")
-        
-    calendar_url = loading_calendar(selected_maker)
-    if calendar_url is not None:
-        st.sidebar.markdown(f'<iframe src="{calendar_url}" width="300" height="300" frameborder="0"></iframe>', unsafe_allow_html=True)
-    else:
-        st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
-        
+
+ 
     col1, col2 = st.columns([2,3])
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
         
         if selected_maker == "sony":
-            sub_tabs = st.tabs(["Specification","Header"])
+            sub_tabs = st.tabs(["Specification","Header", "Calendar"])
         else:
             sub_tabs = st.tabs(["Specification"])
             
@@ -126,7 +118,17 @@ def display_indicators():
                         title='',
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
-
+            with sub_tabs[2]:
+                    fig = Calendar('AIzaSyD7NPJmSa47mojWeG10llV8odoBsTSHSrA',
+                                   '0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc@group.calendar.google.com').create_events_calendar(return_fig=True)
+                    fig.update_layout(
+                        width=500,
+                        height=800,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                
 
     with col2:
         col2_plot_height = 800

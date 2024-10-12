@@ -157,7 +157,7 @@ class DataVisualizer(BaseVisualizer):
                 data = response.json()
                 col_selected = data.get(self.maker)
             except Exception as e:
-                file_path = "col_heatmap.json"
+                file_path = "./json/col_heatmap.json"
                 with open(file_path, 'r') as file:
                     import json
                     data = json.load(file)
