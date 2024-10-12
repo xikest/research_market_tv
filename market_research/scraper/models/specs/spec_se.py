@@ -64,6 +64,8 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
             df_models = df_models.drop(['','Series'], axis=1)
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
+            valid_indices = df_models['Color*'].dropna().index
+            df_models['Color'].loc[valid_indices] = df_models['Color*'].loc[valid_indices]
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
             
