@@ -6,7 +6,6 @@ from market_research.scraper._visualization_scheme import BaseVisualizer
 import requests
 import plotly.io as pio
 import plotly.express as px
-import streamlit as st
 
 class DataVisualizer(BaseVisualizer):
     def __init__(self, df:pd.DataFrame=None, maker="", output_folder_path="results"):
