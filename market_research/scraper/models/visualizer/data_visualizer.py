@@ -109,7 +109,7 @@ class DataVisualizer(BaseVisualizer):
                 'buttons': year_dropdown['buttons'],
                 'direction': 'down',
                 'showactive': True,
-                'x': 0.1,  
+                'x': 0,  
                 'y': 1.0,  
                 'yanchor': 'bottom'  
             }]
