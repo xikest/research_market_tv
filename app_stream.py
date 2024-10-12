@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import nltk
 from io import BytesIO
-
 @st.cache_data
 def loading_nltk():   
     try:
@@ -14,13 +13,12 @@ def loading_nltk():
     except Exception as e:
         st.error(f"Error downloading NLTK resources: {e}")
         
+st.set_page_config(layout="wide")     
 loading_nltk()
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir.calendar import Calendar
 
-
-st.set_page_config(layout="wide")
 makers = ["SONY", "LG", "SAMSUNG"]
 ONLINE = True
 @st.cache_data
