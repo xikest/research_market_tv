@@ -73,7 +73,7 @@ class Calendar:
 
             for i in range(len(df)):
                 summary_text = df["summary"][i].split(":")[0]
-                cleaned_summary = summary_text.replace("sony","").replace("'s'","").replace("inch'","").replace("-'"," ")
+                cleaned_summary = summary_text.replace("sony","").replace("'s'","").replace("inch'","").replace("-'"," ")[:10] + "..."
                 df.at[i, "keywords_summary"] = cleaned_summary
         
             # 요일 및 색상 매핑
