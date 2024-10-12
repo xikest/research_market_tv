@@ -10,7 +10,18 @@ ps -ef|grep bot
 python3 install_driver.py
 
 
+## 가상 환경 접속
+source bot_venv/app_mkt/bin/activate
+
+## 가상 환경 생성
 python3 -m venv bot_venv/app_mkt
 sudo apt install python3.12-venv
 
-pip install -U pandas openpyxl tqdm requests selenium beautifulsoup4 PyMuPDF wordcloud nltk scikit-learn openai matplotlib seaborn opencv-python pytube
+
+## github 클론
+git clone https://github.com/xikest/research_market_tv.git
+## 클론 삭제
+rm -rf research_market_tv
+
+
+pip install openpyxl requests selenium beautifulsoup4 tqdm xik_tools mkt-retv matplotlib numpy pandas seaborn streamlit plotly google-cloud-firestore

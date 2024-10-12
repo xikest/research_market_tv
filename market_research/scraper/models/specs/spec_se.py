@@ -246,13 +246,31 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
             
         def extract_spec_detail(driver) -> dict:  
             dict_spec = {}
-            table_elements= driver.find_elements(By.CLASS_NAME, "subSpecsItem.Specs_subSpecsItem__acKTN")
+            try:
+                table_elements= driver.find_elements(By.CLASS_NAME, "subSpecsItem.Specs_subSpecsItem__acKTN")
+            except:                
+                try:
+                    table_elements= driver.find_elements(By.CLASS_NAME, "Specs_specRow__e9Ife.Specs_specDetailList__StjuR")
+                except:
+                    table_elements= driver.find_elements(By.CLASS_NAME, "spec-highlight__container")
+                    
+                
+                
             for element in table_elements:
-                item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4').text
-                item_value = element.find_element(By.CLASS_NAME, 'Specs_subSpecsItemValue__oWnMq').text
+                try:
+                    item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4').text
+                    item_value = element.find_element(By.CLASS_NAME, 'Specs_subSpecsItemValue__oWnMq').text
+                except:
+                    try:
+                        item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4.Specs_type-p2__s07Sd').text
+                        item_value = element.find_element(By.CLASS_NAME, 'Specs_type-p2__s07Sd.Specs_subSpecsItemValue__oWnMq').text 
+                    except:
+                        item_name = element.find_element(By.CLASS_NAME, "spec-highlight__title").text
+                        item_value = element.find_element(By.CLASS_NAME, "spec-highlight__value").text 
+
+                     
                 label = re.sub(r'[\n?]', '', item_name)
                 content = re.sub(r'[\n?]', '', item_value)
-                
                 original_label = label
                 while label in dict_spec and dict_spec.get(label)!=content:
                     asterisk_count = label.count('*')

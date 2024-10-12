@@ -134,14 +134,12 @@ class Rvisualizer(BaseVisualizer):
                                     'Response Time']
         return measurement_selection
 
-
     def plot_facet_bar(self, select_label, return_fig:bool=False):
-        
         df = self.dataset.get('normal').copy()
         df = df[df['category'].isin([select_label])]
-        if 'Brightness' in select_label :
+        if 'Brightness' in select_label:
             df = df[df['label'].isin(self.brightness_label)]
-        df=df.sort_values(by=['year','series'], ascending=[False, False])    
+        df = df.sort_values(by=['year', 'series'], ascending=[False, False])    
         categories = df['label'].unique()
         div_group = 2
         first_group = categories[:2]
@@ -171,18 +169,17 @@ class Rvisualizer(BaseVisualizer):
             row = 1 if i <= div_group else 2
             col = i if i <= div_group else i - div_group
             
-            df_cat.loc[:,'series'] = df_cat['series'].apply(lambda x: x.upper())
+            df_cat.loc[:, 'series'] = df_cat['series'].apply(lambda x: x.upper())
             for year in df_cat['year'].unique():
                 year_data = df_cat[df_cat['year'] == year]
                 fig.add_trace(
                     go.Bar(
-                        x=year_data['series'] + ' (' + year_data['year'].astype(str)+')',
+                        x=year_data['series'] + ' (' + year_data['year'].astype(str) + ')',
                         y=year_data['result_value'],
                         name=f"{category} ({year})", 
                         marker=dict(color=colors[i % len(colors)]),
                         hovertemplate='%{y}, %{x}<extra></extra>'
-                        ),
-                        
+                    ),
                     row=row, col=col 
                 )
 
@@ -194,24 +191,35 @@ class Rvisualizer(BaseVisualizer):
             for col in range(2, len(categories) + 1): 
                 fig.update_yaxes(matches=None, row=1, col=col)
 
-
+        # 연도 드롭다운 버튼 생성
         years = sorted(df_cat['year'].unique(), reverse=True)
-        year_dropdown = dict(
-            active=0,  
-            buttons=[
+        
+        # 첫 번째 연도 트레이스의 가시성을 기본으로 설정
+        initial_year = years[0]
+        
+        for trace in fig.data:
+            trace.visible = (initial_year in trace.name)
+
+        year_dropdown = {
+            'active': 0,  # 첫 번째 연도가 기본으로 선택되도록 0으로 설정
+            'buttons': [
+                dict(
+                    label=str(year),
+                    method='update',
+                    args=[{
+                        'visible': [year in trace.name for trace in fig.data]
+                    }]
+                ) for year in years
+            ] + [
                 dict(
                     label='All',  
                     method='update',
-                    args=[{'visible': [True] * len(fig.data)}]
+                    args=[{
+                        'visible': [True] * len(fig.data)
+                    }]
                 )
-            ] + [
-                dict(
-                    label=year,
-                    method='update',
-                    args=[{'visible': [year in trace.name for trace in fig.data]}]
-                ) for year in years
             ]
-        )
+        }
 
         fig.update_layout(
             updatemenus=[{
@@ -228,7 +236,6 @@ class Rvisualizer(BaseVisualizer):
             margin=dict(b=100)
         )
         
-
         if return_fig:
             return fig
         else:
@@ -277,22 +284,13 @@ class Rvisualizer(BaseVisualizer):
                 fillcolor=fill_color,
                 name=f"{maker.upper()} {series.upper()}({year}){suffix}",  # Series 이름에 연도 포함
                 mode='lines',
-                line=dict(color=line_color, width=2),
-                visible= True  
+                line=dict(color=line_color, width=2), 
+                visible=(year == years[0])
             ))
 
 
-        year_dropdown = dict(
-            active=0,  
+        year_dropdown = dict( 
             buttons=[
-                dict(
-                    label='All',  
-                    method='update',
-                    args=[
-                        {'visible': [True] * len(fig.data)}
-                    ]
-                )
-            ] + [
                 dict(
                     label=year,
                     method='update',
@@ -301,6 +299,16 @@ class Rvisualizer(BaseVisualizer):
                     ]
                 ) for year in years
             ]
+            +
+            [
+                dict(
+                    label='All',  
+                    method='update',
+                    args=[
+                        {'visible': [True] * len(fig.data)}
+                    ]
+                )
+            ] 
         )
     
         fig.update_layout(
@@ -347,88 +355,88 @@ class Rvisualizer(BaseVisualizer):
         else:
             fig.show()  
 
- 
     def heatmap_scores(self, colorscale="cividis", return_fig:bool=False):
-        
         data_df = self.dataset.get('heatmap').copy()
-                
-        fig = go.Figure()
-        x_labels = [f"{str(idx[0]).upper()}-{str(idx[2]).upper()} ({str(idx[1]).upper()})" for idx in data_df.columns]
-        # Heatmap 추가
-        fig.add_trace(go.Heatmap(
-            z=data_df.values,
+        
+        # 첫 번째로 보여줄 연도 (여기서는 첫 번째 연도를 보여주도록 설정)
+        initial_year = sorted(data_df.columns.get_level_values(1).unique(), reverse=True)[0]
+        initial_df = data_df.xs(initial_year, level=1, axis=1)
+
+        # x_labels 설정
+        x_labels = [f"{str(idx[0]).upper()}-{str(idx[1]).upper()}" for idx in initial_df.columns]
+        
+        # Heatmap 생성 (처음에는 initial_year에 해당하는 데이터만 표시)
+        fig = go.Figure(go.Heatmap(
+            z=initial_df.values,
             x=x_labels,
-            y=data_df.index,
+            y=initial_df.index,
             colorscale=colorscale,
             showscale=False,
             zmin=0,
             zmax=10,
-            text=data_df.values,
+            text=initial_df.values,
             texttemplate="%{text:.1f}",
             hoverinfo='none',
-        )) 
+        ))
         
         years = sorted(data_df.columns.get_level_values(1).unique(), reverse=True)
+        
+        # 연도 선택 드롭다운 생성
         year_dropdown = {
+            'active': 1,  # 두 번째 연도를 기본으로 선택
             'buttons': [
-                dict(
-                    label='All',  
-                    method='update',
-                    args=[
-                        {
-                            'z': [data_df.values],
-                            'x': [[f"{str(idx[0]).upper()}-{str(idx[2]).upper()} ({str(idx[1]).upper()})" for idx in data_df.columns]],
-                            'y': [data_df.index],
-                            'text': [data_df.values],
-                        },
-                    ]
-                )
-            ] 
-            +
-            [
                 dict(
                     label=str(year),
                     method='update',
-                    args=[
-                        {
-                            'z': [data_df.xs(year, level=1, axis=1).values],
-                            'x': [[f"{str(idx[0].upper())}-{str(idx[1]).upper()}" for idx in data_df.xs(year, level=1, axis=1).columns]],
-                            'y': [data_df.index],
-                             'text': [data_df.xs(year, level=1, axis=1).values]
-                        },
-                    ]
+                    args=[{
+                        'z': [data_df.xs(year, level=1, axis=1).values],
+                        'x': [[f"{str(idx[0]).upper()}-{str(idx[1]).upper()}" for idx in data_df.xs(year, level=1, axis=1).columns]],
+                        'y': [data_df.index],
+                        'text': [data_df.xs(year, level=1, axis=1).values]
+                    }]
                 ) for year in years
+            ] + [
+                dict(
+                    label='All',
+                    method='update',
+                    args=[{
+                        'z': [data_df.values],
+                        'x': [[f"{str(idx[0]).upper()}-{str(idx[2]).upper()} ({str(idx[1]).upper()})" for idx in data_df.columns]],
+                        'y': [data_df.index],
+                        'text': [data_df.values]
+                    }]
+                )
             ]
         }
 
+        # 레이아웃 업데이트
         fig.update_layout(
             updatemenus=[dict(
                 type="dropdown",
                 buttons=year_dropdown['buttons'],
                 direction="down",
                 showactive=True,
-                x=0,  
-                y=1.02, 
-                # xanchor='left',  
-                yanchor='bottom',  
+                x=0,
+                y=1.02,
+                yanchor='bottom',
             )],
-            
             xaxis_showgrid=False,
             xaxis=dict(tickangle=90),
             yaxis=dict(tickangle=0),
-            width=1000,  # 그래프 너비
-            height=1000,   # 그래프 높이
+            width=1000,
+            height=1000,
             font=dict(size=self.fontsize, family=self.font),
-            margin=dict(l=100, r=20, t=40, b=100), 
+            margin=dict(l=100, r=20, t=40, b=100),
         )
 
+        # HTML 파일로 저장
         fig.write_html(self.output_folder/f"heatmap.html")
-                        
+        
+        # 그래프 반환
         if return_fig:
             return fig
         else:
             fig.show()  # 그래프 보여주기
-        
 
     def plot_pca(self, palette="RdYlBu", return_fig:bool = False):
 

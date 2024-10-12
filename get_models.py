@@ -16,13 +16,17 @@ def main():
         print(f"작업 시작: {datetime.now()}")
 
         scraper_s = Specscraper_s()
-        firestore_manager.save_dataframe(scraper_s, 'sony')
+        df = scraper_s.data.set_index('model')
+        
+        firestore_manager.save_dataframe(df, 'sony')
         
         scraper_l = Specscraper_l()
-        firestore_manager.save_dataframe(scraper_l, 'lg')
+        df = scraper_l.data.set_index('model')
+        firestore_manager.save_dataframe(df, 'lg')
         
         scraper_se = Specscraper_se()
-        firestore_manager.save_dataframe(scraper_se, 'samsung')
+        df = scraper_se.data.set_index('model')
+        firestore_manager.save_dataframe(df, 'samsung')
 
         print(f"작업 완료: {datetime.now()} - 24시간 후에 다시 실행됩니다.")
         time.sleep(one_day)

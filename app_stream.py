@@ -10,10 +10,16 @@ makers = ["SONY", "LG", "SAMSUNG"]
 
 @st.cache_data
 def loading_webdata(selected_maker):
+#     web_data = {
+#             "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
+#             "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
+#             "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+    
     web_data = {
-            "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
-            "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
-            "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+            "sony": 's_scrape_model_data.json',
+            "lg": 'l_scrape_model_data.json',
+            "samsung": 'se_scrape_model_data.json'}
+    
     selected_json = web_data.get(selected_maker)
     selected_data = pd.read_json(selected_json, orient='records', lines=True)
     selected_data = selected_data.dropna(subset=['price']) #
@@ -25,7 +31,8 @@ def loading_webdata(selected_maker):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
+        # "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul&showTitle=0',
+        "sony": None,
         "lg": None,
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
@@ -34,10 +41,11 @@ def loading_calendar(indicator_type):
 # @st.cache_data
 def loading_rtings(data_src='measurement'):
     if data_src == 'measurement':
-        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
+        # json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
+        json_path = 'rtings_measurement_data.json'  
     elif data_src == 'scores':
-        json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
-
+        json_path = 'rtings_scores_data.json'
+        # json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
@@ -106,7 +114,7 @@ def display_indicators():
                     for maker in makers:
                         data_price_selected = loading_webdata(maker.lower())
                         data_price_selected.columns = data_price_selected.columns.str.lower()
-                        data_price_selected.loc[:, 'series'] = data_price_selected['series'] + f" ({maker})"
+                        data_price_selected.loc[:, 'series'] = f"[{maker}] " + data_price_selected['series']
                         data_price = pd.concat([data_price, data_price_selected[["year", "display type", "size", "series", "model","grade", "price", "price_original", "price_gap", "description"]]], axis=0)
                 fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
                 fig.update_layout(

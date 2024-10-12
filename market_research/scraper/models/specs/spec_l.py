@@ -230,9 +230,16 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                 element_all_specs.click()
                 time.sleep(self.wait_time)
             except:
-                element_all_specs = driver.find_element(By.CLASS_NAME, "MuiTypography-root.MuiTypography-h6.MuiTypography-alignLeft.MuiLink-root.MuiLink-underlineAlways.css-kgbp8r")
-                self.web_driver.move_element_to_center(element_all_specs)
-                time.sleep(self.wait_time)
+                try: 
+                    element_all_specs = driver.find_element(By.CLASS_NAME, "MuiTypography-root.MuiTypography-h6.MuiTypography-alignLeft.MuiLink-root.MuiLink-underlineAlways.css-kgbp8r")
+                    self.web_driver.move_element_to_center(element_all_specs)
+                    time.sleep(self.wait_time)
+                except:
+                    element_all_specs = driver.find_element(By.CLASS_NAME, 'MuiTypography-root.MuiTypography-h5.css-14uiqdv')
+                    self.web_driver.move_element_to_center(element_all_specs)
+                    time.sleep(self.wait_time)
+                
+                
             return None 
         
 
@@ -240,10 +247,21 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             dict_spec = {}
             spec_elements = driver.find_elements(By.CSS_SELECTOR, '.MuiBox-root.css-1nnt9ji')
             for spec_element in spec_elements:
-                label = spec_element.find_element(By.CLASS_NAME,
-                                                    'MuiTypography-root.MuiTypography-body3.css-11mszpq').text.strip()
-                content = spec_element.find_element(By.CLASS_NAME,
+                try: 
+                    label = spec_element.find_element(By.CLASS_NAME,
+                                                        'MuiTypography-root.MuiTypography-body3.css-11mszpq').text.strip()
+                    content = spec_element.find_element(By.CLASS_NAME,
+                                                        'MuiTypography-root.MuiTypography-body2.css-1yx8hz4').text.strip()
+                except:
+ 
+                    label = spec_element.find_element(By.CLASS_NAME,
+                                                    'MuiTypography-root.MuiTypography-body3.css-byc8c0').text.strip()
+                    content = spec_element.find_element(By.CLASS_NAME,
                                                     'MuiTypography-root.MuiTypography-body2.css-1yx8hz4').text.strip()
+
+                
+                
+
                 if label != '':
                     
                     original_label = label
@@ -309,6 +327,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             dict_info["series"] = model[-2:]
             dict_info["size"] = model[:-2]
             dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
+            
         
         # "qned" 또는 "nano"가 포함된 모델 처리
         elif "qned" in model or "nano" in model:
@@ -346,7 +365,6 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
             dict_info["size"] = model_split[0]
             model = model_split[-1]
             dict_info["year"] = model[0]
-            dict_info["series"] = model[1:]
+            dict_info["series"] = model
             dict_info["year"] =  year_mapping.get('u').get(dict_info.get("year"), None)
-
         return dict_info

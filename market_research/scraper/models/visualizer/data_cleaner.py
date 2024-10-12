@@ -24,7 +24,8 @@ class DataCleaner:
 
         self.df = self.df.map(transform_text)
         self.df.columns = [transform_text(x) for x in self.df.columns]
-        self.df = self.df.sort_values(by=["series","display type"]).ffill()
+        self.df = self.df.groupby('series').apply(lambda x: x.fillna(method='ffill').fillna(method='bfill')).reset_index(drop=True)
+        self.df = self.df.sort_values(by=["series","display type"])
 
     def get_price_df(self):
             df = self.df[
