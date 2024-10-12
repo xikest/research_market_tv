@@ -1,13 +1,14 @@
+ONLINE = True
+
 import streamlit as st
 import pandas as pd
 from io import BytesIO
 import nltk
-nltk.download('punkt_tab')  
-nltk.download('punkt')       
-nltk.download('averaged_perceptron_tagger')
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('stopwords')
-nltk.download('wordnet')
+if ONLINE:
+    nltk.download('punkt', quiet=True)
+    nltk.download('averaged_perceptron_tagger', quiet=True) 
+    nltk.download('stopwords', quiet=True)
+    nltk.download('wordnet', quiet=True)
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir.calendar import Calendar
@@ -15,7 +16,7 @@ from market_research.ir.calendar import Calendar
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+
 @st.cache_data
 def loading_webdata(selected_maker):
     if ONLINE:
