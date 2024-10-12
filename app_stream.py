@@ -113,7 +113,7 @@ def display_indicators():
                 
             with st.container(): 
                 data_price = pd.DataFrame()
-                toggle = st.radio("Price map", (selected_maker.upper(), "All"), horizontal=True)
+                toggle = st.radio("", (selected_maker.upper(), "All"), horizontal=True)
                 if toggle == selected_maker.upper():
                     data_price = loading_webdata(selected_maker)
                 elif toggle == "All":
@@ -126,8 +126,7 @@ def display_indicators():
                 fig.update_layout(
                     width=500,
                     height=400,
-                    # title='Price map',
-                    title='',
+                    title='Price map',
                     margin=dict(t=20, b=0))
                 st.plotly_chart(fig, use_container_width=True)
 
