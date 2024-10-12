@@ -1,19 +1,19 @@
 import streamlit as st
 import pandas as pd
-import nltk
 from io import BytesIO
-
-st.set_page_config(layout="wide")   
+import nltk
 nltk.download('punkt_tab')  
 nltk.download('punkt')       
 nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger_eng')
 nltk.download('stopwords')
 nltk.download('wordnet')
-
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir.calendar import Calendar
 
+
+st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
 ONLINE = True
 @st.cache_data
