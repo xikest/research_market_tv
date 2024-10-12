@@ -5,9 +5,7 @@ import requests
 import datetime
 import pandas as pd
 import re 
-import spacy
-from string import punctuation
-nlp = spacy.load("en_core_web_sm")
+
 
 
 class Calendar:
@@ -72,23 +70,10 @@ class Calendar:
     def create_events_calendar(self, filter_year = 2024, month_interval=10, return_fig=False):
 
         def preprocess_data(df, month_interval = 10):        
-            def preprocess_text(text):
-                doc = nlp(text.lower())
-                custom_stopwords = {'sony', "'s"}
-                # 키워드 추출 (명사 및 동사)
-                keywords = [
-                    token.text for token in doc
-                    if token.text not in custom_stopwords and
-                    token.text not in punctuation and
-                    not token.is_stop and
-                    token.pos_ in ['NOUN', 'VERB']
-                ]
-                processed_text = " ".join(keywords)[:10] + "..."
-                return processed_text
 
             for i in range(len(df)):
                 summary_text = df["summary"][i].split(":")[0]
-                cleaned_summary = preprocess_text(summary_text)
+                cleaned_summary = summary_text.replace("sony","").replace("'s'","").replace("inch'","").replace("-'"," ")
                 df.at[i, "keywords_summary"] = cleaned_summary
         
             # 요일 및 색상 매핑

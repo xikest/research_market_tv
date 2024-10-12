@@ -1,21 +1,13 @@
-ONLINE = True
-
 import streamlit as st
 import pandas as pd
 from io import BytesIO
-import nltk
-if ONLINE:
-    nltk.download('punkt', quiet=True)
-    nltk.download('averaged_perceptron_tagger', quiet=True) 
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir.calendar import Calendar
 
-
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
+ONLINE = True
 
 @st.cache_data
 def loading_webdata(selected_maker):
@@ -35,7 +27,7 @@ def loading_webdata(selected_maker):
     selected_data = selected_data.dropna(subset=['price']) #
     return selected_data
      
-# @st.cache_data
+@st.cache_data
 def loading_rtings(data_src='measurement'):
     if ONLINE:
         if data_src == 'measurement':
@@ -63,7 +55,6 @@ def download_data():
     df_dict.update({category: loading_rtings(category).get(category) for category in ['measurement', 'scores']})
     excel_data = to_excel(df_dict)
     return excel_data
-
 
 
 
