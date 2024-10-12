@@ -1,6 +1,5 @@
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
 import requests
 import datetime
 import pandas as pd
@@ -12,7 +11,6 @@ class Calendar:
     def __init__(self, API_KEY:str, CALENDAR_ID :str):
         self.API_KEY = API_KEY
         self.CALENDAR_ID=CALENDAR_ID
-        pio.templates.default='ggplot2'
         events = self._get_all_events(API_KEY, CALENDAR_ID)
         self._data = self._create_dataframe(events)
         pass
@@ -187,10 +185,7 @@ class Calendar:
             title='Events Calendar',
             width=600,
             height=800,
-            # plot_bgcolor='white',
-            # paper_bgcolor='white',
             font=dict(color='black'),
-            margin=dict(l=0, r=0, t=0, b=0)  # 여백 설정
         )
 
         

@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.io as pio
 from io import BytesIO
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
@@ -8,6 +9,7 @@ from market_research.ir.calendar import Calendar
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
 ONLINE = True
+pio.templates.default='ggplot2'
 
 @st.cache_data
 def loading_webdata(selected_maker):
