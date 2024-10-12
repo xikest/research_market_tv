@@ -1,14 +1,7 @@
 import streamlit as st
 import pandas as pd
-from market_research.scraper import DataVisualizer
-from market_research.scraper import Rvisualizer
-from market_research.ir.calendar import Calendar
-from io import BytesIO
 import nltk
-
-st.set_page_config(layout="wide")
-makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+from io import BytesIO
 
 @st.cache_data
 def loading_nltk():   
@@ -20,7 +13,16 @@ def loading_nltk():
         nltk.download('wordnet')
     except Exception as e:
         st.error(f"Error downloading NLTK resources: {e}")
+        
+loading_nltk()
+from market_research.scraper import DataVisualizer
+from market_research.scraper import Rvisualizer
+from market_research.ir.calendar import Calendar
 
+
+st.set_page_config(layout="wide")
+makers = ["SONY", "LG", "SAMSUNG"]
+ONLINE = True
 @st.cache_data
 def loading_webdata(selected_maker):
     if ONLINE:
@@ -72,7 +74,6 @@ def download_data():
 
 
 def display_indicators():
-    loading_nltk()
     selected_maker = st.sidebar.selectbox("", makers).lower()
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
