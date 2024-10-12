@@ -4,11 +4,18 @@ from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir.calendar import Calendar
 from io import BytesIO
-
+import nltk
 
 st.set_page_config(layout="wide")
 makers = ["SONY", "LG", "SAMSUNG"]
 ONLINE = True
+
+@st.cache_data
+def loading_nltk():
+    nltk.download('punkt')
+    nltk.download('stopwords')
+    nltk.download('averaged_perceptron_tagger')
+    nltk.download('wordnet')
 
 @st.cache_data
 def loading_webdata(selected_maker):
@@ -57,7 +64,11 @@ def download_data():
     excel_data = to_excel(df_dict)
     return excel_data
 
+
+
+
 def display_indicators():
+    loading_nltk()
     selected_maker = st.sidebar.selectbox("", makers).lower()
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
