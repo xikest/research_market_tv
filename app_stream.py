@@ -88,7 +88,7 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
         
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([2,3])
     with col1:
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
@@ -107,7 +107,7 @@ def display_indicators():
                 
             with st.container(): 
                 data_price = pd.DataFrame()
-                toggle = st.radio(" ", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
+                toggle = st.radio("", (selected_maker.upper(), "All"), horizontal=True)
                 if toggle == selected_maker.upper():
                     data_price = loading_webdata(selected_maker)
                 elif toggle == "All":
@@ -138,8 +138,8 @@ def display_indicators():
 
     with col2:
         col2_plot_height = 800
-        selected_multi_makers = st.multiselect(" ", makers, placeholder='Radar Scores', 
-                                                key='key_for_scores', label_visibility='hidden')
+        selected_multi_makers = st.multiselect("", makers, placeholder='Radar Scores', 
+                                                key='key_for_scores')
         if not selected_multi_makers: 
             selected_multi_makers =  selected_maker
         else:
