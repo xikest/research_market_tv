@@ -64,7 +64,10 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         
         if demo_mode:
             # Load existing JSON data
-            df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json', orient='records', lines=True)
+            try: 
+                df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json', orient='records', lines=True)
+            except:
+                df_models = pd.read_json('./json/s_scrape_model_data.json', orient='records', lines=True)
             print("operating demo")
         else:
             print("collecting models")

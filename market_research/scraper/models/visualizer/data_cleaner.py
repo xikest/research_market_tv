@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 class DataCleaner:
     """
     cleanup = DataCleaner(df)
@@ -24,14 +26,42 @@ class DataCleaner:
 
         self.df = self.df.map(transform_text)
         self.df.columns = [transform_text(x) for x in self.df.columns]
-        self.df = self.df.groupby('series').apply(lambda x: x.fillna(method='ffill').fillna(method='bfill')).reset_index(drop=True)
+        self.df = self.df.groupby('series').apply(lambda x: x.ffill().bfill()).reset_index(drop=True)
         self.df = self.df.sort_values(by=["series","display type"])
+        self.df.columns = self.df.columns.str.strip()
+        try:
+            self.df = self.df.rename(columns={"rated power consumption": "maximum power consumption", "maximum power consumption": "maximum power consumption"})
+            self.df['maximum power consumption'] = self.df['maximum power consumption'].astype(str).str.replace('w', '').str.strip()
+        except: pass
+        self.df = self.df.sort_values(by=['year', 'size', 'series'], ascending=[False, True, False])
+        self.df['year'] = self.df['year'].astype('str')
+        
 
     def get_price_df(self):
             df = self.df[
                 ["year", "display type", "size", "series", "model", "price", "price_original", "price_gap", "description"]]
             df = df.sort_values(["price", "year", "display type", "series", "size", ], ascending=False)
+            df = df.dropna(subset=['price'])  #
+            df['price_gap'] = df['price_gap'].fillna(0)
+            df['price_gap'] = df['price_gap'].map(lambda x: int(x))
+            df = df.sort_values(by=['year',  'series'], ascending=True)
+            df.loc[:, 'description'] = df.apply(lambda row: 
+                        f"{row['description']}<br>release: ${row['price_original']}<br>price: ${row['price']} ({row['price_gap']}↓)"  
+                                                    if row['price_gap'] != 0 else 
+                                                    f"{row['description']}<br>price: ${row['price']}" , axis=1)
             return df
+        
+    def get_power_concumption_df(self):
+        df = self.df.copy()
+        try: 
+            df['maximum power consumption'] = df['maximum power consumption'].replace('-', np.nan)
+            df = df[df['maximum power consumption'].notna()]
+            df['maximum power consumption'] = pd.to_numeric(df['maximum power consumption'], errors='coerce') 
+            df = df.dropna(subset=['maximum power consumption']) 
+        except:
+            df['maximum power consumption'] = None  
+        return df
+        
 
     def _cleanup_columns(self):
         self.df = self.df.drop_duplicates()
@@ -41,7 +71,7 @@ class DataCleaner:
             df = self.df
             df["display type"] = df["display type"].str.replace(r'display|4k ', '', regex=True)
             df = df.set_index(["year", "series", "display type"]).drop(
-                ["model", "size", "grade"], axis=1)
+                ["model", "grade"], axis=1)
             df = df.fillna("-")
             
             return df

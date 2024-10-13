@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from tools.file import FileManager
 import plotly.graph_objs as go
 from .data_cleaner import DataCleaner
@@ -6,11 +7,15 @@ from market_research.scraper._visualization_scheme import BaseVisualizer
 import requests
 import plotly.io as pio
 import plotly.express as px
+import streamlit as st
+
 
 class DataVisualizer(BaseVisualizer):
     def __init__(self, df:pd.DataFrame=None, maker="", output_folder_path="results"):
         
         pio.templates.default='ggplot2'
+        self.colors = px.colors.qualitative.Plotly 
+        self.markers = ['circle', 'x', 'square', 'star', 'diamond', 'pentagon', 'hexagon', 'cross', 'octagon', 'hexagon2']
         
         self.maker = maker
         super().__init__(output_folder_path = output_folder_path)
@@ -19,34 +24,18 @@ class DataVisualizer(BaseVisualizer):
         if df is not None:
             self.dc = DataCleaner(df)
 
-    def price_map(self, data=None, return_data=False, return_fig=False):
-        # 데이터 준비
-        if data is not None and isinstance(data, pd.DataFrame):   
-            data =  data
-        else:
-            data = self.dc.get_price_df().copy()
-            
-        
-        data = data.dropna(subset=['price'])  #
-        data['year'] = data['year'].astype('str')
-        data['price_gap'] = data['price_gap'].fillna(0)
-        data['price_gap'] = data['price_gap'].map(lambda x: int(x))
-        data = data.sort_values(by=['year',  'series'], ascending=True)
-        data.loc[:, 'description'] = data.apply(lambda row: 
-                    f"{row['description']}<br>release: ${row['price_original']}<br>price: ${row['price']} ({row['price_gap']}↓)"  
-                                                if row['price_gap'] != 0 else 
-                                                f"{row['description']}<br>price: ${row['price']}" , axis=1)
-        years = sorted(data['year'].unique(), reverse=True)
-        series = data.series.unique()
+    def price_map(self, return_data=False, return_fig=False):
 
-        colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
-        color_map = {i: colors[i % len(colors)] for i in range(len(series))}
-                
-        markers = ['circle', 'x', 'square', 'star', 'diamond', 'pentagon',  'hexagon', 'cross', 'octagon',  'hexagon2']
-        marker_map = {year: markers[i] for i, year in enumerate(sorted(years, reverse=True))}
-                
-        fig = go.Figure()
+        data = self.dc.get_price_df().copy()
         
+        years = sorted(data['year'].unique(), reverse=True)
+        series = data['series'].unique()
+        
+        color_map = {i: self.colors[i % len(self.colors)] for i in range(len(series))}
+        marker_map = {year: self.markers[i] for i, year in enumerate(years)}
+                 
+        
+        fig = go.Figure()
         for i, s in enumerate(series):
             data_series = data[data['series'] == s]
             year = data_series['year'].drop_duplicates().item()
@@ -78,45 +67,47 @@ class DataVisualizer(BaseVisualizer):
                 showlegend=True,
                 visible=(year == years[0])
             ))
-
-        ticks_below_3000 = list(range(0, 3001, 500))
-        ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
-        tickvals = ticks_below_3000 + ticks_above_3000
+            
         
         year_dropdown = dict(
-            buttons= [
+            buttons=[
                 dict(
                     label=year,
                     method='update',
                     args=[
-                        {'visible': [year in trace.name for trace in fig.data]}
+                        {
+                            'visible': [year in trace.name for trace in fig.data]
+                        }
                     ]
                 ) for year in years
             ] +
             [
                 dict(
-                    label='All',  
+                    label='All',
                     method='update',
                     args=[
-                        {'visible': [True] * len(fig.data)}
+                        {
+                            'visible': [True] * len(fig.data)
+                        }
                     ]
                 )
-            ] 
+            ]
         )
-    
+
+        ticks_below_3000 = list(range(0, 3001, 500))
+        ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
+        tickvals = ticks_below_3000 + ticks_above_3000
+
         fig.update_layout(
             updatemenus=[{
                 'buttons': year_dropdown['buttons'],
                 'direction': 'down',
                 'showactive': True,
-                'x': 0.2,  
+                'x': 0.1,  
                 'y': 1.0,  
                 'yanchor': 'bottom'  
-            }]
-        )
-
-        # 레이아웃 설정
-        fig.update_layout(
+            }],
+            
             title='Price map',
             xaxis_title='Size (Inch)',
             yaxis_title='Current Price ($)',
@@ -131,6 +122,13 @@ class DataVisualizer(BaseVisualizer):
                 tickmode='array',  
                 tickvals=tickvals
             ),
+            xaxis=dict(
+                range=[30, 100],
+                showgrid=True,
+                tickmode='array',  
+                tickvals=list(range(30, 100, 10))
+            ),
+            
             width=1000,
             height= 800,
             hovermode='closest',
@@ -147,7 +145,113 @@ class DataVisualizer(BaseVisualizer):
         if return_data:
             data['series'] = data['series'].map(lambda x: f'{self.maker}_{x}')
             return data
-             
+        
+        
+            
+
+    def power_consumption(self, return_data=False, return_fig=False):
+
+        data = self.dc.get_power_concumption_df().copy()       
+        years = sorted(data['year'].unique(), reverse=True)
+        series = sorted(data['series'].unique())  
+        
+        color_map = {i: self.colors[i % len(self.colors)] for i in range(len(series))}
+        marker_map = {year: self.markers[i] for i, year in enumerate(sorted(years, reverse=True))}
+        
+        fig = go.Figure()
+        
+        for i, s in enumerate(series):
+            data_series = data[data['series'] == s]
+            year = data_series['year'].drop_duplicates().item()
+            price = data_series['price']
+            
+            
+            fig.add_trace(go.Scatter(
+                x=data_series['size'],
+                y=data_series['maximum power consumption'],
+                mode='markers',
+                marker=dict(
+                    size=12,  
+                    color=color_map.get(i),  
+                    symbol=marker_map.get(year),
+                    opacity=0.8,  
+                ), 
+                name=f'{s.upper()} ({year})',
+                hovertemplate='%{y}W (%{text}), $%{customdata[0]}<extra></extra>',  
+                text=[s.upper()] * len(data_series),  
+                customdata=np.stack([price], axis=-1),  
+                showlegend=True,
+                visible=(year == years[0])
+            ))
+
+        year_dropdown = dict(
+            buttons=[
+                dict(
+                    label=year,
+                    method='update',
+                    args=[
+                        {'visible': [year in trace.name for trace in fig.data]}
+                    ]
+                ) for year in years
+            ] +
+            [
+                dict(
+                    label='All',  
+                    method='update',
+                    args=[
+                        {'visible': [True] * len(fig.data)}
+                    ]
+                )
+            ]
+        )
+
+        fig.update_layout(
+            updatemenus=[{
+                'buttons': year_dropdown['buttons'],
+                'direction': 'down',
+                'showactive': True,
+                'x': 0.1,  
+                'y': 1.0,  
+                'yanchor': 'bottom'  
+            }],
+            title='power consumption',
+            legend_title='Year',
+            showlegend=True,
+            template='simple_white',
+            yaxis=dict(
+                title='W',
+                range=[0, data['maximum power consumption'].max() + 100],  # y축 범위 조정
+                showgrid=True,
+                tickmode='linear',
+                dtick=100  # y축의 간격을 100으로 설정
+            ),
+            xaxis=dict(
+                range=[30, 100],
+                showgrid=True,
+                tickmode='array',  
+                tickvals=list(range(30, 100, 10))
+            ),
+
+            width=1000,
+            height=800,
+            hovermode='closest',
+            legend=dict(
+                traceorder='reversed' 
+            )
+        )
+        
+        fig.write_html(self.output_folder/f"{self.maker}_power_cosumption.html")
+        
+        if return_fig:
+            return fig
+        else:
+            fig.show()
+        if return_data:
+            data['series'] = data['series'].map(lambda x: f'{self.maker}_{x}')
+            return data
+        
+        
+        
     def heatmap_spec(self, col_selected:list=None, display_types:str=None, cmap="Blues", return_fig=False):
         if col_selected is None:
             try:
