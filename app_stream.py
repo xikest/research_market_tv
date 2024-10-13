@@ -92,7 +92,7 @@ def loading_plot_financials_with_margin():
 def display_html_table(df: pd.DataFrame, title: str):
     if not df.empty:
         df = df[['quarter', 'url']]
-        df['url'] = df['url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
+        df.loc[:,'url'] = df.loc[:,'url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
         st.subheader(title)
         st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
     else:
