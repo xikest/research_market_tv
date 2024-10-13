@@ -120,7 +120,6 @@ class Calendar:
         df[df['year'] == filter_year]
         
         marker_size = 11
-        
         fig = go.Figure()
         point_counter = {}
 
@@ -130,8 +129,7 @@ class Calendar:
             if key not in point_counter:
                 point_counter[key] = 0
             else:
-                point_counter[key] += month_interval/7
-
+                point_counter[key] += month_interval/10
             y_offset = point_counter[key]
             month = df['month_numeric'][i] // month_interval
             marker_color = month_colors.get(month, 'black')

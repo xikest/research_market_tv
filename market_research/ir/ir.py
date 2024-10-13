@@ -5,110 +5,43 @@ import yfinance as yf
 import plotly.graph_objects as go
 import plotly.subplots as sp
 from datetime import datetime
-import requests
+import asyncio
+import aiohttp
 
 class SONY_IR():
     def __init__(self):
-        # self.tas = TextAnalysis()
-        
-        self.cleaning_words = [  #사전 필터링하는 단어
-                            "half","fy2021","fy2020", "month","way", "input","earnings",
-                            "forecast","please","terms","market","g","ns", "unit","assets",
-                            "fy2022","levels","q","fy2023","numbers","result","units",
-                            "factors","costs","ss","q1","part",'segment', 'quarter', 
-                            'statements', 'business', 'question', 'yen', 'year', 'sony', 'results',
-                            "end","q2","questioner",
-                            "session","fy2024",
-                            # "sale","plan","capacity","growth","demand",
-                            "outlook","increase","investment",
-                            "example","rate","flow","time","a2","a1","sfh","r","dtc", "statement",
-                            "plan", "tax", "value", "term","capital", "growth","company","group", "service",
-                            "risk","profit","minotrity"
-                        ]     
-        
-        
-        self.replacement_mapping = {  #사전에 교체하는 단어
-                            "games": "game",
-                            "plans": "plan",
-                            "sensors": "sensor",
-                            "changes": "change",
-                            "risks": "risk",
-                            "services": "service",
-                            "margins": "margin",
-                            "profits": "profit",
-                            "wafers": "wafer",
-                            "sizes": "size",
-                            "customers": "customer",
-                            "applications": "application",
-                            "shortages": "shortage",
-                            "expenses": "expense",
-                            "sales":"sale",
-                            "titles":"title",
-                            "conditions":"condition",
-                            "prices":"price",
-                            "investments":"investment",
-                            "rates":"rate",
-                            "inventories":"inventory",
-                            "uncertainties":"uncertainty",
-                            "cameras":"camera",
-                            "opportunities":"opportunity",
-                            "volumes":"volume",
-                            "costs":"cost",
-                            "technologies":"technology",
-                            "employees":"employee",
-                            "companies":"company",
-                            "creators":"creator",
-                            "challenges":"challenge",
-                            "businesses":"business",
-                            "years":"year",
-                            "electronics":"electronic",
-                            "strategies":"strategy",
-                            "electronics":"electronic",
-                            "targets":"target",
-                            "statements":"statement"
-                        }
         pass
 
-    def get_ir_script(self) -> dict:
-        def check_url_exists(url: str) -> bool:
-            try:
-                response = requests.head(url)
-                # 200 OK
-                return response.status_code == 200
-            except requests.RequestException:
-                return False
-        
+    def get_ir_script() -> pd.DataFrame:
         today = datetime.now()
         start_date = today.replace(year=today.year - 4)
 
         file_dict = {}
-        
-        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/er/pdf/"
-        years = range(start_date.year, today.year + 1)  
+
+        # Earning Reports
+        base_url_earning = "https://www.sony.com/en/SonyInfo/IR/library/presen/er/pdf/"
+        years = range(start_date.year, today.year + 1)
         quarters = range(1, 5)
-        for year in years:
-            for quarter in quarters:
-                filename = f"{year%100}q{quarter}_qa"  
-                url = f"{base_url}{filename}.pdf"
-                if check_url_exists(url):  # URL 
-                                file_dict[f"20{filename.upper()}"] = url
+        
+        earning_files = asyncio.run(gather_urls(base_url_earning, lambda y, q: f"{y%100}q{q}_qa.pdf", years, quarters))
+        file_dict.update(earning_files)
 
-        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/strategy/pdf"
-        years = range(2020, today.year + 1)  
+        # Strategy Reports
+        base_url_strategy = "https://www.sony.com/en/SonyInfo/IR/library/presen/strategy/pdf/"
+        years_strategy = range(2020, today.year + 1)
 
-        for year in years:
-            for quarter in quarters:
-                filename = f"{year}/qa_E"
-                url = f"{base_url}/{filename}.pdf"
-                if check_url_exists(url):  # URL
-                    file_dict[filename.replace('/', '_').upper()] = url
+        strategy_files = asyncio.run(gather_urls(base_url_strategy, lambda y, q: f"{y}/qa_E.pdf", years_strategy, quarters))
+        file_dict.update(strategy_files)
 
         df = pd.DataFrame(list(file_dict.items()), columns=['filename', 'url'])
-        df.loc[:,'year'] = df.filename.map(lambda x: x[:4])
-        df.loc[:,"category"] = df.filename.map(lambda x:  "Strategy" if x[-1] == "E" else "Earning")
-        df.loc[:,"quarter"]= df[df["category"] == "Earning"].filename.map(lambda x: x[4:6].upper())
-        df.loc[:,"quarter"] = df["quarter"].fillna("-")
-        return df 
+        df['year'] = df['filename'].map(lambda x: x[:4])
+        df['category'] = df['filename'].map(lambda x: "Strategy" if x[-1] == "E" else "Earning")
+        df['quarter'] = df[df['category'] == "Earning"]['filename'].map(lambda x: x[4:6].upper())
+        df['quarter'] = df['quarter'].fillna("-")
+        
+        return df
+
+
         
     def plot_financials_with_margin(self, ticker='SONY'):
         def format_value(value):
@@ -185,7 +118,7 @@ class SONY_IR():
         )
         return fig
     
-    def plot_usd_jpy_and_japan_gdp(self):
+    def plot_usd_exchange(self):
         today = datetime.now()
         start_date = today.replace(year=today.year - 4)
         end_date = today
@@ -225,3 +158,27 @@ class SONY_IR():
             height=800  # 그래프 높이 설정
         )
         return fig
+
+
+
+async def check_url_exists(session, url: str) -> bool:
+    try:
+        async with session.head(url) as response:
+            return response.status == 200
+    except Exception:
+        return False
+
+async def gather_urls(base_url: str, filename_format: str, years: range, quarters: range) -> dict:
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        file_dict = {}
+        
+        for year in years:
+            for quarter in quarters:
+                filename = filename_format(year, quarter)
+                url = f"{base_url}{filename}"
+                tasks.append(check_url_exists(session, url))
+                file_dict[url] = filename  # Save filename for successful URLs
+
+        results = await asyncio.gather(*tasks)
+        return {file_dict[url]: url for url, exists in zip(file_dict.keys(), results) if exists}

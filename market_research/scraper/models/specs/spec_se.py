@@ -52,6 +52,7 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
                     dict_models[key] = dict_info
                     dict_spec = self._extract_global_specs(url=url)
                     dict_models[key].update(dict_spec)
+                    dict_models['url'] = url
                 except Exception as e:
                     if self.tracking_log:
                         print(f"fail to collect: {url}")
@@ -65,7 +66,9 @@ class ModelScraper_se(Scraper, Modeler, DataVisualizer):
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
             valid_indices = df_models['Color*'].dropna().index
-            df_models['Color'].loc[valid_indices] = df_models['Color*'].loc[valid_indices]
+            df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
+
+            
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
             

@@ -52,6 +52,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     dict_models[key] = dict_info
                     dict_spec = self._extract_global_specs(url=url)
                     dict_models[key].update(dict_spec)
+                    dict_models['url'] = url
                 except Exception as e:
                     pass
             return dict_models
@@ -74,7 +75,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             url_dict = find_urls()
                 
             dict_models = extract_specs(url_dict)
-            
             df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)

@@ -53,6 +53,7 @@ class ModelScraper_l(Scraper, Modeler, DataVisualizer):
                     dict_models[key] = dict_info
                     dict_spec = self._extract_global_specs(url=url)
                     dict_models[key].update(dict_spec)
+                    dict_models['url'] = url
                 except Exception as e:
                     if self.tracking_log:
                         print(f"fail to collect: {url}")

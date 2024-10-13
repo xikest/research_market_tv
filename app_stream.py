@@ -73,6 +73,33 @@ def loading_rtings(data_src='measurement'):
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
+@st.cache_data
+def loading_ir_script():
+    ir_df = SONY_IR().get_ir_script()
+    return ir_df
+    
+@st.cache_data
+def loading_plot_usd_exchange():
+    fig = SONY_IR().plot_usd_exchange()
+    return fig
+    
+@st.cache_data
+def loading_plot_financials_with_margin():
+    fig = SONY_IR().plot_financials_with_margin(ticker='SONY')
+    return fig
+
+@st.cache_data
+def display_html_table(df: pd.DataFrame, title: str):
+    if not df.empty:
+        df = df[['quarter', 'url']]
+        df['url'] = df['url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
+        st.subheader(title)
+        st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
+    else:
+        st.write("No material.")
+
+                       
+
 def download_data():
     def to_excel(df_dict):
         output = BytesIO()
@@ -190,7 +217,7 @@ def display_indicators():
                     
             with sub_tabs[3]:
                 with st.container(): 
-                    fig = SONY_IR().plot_financials_with_margin(ticker='SONY')
+                    fig = loading_plot_financials_with_margin()
                     fig.update_layout(
                         width=500,
                         height=300,
@@ -200,16 +227,19 @@ def display_indicators():
                     
                     
                 with st.container(): 
-                    fig = SONY_IR().plot_usd_jpy_and_japan_gdp()
-                    fig.update_layout(
-                        width=500,
-                        height=300,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
+                    try:
+                        fig = loading_plot_usd_exchange()
+                        fig.update_layout(
+                            width=500,
+                            height=300,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                    except:
+                        st.write("no working")
+                        
                 with st.container(): 
-                    ir_df = SONY_IR().get_ir_script()
+                    ir_df = loading_ir_script()
                     years = sorted(ir_df.year.unique(), reverse=True)
                     sub_tabs_irs = st.tabs(years)
 
@@ -221,22 +251,23 @@ def display_indicators():
                         with sub_tabs_irs[i]:
                             col1_ir, col2_ir = st.columns(2)
                             with col1_ir:
-                                st.subheader("Earning")
-                                if not ir_df_year_earning.empty:
-                                    ir_df_year_display = ir_df_year_earning[['quarter', 'url']]
-                                    ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
-                                    st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
-                                else:
-                                    st.write("No material.")
+                                display_html_table(ir_df_year_earning, "Earning")
+                                # if not ir_df_year_earning.empty:
+                                #     ir_df_year_display = ir_df_year_earning[['quarter', 'url']]
+                                #     ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
+                                #     st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
+                                # else:
+                                #     st.write("No material.")
                             with col2_ir:
-                                st.subheader("Strategy")
-                                if not ir_df_year_strategy.empty:
-                                    ir_df_year_display = ir_df_year_strategy[['quarter', 'url']]
-                                    ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
-                                    st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
-                                else:
-                                    st.write("No material.")
-                                    
+                                display_html_table(ir_df_year_strategy, "Strategy")
+                                
+                                # if not ir_df_year_strategy.empty:
+                                #     ir_df_year_display = ir_df_year_strategy[['quarter', 'url']]
+                                #     ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
+                                #     st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
+                                # else:
+                                #     st.write("No material.")
+                                                                
 
                     
 
