@@ -184,25 +184,28 @@ class SONY_IR():
         )
         return fig
     
-
     def plot_usd_jpy_and_japan_gdp(self):
-        
         today = datetime.now()
         start_date = today.replace(year=today.year - 4)
         end_date = today
         
-        usd_jpy = fdr.DataReader('DEXJPUS', 'fred', start_date, end_date)  # FRED에서 USD/JPY 환율 데이터 가져오기
-        gdp_japan = fdr.DataReader('JPNNGDP', 'fred', start_date, end_date)  # FRED에서 일본 GDP 데이터 가져오기
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
+
+        usd_jpy = fdr.DataReader('DEXJPUS', 'fred', start=start_date_str, end=end_date_str)  # USD/JPY 환율
+        gdp_japan = fdr.DataReader('JPNNGDP', 'fred', start=start_date_str, end=end_date_str)  # 일본 GDP
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy['DEXJPUS'], mode='lines', name='USD/JPY'))
         fig.add_trace(go.Scatter(x=gdp_japan.index, y=gdp_japan['JPNNGDP'], mode='lines', name='Japan GDP', yaxis='y2'))
+        
         fig.update_layout(
             title="USD/JPY Exchange Rate and Japan GDP",
             xaxis_title="Date",
             yaxis_title="USD/JPY Exchange Rate",
             yaxis2=dict(title="Japan GDP", overlaying='y', side='right'),
             legend=dict(x=0, y=1.1),
-            template="plotly_dark" )
+            template="plotly_dark"
+        )
+        
         return fig
-
