@@ -1,5 +1,5 @@
 import pandas as pd
-import pandas_datareader as pdr
+import FinanceDataReader as fdr
 from datetime import datetime
 import yfinance as yf
 import plotly.graph_objects as go
@@ -191,8 +191,8 @@ class SONY_IR():
         start_date = today.replace(year=today.year - 4)
         end_date = today
         
-        usd_jpy = pdr.get_data_fred('DEXJPUS', start_date, end_date)  # FRED에서 USD/JPY 환율 데이터 가져오기
-        gdp_japan = pdr.get_data_fred('JPNNGDP', start_date, end_date)  # FRED에서 일본 GDP 데이터 가져오기
+        usd_jpy = fdr.DataReader('DEXJPUS', 'fred', start_date, end_date)  # FRED에서 USD/JPY 환율 데이터 가져오기
+        gdp_japan = fdr.DataReader('JPNNGDP', 'fred', start_date, end_date)  # FRED에서 일본 GDP 데이터 가져오기
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy['DEXJPUS'], mode='lines', name='USD/JPY'))
