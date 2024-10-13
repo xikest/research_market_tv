@@ -188,12 +188,10 @@ class SONY_IR():
         today = datetime.now()
         start_date = today.replace(year=today.year - 4)
         end_date = today
-        
-        start_date_str = start_date.strftime('%Y-%m-%d')
-        end_date_str = end_date.strftime('%Y-%m-%d')
 
-        usd_jpy = fdr.DataReader('DEXJPUS', 'fred', start=start_date_str, end=end_date_str)  # USD/JPY 환율
-        gdp_japan = fdr.DataReader('JPNNGDP', 'fred', start=start_date_str, end=end_date_str)  # 일본 GDP
+
+        usd_jpy = fdr.DataReader('FRED:DEXJPUS',  start=start_date, end=end_date)  # USD/JPY 환율
+        gdp_japan = fdr.DataReader('FRED:JPNNGDP', start=start_date, end=end_date)  # 일본 GDP
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy['DEXJPUS'], mode='lines', name='USD/JPY'))
