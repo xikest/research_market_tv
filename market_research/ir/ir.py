@@ -3,6 +3,7 @@ import FinanceDataReader as fdr
 from datetime import datetime
 import yfinance as yf
 import plotly.graph_objects as go
+import plotly.subplots as sp
 from datetime import datetime
 import requests
 
@@ -89,7 +90,7 @@ class SONY_IR():
             for quarter in quarters:
                 filename = f"{year%100}q{quarter}_qa"  
                 url = f"{base_url}{filename}.pdf"
-                if check_url_exists(url):  # URL 존재 여부 확인
+                if check_url_exists(url):  # URL 
                                 file_dict[f"20{filename.upper()}"] = url
 
         base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/strategy/pdf"
@@ -99,7 +100,7 @@ class SONY_IR():
             for quarter in quarters:
                 filename = f"{year}/qa_E"
                 url = f"{base_url}/{filename}.pdf"
-                if check_url_exists(url):  # URL 존재 여부 확인
+                if check_url_exists(url):  # URL
                     file_dict[filename.replace('/', '_').upper()] = url
 
         df = pd.DataFrame(list(file_dict.items()), columns=['filename', 'url'])
@@ -111,14 +112,14 @@ class SONY_IR():
         
     def plot_financials_with_margin(self, ticker='SONY'):
         def format_value(value):
-            """ 숫자를 K, M, T 단위로 포맷팅하는 함수 """
-            if value >= 1_000_000_000_000:  # 1T 이상
+
+            if value >= 1_000_000_000_000:  # 1T 
                 return f'{value/1_000_000_000_000:.1f}T'
-            elif value >= 1_000_000_000:  # 1B 이상
+            elif value >= 1_000_000_000:  # 1B 
                 return f'{value/1_000_000_000:.1f}B'
-            elif value >= 1_000_000:  # 1M 이상
+            elif value >= 1_000_000:  # 1M 
                 return f'{value/1_000_000:.1f}M'
-            elif value >= 1_000:  # 1K 이상
+            elif value >= 1_000:  # 1K 
                 return f'{value/1_000:.1f}K'
             else:
                 return str(value)
@@ -192,20 +193,35 @@ class SONY_IR():
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        usd_jpy = fdr.DataReader('FRED:DEXJPUS',  start=start_date_str, end=end_date_str)  # USD/JPY 환율
-        gdp_japan = fdr.DataReader('FRED:JPNNGDP', start=start_date_str, end=end_date_str)  # 일본 GDP
+        usd_jpy = fdr.DataReader('FRED:DEXJPUS', start=start_date_str, end=end_date_str)  # USD/JPY 
+        usd_mxn = fdr.DataReader('FRED:DEXMXUS', start=start_date_str, end=end_date_str)  # USD/MXN
+        usd_myr = fdr.DataReader('FRED:DEXMAUS', start=start_date_str, end=end_date_str)  # USD/MYR 
+        eur_usd = fdr.DataReader('FRED:DEXUSEU', start=start_date_str, end=end_date_str)  # EUR/USD 
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy['DEXJPUS'], mode='lines', name='USD/JPY'))
-        fig.add_trace(go.Scatter(x=gdp_japan.index, y=gdp_japan['JPNNGDP'], mode='lines', name='Japan GDP', yaxis='y2'))
-        
-        fig.update_layout(
-            title="USD/JPY Exchange Rate and Japan GDP",
-            xaxis_title="Date",
-            yaxis_title="USD/JPY Exchange Rate",
-            yaxis2=dict(title="Japan GDP", overlaying='y', side='right'),
-            legend=dict(x=0, y=1.1),
-            template="plotly_dark"
+
+        jpy_myr = usd_myr['DEXMAUS'] / usd_jpy['DEXJPUS']  # JPY/MYR
+        jpy_mxn = usd_mxn['DEXMXUS'] / usd_jpy['DEXJPUS']  # JPY/MXN
+        eur_jpy = eur_usd['DEXUSEU'] * usd_jpy['DEXJPUS']  # EUR/JPY
+
+
+        fig = sp.make_subplots(
+            rows=2, cols=1,  
+            shared_xaxes=True,  
+            subplot_titles=("USD/JPY and JPY/MXN", "EUR/JPY and JPY/MYR"),  
+            specs=[[{"secondary_y": True}], [{"secondary_y": True}]] 
         )
+
+        fig.add_trace(go.Scatter(x=usd_jpy.index, y=usd_jpy['DEXJPUS'], mode='lines', name='USD/JPY'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=jpy_mxn.index, y=jpy_mxn, mode='lines', name='JPY/MXN'), row=1, col=1, secondary_y=True)
         
+        fig.add_trace(go.Scatter(x=eur_jpy.index, y=eur_jpy, mode='lines', name='EUR/JPY'), row=2, col=1)
+        fig.add_trace(go.Scatter(x=jpy_myr.index, y=jpy_myr, mode='lines', name='JPY/MYR'), row=2, col=1, secondary_y=True)
+
+        fig.update_layout(
+            title="Exchange Rates",
+            xaxis_title="",
+            yaxis_title="",  # 첫 번째 y축 제목 설정
+            template="plotly_dark",
+            height=800  # 그래프 높이 설정
+        )
         return fig
