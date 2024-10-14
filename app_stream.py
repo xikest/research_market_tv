@@ -9,7 +9,7 @@ from market_research.ir import SONY_IR
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -28,25 +28,29 @@ def loading_webdata(selected_maker:str):
                 "lg": './json/l_scrape_model_data.json',
                 "samsung": './json/se_scrape_model_data.json'}
         
-
-    selected_maker = selected_maker.lower()
     data_all = pd.DataFrame()
-    if selected_maker == 'all':
-        for selected_maker in web_data.keys():
-            try: 
-                selected_json = web_data.get(selected_maker)
-                selected_data = pd.read_json(selected_json, orient='records', lines=True)
-                selected_data.columns = selected_data.columns.str.lower().str.strip()
-                selected_data.loc[:, 'series'] = f"[{selected_maker}] " + selected_data['series']
-                data_all = pd.concat([data_all, selected_data[["year", "display type", "size", "series", "model", "grade", "price", "price_original", "price_gap", "description"]]], axis=0)
-            except:
-                continue
+    if isinstance(selected_maker, list):
+        if len(selected_maker) == 1:
+            selected_maker = selected_maker[0] 
+        else:   
+            for maker in selected_maker:
+                try: 
+                    selected_json = web_data.get(maker.lower())
+                    selected_data = pd.read_json(selected_json, orient='records', lines=True)
+                    selected_data.columns = selected_data.columns.str.lower().str.strip()
+                    selected_data.loc[:, 'series'] = f"[{maker}] " + selected_data['series']
+                    selected_data = selected_data.dropna(subset=['price'])
+                    data_all = pd.concat([data_all, selected_data[["year", "display type", "size", "series", "model", "grade", "price", "price_original", "price_gap", "description"]]], axis=0)
+                except:
+                    continue
             
-    else:
-        selected_json = web_data.get(selected_maker)
+    if isinstance(selected_maker, str):
+
+        selected_json = web_data.get(selected_maker.lower())
         selected_data = pd.read_json(selected_json, orient='records', lines=True)
         selected_data.columns = selected_data.columns.str.lower().str.strip()
-        data_all = selected_data.dropna(subset=['price'])
+        selected_data = selected_data.dropna(subset=['price'])
+        data_all = selected_data
     return data_all
      
      
@@ -74,6 +78,10 @@ def loading_rtings(data_src='measurement'):
         elif data_src == 'scores':
             json_path = './json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
+    
+    ################################# temp################################
+    data = data.dropna(subset='year')
+    ######################################################################    
     return {data_src: data}
 
 @st.cache_data
@@ -140,8 +148,9 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
  
-    col1, col2 = st.columns([2,3])
+    col1, _, col2 = st.columns([3,0.2,6.8])
     with col1:
+        col1_plot_height = 800
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
         data = loading_webdata(selected_maker)
         
@@ -153,26 +162,9 @@ def display_indicators():
         with sub_tabs[0]:
             with st.container(): 
                 fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-                fig.update_layout(width=500, height=400, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
+                fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
                 st.plotly_chart(fig, use_container_width=True)            
                 
-            with st.container(): 
-                data_price = pd.DataFrame()
-                toggle = st.radio("price", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
-                if toggle.lower() == selected_maker.lower():
-                    data_price = loading_webdata(selected_maker)
-                elif toggle.lower() == "all":
-                    data_price = loading_webdata(toggle)
-                    
-                data_price = data_price.dropna(subset=['price'])
-                fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
-                fig.update_layout(
-                    width=500,
-                    height=300,
-                    title='',
-                    margin=dict(t=20, b=0))
-                st.plotly_chart(fig, use_container_width=True)
-                    
                     
         if selected_maker == "sony":
             with sub_tabs[1]:
@@ -180,7 +172,7 @@ def display_indicators():
                     fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
                     fig.update_layout(
                         width=500,
-                        height=800,
+                        height=col1_plot_height,
                         title='',
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
@@ -189,25 +181,77 @@ def display_indicators():
                                    '0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc@group.calendar.google.com').create_events_calendar(return_fig=True)
                     fig.update_layout(
                         width=500,
-                        height=800,
+                        height=col1_plot_height,
                         title='',
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
+                     
+            with sub_tabs[3]:
+                with st.container(): 
+                    fig = loading_plot_financials_with_margin()
+                    fig.update_layout(
+                        width=500,
+                        height=300,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                with st.container(): 
+                    try:
+                        fig = loading_plot_usd_exchange()
+                        fig.update_layout(
+                            width=500,
+                            height=300,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                    except:
+                        st.write("no working")
+                        
+                with st.container(): 
+                    ir_df = loading_ir_script()
+                    years = sorted(ir_df.year.unique(), reverse=True)
+                    sub_tabs_irs = st.tabs(years)
 
+                    for i, year in enumerate(years):
+                        ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
+                        ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
+                        ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
+                        
+                        with sub_tabs_irs[i]:
+                            col1_ir, col2_ir = st.columns(2)
+                            with col1_ir:
+                                display_html_table(ir_df_year_earning, "Earning")
+
+                            with col2_ir:
+                                display_html_table(ir_df_year_strategy, "Strategy")
 
     with col2:
         col2_plot_height = 800
-        selected_multi_makers = st.multiselect(label="rtings_label", options=makers, placeholder='Radar Scores', 
+        selected_multi_makers = st.multiselect(label="maker_label", options=makers, placeholder='Select Makers', 
                                                 key='key_for_scores', label_visibility='hidden')
         if not selected_multi_makers: 
             selected_multi_makers =  selected_maker
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab_name = [ "Primary ", "Secondary"]
+        tab_name = [ "Price", "Primary ", "Secondary"]
         tabs = st.tabs(tab_name)
+
+        with tabs[0]:  
+            with st.container(): 
+                data_price = loading_webdata(selected_multi_makers)
+                fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
+                fig.update_layout(
+                    width=500,
+                    height=col2_plot_height,
+                    title='',
+                    margin=dict(t=20, b=0))
+                st.plotly_chart(fig, use_container_width=True)
+                    
                 
-        with tabs[0]:
+                
+        with tabs[1]:
             sub_tabs = st.tabs(["Total", "Sub", "Heat map","PCA"])
             
             with sub_tabs[0]:
@@ -247,7 +291,7 @@ def display_indicators():
                     st.write("No information")            
                 
                 
-        with tabs[1]:
+        with tabs[2]:
             sub_category = Rvisualizer.get_measurement_selection()
             sub_tabs = st.tabs(sub_category)
             
@@ -260,51 +304,8 @@ def display_indicators():
                                           margin=dict(t=0, r=0, b=20))
                         
                         st.plotly_chart(fig, use_container_width=True)
-    with col1:   
-            with sub_tabs[3]:
-                with st.container(): 
-                    fig = loading_plot_financials_with_margin()
-                    fig.update_layout(
-                        width=500,
-                        height=300,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    
-                with st.container(): 
-                    try:
-                        fig = loading_plot_usd_exchange()
-                        fig.update_layout(
-                            width=500,
-                            height=300,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("no working")
-                        
-                with st.container(): 
-                    ir_df = loading_ir_script()
-                    years = sorted(ir_df.year.unique(), reverse=True)
-                    sub_tabs_irs = st.tabs(years)
 
-                    for i, year in enumerate(years):
-                        ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
-                        ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
-                        ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-                        
-                        with sub_tabs_irs[i]:
-                            col1_ir, col2_ir = st.columns(2)
-                            with col1_ir:
-                                display_html_table(ir_df_year_earning, "Earning")
-
-                            with col2_ir:
-                                display_html_table(ir_df_year_strategy, "Strategy")
                     
 
 if __name__ == "__main__":
     display_indicators()
-
-
-
