@@ -235,7 +235,7 @@ def display_indicators():
         else:
             selected_multi_makers = list(map(str.lower, selected_multi_makers))
             
-        tab_name = [ "Price", "Primary ", "Secondary"]
+        tab_name = [ "Price", "Scores", "Data"]
         tabs = st.tabs(tab_name)
 
         with tabs[0]:  
