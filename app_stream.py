@@ -9,7 +9,7 @@ from market_research.ir import SONY_IR
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 
 
