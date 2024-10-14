@@ -193,48 +193,7 @@ def display_indicators():
                         title='',
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
-                    
-            with sub_tabs[3]:
-                with st.container(): 
-                    fig = loading_plot_financials_with_margin()
-                    fig.update_layout(
-                        width=500,
-                        height=300,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    
-                with st.container(): 
-                    try:
-                        fig = loading_plot_usd_exchange()
-                        fig.update_layout(
-                            width=500,
-                            height=300,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("no working")
-                        
-                with st.container(): 
-                    ir_df = loading_ir_script()
-                    years = sorted(ir_df.year.unique(), reverse=True)
-                    sub_tabs_irs = st.tabs(years)
 
-                    for i, year in enumerate(years):
-                        ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
-                        ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
-                        ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-                        
-                        with sub_tabs_irs[i]:
-                            col1_ir, col2_ir = st.columns(2)
-                            with col1_ir:
-                                display_html_table(ir_df_year_earning, "Earning")
-
-                            with col2_ir:
-                                display_html_table(ir_df_year_strategy, "Strategy")
-                    
 
     with col2:
         col2_plot_height = 800
@@ -301,7 +260,48 @@ def display_indicators():
                                           margin=dict(t=0, r=0, b=20))
                         
                         st.plotly_chart(fig, use_container_width=True)
+    with col1:   
+            with sub_tabs[3]:
+                with st.container(): 
+                    fig = loading_plot_financials_with_margin()
+                    fig.update_layout(
+                        width=500,
+                        height=300,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    
+                with st.container(): 
+                    try:
+                        fig = loading_plot_usd_exchange()
+                        fig.update_layout(
+                            width=500,
+                            height=300,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                    except:
+                        st.write("no working")
+                        
+                with st.container(): 
+                    ir_df = loading_ir_script()
+                    years = sorted(ir_df.year.unique(), reverse=True)
+                    sub_tabs_irs = st.tabs(years)
 
+                    for i, year in enumerate(years):
+                        ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
+                        ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
+                        ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
+                        
+                        with sub_tabs_irs[i]:
+                            col1_ir, col2_ir = st.columns(2)
+                            with col1_ir:
+                                display_html_table(ir_df_year_earning, "Earning")
+
+                            with col2_ir:
+                                display_html_table(ir_df_year_strategy, "Strategy")
+                    
 
 if __name__ == "__main__":
     display_indicators()

@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.colors as colors
+import streamlit as st
 
 class Rvisualizer(BaseVisualizer):
 
@@ -113,7 +114,8 @@ class Rvisualizer(BaseVisualizer):
             "Response Time": "ms",
             "Stutter": "ms",
             "Variable Refresh Rate": "Hz",
-            "Viewing Angle": "°"
+            "Viewing Angle": "°",
+            "Misc": "W"
         } 
         pass
         
@@ -143,9 +145,7 @@ class Rvisualizer(BaseVisualizer):
         div_group = 2
         first_group = categories[:2]
         second_group = categories[2:]
-
-        plot_unit = self.title_units_dict.get(select_label)
-
+        plot_unit = self.title_units_dict.get(select_label, "")
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
 
         # 서브플롯 생성
@@ -179,7 +179,7 @@ class Rvisualizer(BaseVisualizer):
                         y=year_data['result_value'],
                         name=f"{category} ({year})", 
                         marker=dict(color=colors[i % len(colors)]),
-                        hovertemplate='%{y}, %{x}<extra></extra>'
+                        hovertemplate='%{y}' + plot_unit + '<br>%{x}<extra></extra>'
                     ),
                     row=row, col=col 
                 )

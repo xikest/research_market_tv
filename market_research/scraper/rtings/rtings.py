@@ -31,31 +31,36 @@ class Rtings(Scraper, Rvisualizer):
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
         url = None
-    
-        try:
-            for url in tqdm(urls):
-                if self.verbose:
-                    print(f"connecting to {url}")
+        fail_url_list = []
+        for url in tqdm(urls):
+            try:
+                if self.verbose: print(f"connecting to {url}")
                 df = self._get_score(url)
                 scores_df = pd.concat([scores_df, df], axis=0)
 
                 df = self._get_measurement_reuslts(url)
                 measurement_df =pd.concat([measurement_df, df], axis=0)
 
-                df = self._get_commetns(url)
-                comments_df = pd.concat([measurement_df, df], axis=0)
+                df = self._get_comments(url)
+                comments_df = pd.concat([comments_df, df], axis=0)
 
-
-            scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
-            measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
-            if export_excel:
-                FileManager.df_to_excel(scores_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
-                FileManager.df_to_excel(measurement_df, file_name=self.output_xlsx_name, sheet_name="measurement", mode='a')
-                FileManager.df_to_excel(comments_df, file_name=self.output_xlsx_name, sheet_name="comments", mode='a')
-        except Exception as e:
-            if self.verbose:
-                print(f"fail {url}")
-                print(e)
+            except Exception as e:
+                fail_url_list.append(url)
+                if self.verbose:
+                    print(f"fail {url}")
+                    print(e)
+                continue
+            
+        if fail_url_list:
+            print(f"failed URL: {fail_url_list}")
+        
+        scores_df.to_json(self.output_folder / "rtings_scores_data.json", orient='records', lines=True)
+        measurement_df.to_json(self.output_folder / "rtings_measurement_data.json", orient='records', lines=True)
+        if export_excel:
+            FileManager.df_to_excel(scores_df, file_name=self.output_xlsx_name, sheet_name="scores", mode='w')
+            FileManager.df_to_excel(measurement_df, file_name=self.output_xlsx_name, sheet_name="measurement", mode='a')
+            FileManager.df_to_excel(comments_df, file_name=self.output_xlsx_name, sheet_name="comments", mode='a')
+                    
         return {
             "scores":scores_df,
                 "measurement":measurement_df,
@@ -122,7 +127,7 @@ class Rtings(Scraper, Rvisualizer):
             driver.quit()
             
 
-    def _get_commetns(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", min_sentence_length = 0):
+    def _get_comments(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled", min_sentence_length = 0):
         """
         return dict or DataFrame
 
