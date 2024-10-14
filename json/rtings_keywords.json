@@ -58,6 +58,12 @@
             "qn90c"
         ]
     },
+    "panasonic": {
+        "oled": [
+            "z95a",
+            "z85a",
+            "w95a",
+        ],
     "tcl": {
         "mini_led": [
             "qm851g",
@@ -73,13 +79,13 @@
             "u8n",
             "u7n",
             "u6n",
-            'ux',
-            'qd7n',
-            'u70n',
-            'a7n',
-            's7n',
-            'a4fh',
-            'qd65nf'
+            "ux",
+            "qd7n",
+            "u70n",
+            "a7n",
+            "s7n",
+            "a4fh",
+            "qd65nf"
         ]
     }
 
