@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
+import requests
+
+
 
 class Rurlsearcher(Scraper):
     def __init__(self, enable_headless=True):
@@ -21,7 +24,20 @@ class Rurlsearcher(Scraper):
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
             for series in df['series'].unique():
                 keywords_set.add(f"{maker} {series}")
+                
+        url = "https://github.com/xikest/research_market_tv/raw/main/json/rtings_keywords.json"
+        response = requests.get(url)
+        if response.status_code == 200:
+            ex_keywords = response.json() 
+            ex_keywords = set(ex_keywords)
+        keywords_set.update(ex_keywords)   
+        
         return keywords_set
+
+
+
+
+
 
     def get_urls_from_web(self, keywords: set = None) -> list:
 
