@@ -55,9 +55,47 @@
             "qn95d",
             "qn90d",
             "qn95c",
-            "qn90c"
+            "qn90c",
+             "qn80d",
+            "qn80c",
+            "q80d",
+            "q80c",
+            "q70d",
+            "q70c"   
+        ]
+    },
+    "panasonic": {
+        "oled": [
+            "z95a",
+            "z85a",
+            "w95a",
+        ],
+    "tcl": {
+        "mini_led": [
+            "qm851g",
+            "qm751",
+            "q651",
+            "s551",
+            "s350",
+            "s250"
+        ],
+    "hisense": {
+        "mini_led": [
+            "u76n",
+            "u8n",
+            "u7n",
+            "u6n",
+            "ux",
+            "qd7n",
+            "u70n",
+            "a7n",
+            "s7n",
+            "a4fh",
+            "qd65nf"
         ]
     }
+
+    
 },
 "urls": {
     "sony": {
