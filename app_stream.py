@@ -9,8 +9,11 @@ from market_research.ir import SONY_IR
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
+
+
+
 
 @st.cache_data
 def loading_webdata(selected_maker:str):
@@ -34,9 +37,8 @@ def loading_webdata(selected_maker:str):
                 selected_json = web_data.get(selected_maker)
                 selected_data = pd.read_json(selected_json, orient='records', lines=True)
                 selected_data.columns = selected_data.columns.str.lower().str.strip()
-                selected_data = selected_data.rename(columns={"rated power consumption": "maximum power consumption", "maximum power consumption": "maximum power consumption"})
                 selected_data.loc[:, 'series'] = f"[{selected_maker}] " + selected_data['series']
-                data_all = pd.concat([data_all, selected_data[["year", "display type", "size", "series", "model", "grade", "price", "price_original", "price_gap", "description", "maximum power consumption"]]], axis=0)
+                data_all = pd.concat([data_all, selected_data[["year", "display type", "size", "series", "model", "grade", "price", "price_original", "price_gap", "description"]]], axis=0)
             except:
                 continue
             
@@ -46,6 +48,7 @@ def loading_webdata(selected_maker:str):
         selected_data.columns = selected_data.columns.str.lower().str.strip()
         data_all = selected_data.dropna(subset=['price'])
     return data_all
+     
      
 @st.cache_data
 def loading_calendar(indicator_type):
@@ -115,7 +118,7 @@ def download_data():
     return excel_data
 
 def display_indicators():
-    selected_maker = st.sidebar.selectbox("", makers).lower()
+    selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
         data=download_data(),
@@ -154,47 +157,23 @@ def display_indicators():
                 st.plotly_chart(fig, use_container_width=True)            
                 
             with st.container(): 
-                if selected_maker != "lg":
-                    sub_tabs_col0 = st.tabs(["price", "power consumption (Max)"])
-                else:
-                    sub_tabs_col0 = st.tabs(["price"])
-                        
-                with sub_tabs_col0[0]:
-                    data_price = pd.DataFrame()
-                    toggle = st.radio("price", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
-                    if toggle.lower() == selected_maker.lower():
-                        data_price = loading_webdata(selected_maker)
-                    elif toggle.lower() == "all":
-                        data_price = loading_webdata(toggle)
-                        
-                    data_price = data_price.dropna(subset=['price'])
-                    fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
-                    fig.update_layout(
-                        width=500,
-                        height=300,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
+                data_price = pd.DataFrame()
+                toggle = st.radio("price", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
+                if toggle.lower() == selected_maker.lower():
+                    data_price = loading_webdata(selected_maker)
+                elif toggle.lower() == "all":
+                    data_price = loading_webdata(toggle)
                     
-                if selected_maker != "lg":
-                    with sub_tabs_col0[1]:
-                        data_power = pd.DataFrame()
-                        toggle = st.radio("power", (selected_maker.upper(), "All"), horizontal=True, label_visibility='hidden')
-                        if toggle.lower() == selected_maker.lower():
-                            data_power = loading_webdata(toggle)
-                        elif toggle.lower() == "all":
-                            data_power = loading_webdata(toggle)
-
-                        # st.dataframe(data_power)       
-                        fig = DataVisualizer(data_power, maker=selected_maker).power_consumption(return_fig=True)  
-                        fig.update_layout(
-                            width=500,
-                            height=300,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
+                data_price = data_price.dropna(subset=['price'])
+                fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
+                fig.update_layout(
+                    width=500,
+                    height=300,
+                    title='',
+                    margin=dict(t=20, b=0))
+                st.plotly_chart(fig, use_container_width=True)
                     
-
+                    
         if selected_maker == "sony":
             with sub_tabs[1]:
                 with st.container():              
@@ -252,23 +231,9 @@ def display_indicators():
                             col1_ir, col2_ir = st.columns(2)
                             with col1_ir:
                                 display_html_table(ir_df_year_earning, "Earning")
-                                # if not ir_df_year_earning.empty:
-                                #     ir_df_year_display = ir_df_year_earning[['quarter', 'url']]
-                                #     ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
-                                #     st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
-                                # else:
-                                #     st.write("No material.")
+
                             with col2_ir:
                                 display_html_table(ir_df_year_strategy, "Strategy")
-                                
-                                # if not ir_df_year_strategy.empty:
-                                #     ir_df_year_display = ir_df_year_strategy[['quarter', 'url']]
-                                #     ir_df_year_display.loc[:,'url'] = ir_df_year_display['url'].apply(lambda x: f'<a href="{x}" target="_blank">link </a>')  # HTML 링크로 변환
-                                #     st.markdown(ir_df_year_display.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
-                                # else:
-                                #     st.write("No material.")
-                                                                
-
                     
 
     with col2:

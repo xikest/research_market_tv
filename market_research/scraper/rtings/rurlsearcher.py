@@ -4,47 +4,30 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
-import requests
 
 class Rurlsearcher(Scraper):
     def __init__(self, enable_headless=True):
         super().__init__(enable_headless=enable_headless)
         self.wait_time = 2
         
+    def _get_model_keywords_from_mkrt(self, path_dict:dict=None) ->set:
+        if path_dict is None:
+            path_dict={"sony": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json",
+                    "lg": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json",
+                    "samsung":"https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json"
+                    }
+        keywords_set = set()
+        for maker in path_dict:
+            df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
+            for series in df['series'].unique():
+                keywords_set.add(f"{maker} {series}")
+        return keywords_set
 
-    def _get_search_src(self):
-        file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_keywords.json"
-        response = requests.get(file_path)
-        data = response.json()
-        return data
+    def get_urls_from_web(self, keywords: set = None) -> list:
+
         
-
-    def get_keywords_for_search(self, maker: str = None, category: str = None):
-        src_dict = self._get_search_src()['keywords']
-        keywords = []
-
-        for maker_key, category_dict in src_dict.items():
-            if maker is None or maker_key == maker:
-                for category_key, keyword_list in category_dict.items():
-                    if category is None or category_key == category:
-                        keywords.extend([f"{maker_key} {keyword}" for keyword in keyword_list])
-        
-        return keywords
-    
-    
-    def get_urls_for_search(self, maker: str = None, category: str = None):
-        src = self._get_search_src()
-        src_dict = src['urls']
-        urls = []
-        for maker_key, category_dict in src_dict.items():
-            if maker is None or maker_key == maker:
-                for category_key, url_list in category_dict.items():
-                    if category is None or category_key == category:
-                        urls.extend(url_list)
-        
-        return urls
-
-    def get_urls_from_web(self, keywords: list = None) -> list:
+        if keywords is None:
+            keywords = self._get_model_keywords_from_mkrt()
         urls_set = set()
         for keyword in tqdm(keywords):
             url = self._search_and_extract_url(search_query=keyword)

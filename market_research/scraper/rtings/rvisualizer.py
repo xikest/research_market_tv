@@ -16,59 +16,53 @@ class Rvisualizer(BaseVisualizer):
         def initialize_data(data:dict, maker_filter=None, measurement_selection:list=None):
             def retrim(ds: pd.Series, mark: str = ","):
                 return ds.str.replace(mark, "")
-            
+            def label_cleaning(df):
+                def brightness_label(df):
+                    select_brightness = df['label'].str.contains("Window") & df['label'].str.contains("Peak")
+                    df_brightness = df[select_brightness]
+                    df_brightness.loc[:, "label"] = df_brightness["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
+                    df_brightness = df_brightness.sort_values(["series", "label"], ascending=True)
+                    df_brightness["label"] = df_brightness.label.map(lambda x: str(x) + "%")
+                    self.brightness_label = df_brightness['label'].unique()
+                    df[select_brightness] = df_brightness
+                    return df
+                
+                df = df.rename(columns={"header":"category", "category": "header"})
+                valid_measurements = set(df['category']).intersection(measurement_selection)
+                df = df[df['category'].isin(valid_measurements)]
+                label_dict = {'1,000 cd/m² DCI P3 Coverage ITP': "DCI",
+                                        '10,000 cd/m² Rec 2020 Coverage ITP': "BT2020",
+                                        'Blue Luminance': "Blue",
+                                        'Cyan Luminance': "Cyan",
+                                        'Green Luminance': "Green",
+                                        'Magenta Luminance': "Magenta",
+                                        'Red Luminance': "Red",
+                                        'White Luminance': "White",
+                                        'Yellow Luminance': "Yellow"}
+                
+                for target, label in label_dict.items():
+                    df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
+                df.loc[:, "result_value"] = df.loc[:, "result_value"].map(lambda x:x.lower())    
+                value_dict = {"n/a": "0", "inf": "1000000"}
+                for target, value in value_dict.items():
+                    df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
+                trim_marks = ["cd/m²", ",", "%", "°", "k", "ms", "hz", "db", ": 1", "w"]
+                for trim_mark in trim_marks:
+                    try:
+                        df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
+                    except Exception as e:
+                        print(e)
+                        pass
+                df = brightness_label(df)
+                return df
+            def drop_nouse_col(df):
+                df.loc[:, 'result_value'] = df['result_value'].astype(float)
+                df = df.drop(['size','model', 'product','grade','header'], axis=1).drop_duplicates()
+                return df         
+                
             data_type = list(data.keys())[0]
             if data_type == 'measurement':
                 df = data.get('measurement')
-
-                def label_cleaning(df):
-                    def brightness_label(df):
-                        select_brightness = df['label'].str.contains("Window") & df['label'].str.contains("Peak")
-                        df_brightness = df[select_brightness]
-                        df_brightness.loc[:, "label"] = df_brightness["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
-                        df_brightness = df_brightness.sort_values(["series", "label"], ascending=True)
-                        df_brightness["label"] = df_brightness.label.map(lambda x: str(x) + "%")
-                        self.brightness_label = df_brightness['label'].unique()
-                        df[select_brightness] = df_brightness
-                        
-                        return df
-                    
-                    df = df.rename(columns={"header":"category", "category": "header"})
-                    df = df[df['category'].isin(measurement_selection)]
-                    
-                    label_dict = {'1,000 cd/m² DCI P3 Coverage ITP': "DCI",
-                                            '10,000 cd/m² Rec 2020 Coverage ITP': "BT2020",
-                                            'Blue Luminance': "Blue",
-                                            'Cyan Luminance': "Cyan",
-                                            'Green Luminance': "Green",
-                                            'Magenta Luminance': "Magenta",
-                                            'Red Luminance': "Red",
-                                            'White Luminance': "White",
-                                            'Yellow Luminance': "Yellow"}
-                    
-                    for target, label in label_dict.items():
-                        df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
-                        
-                    df.loc[:, "result_value"] = df.loc[:, "result_value"].map(lambda x:x.lower())    
-                    value_dict = {"n/a": "0", "inf": "1000000"}
-                    for target, value in value_dict.items():
-                        df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
-                    trim_marks = ["cd/m²", ",", "%", "°", "k", "ms", "hz", "db", ": 1"]
-                    for trim_mark in trim_marks:
-                        try:
-                            df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
-                        except Exception as e:
-                            print(e)
-                            pass
-                    df = brightness_label(df)
-                    return df
-                def drop_nouse_col(df):
-                    df = df[(df['header'] != 'Sound Quality') & (df['header'] != 'Smart Features') & (df['header'] != 'Inputs')]
-                    df = df[~df.score.isin([""])]  # score가 있는 데이터만 사용
-                    df['result_value'] = df['result_value'].astype(float)
-                    df = df.drop(['size','model', 'product','grade','header'], axis=1).drop_duplicates().replace("", np.nan).dropna()
-                    return df
-                
                 df = label_cleaning(df)
                 df = drop_nouse_col(df)
 
@@ -77,14 +71,17 @@ class Rvisualizer(BaseVisualizer):
                 df = df.drop(['size','model', 'product','grade'], axis=1).drop_duplicates().replace("", np.nan).dropna()
             else:
                 raise ValueError
-            df["score"] = df["score"].astype(float)
+            
             df['year'] = df['year'].astype(int).astype(str)
             
             if maker_filter:
                 if isinstance(maker_filter, str): maker_filter = [maker_filter]
                 filtered_mask = df['maker'].isin(maker_filter)
                 df = df[filtered_mask]
+                
             heatmap_df = df.copy()
+            heatmap_df = heatmap_df[~heatmap_df["score"].isin([""])] 
+            heatmap_df.loc[:, "score"] = heatmap_df["score"].astype(float)
             heatmap_df = heatmap_df[["maker", "year", "series","category",'score']].drop_duplicates()
             heatmap_df = heatmap_df.pivot(index=["maker","year", "series"], columns=["category"], values='score')
             heatmap_df = heatmap_df.T
@@ -131,7 +128,9 @@ class Rvisualizer(BaseVisualizer):
                                     'Viewing Angle',
                                     'Reflections',
                                     'Gray Uniformity',
-                                    'Response Time']
+                                    'Response Time',
+                                    'Variable Refresh Rate',
+                                    'Misc']
         return measurement_selection
 
     def plot_facet_bar(self, select_label, return_fig:bool=False):
@@ -144,6 +143,8 @@ class Rvisualizer(BaseVisualizer):
         div_group = 2
         first_group = categories[:2]
         second_group = categories[2:]
+
+        plot_unit = self.title_units_dict.get(select_label)
 
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
 
@@ -194,7 +195,6 @@ class Rvisualizer(BaseVisualizer):
         # 연도 드롭다운 버튼 생성
         years = sorted(df_cat['year'].unique(), reverse=True)
         
-        # 첫 번째 연도 트레이스의 가시성을 기본으로 설정
         initial_year = years[0]
         
         for trace in fig.data:
