@@ -4,7 +4,8 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
-import requests
+from typing import Tuple
+# import requests
 
 
 
@@ -13,43 +14,58 @@ class Rurlsearcher(Scraper):
         super().__init__(enable_headless=enable_headless)
         self.wait_time = 2
         
-    def _get_model_keywords_from_mkrt(self, path_dict:dict=None) ->set:
+    def _get_model_info_from_mkrt(self, path_dict:dict=None) ->set:
         if path_dict is None:
             path_dict={"sony": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json",
                     "lg": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json",
                     "samsung":"https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json"
                     }
-        keywords_set = set()
+            info_df = pd.DataFrame()
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
-            for series in df['series'].unique():
-                keywords_set.add(f"{maker} {series}")
+            df = df[["model", "year", "series", "size", "grade"]]
+            df['maker'] = maker
+            info_df = pd.concat([info_df, df], axis=0)
+        return info_df
+
+            # for series in df['series'].unique():
+            #     keywords_set.add(f"{maker} {series}")
                 
-        url = "https://github.com/xikest/research_market_tv/raw/main/json/rtings_keywords.json"
-        response = requests.get(url)
-        if response.status_code == 200:
-            ex_keywords = response.json() 
-            ex_keywords = set(ex_keywords)
-        keywords_set.update(ex_keywords)   
+        # url = "https://github.com/xikest/research_market_tv/raw/main/json/rtings_keywords.json"
+        # response = requests.get(url)
+        # if response.status_code == 200:
+        #     ex_keywords = response.json() 
+        #     ex_keywords = set(ex_keywords)
+        # keywords_set.update(ex_keywords)   
         
-        return keywords_set
 
+    def get_urls_with_model_info(self) -> Tuple[list, pd.DataFrame]:
+        info_df = self._get_model_info_from_mkrt()
+        failed_series = []
+        for idx, row in tqdm(info_df.iterrows()):
+            try:
+                maker = row['maker']
+                series = row['series']
+                keyword = f"{maker} {series}"
+                url = self._search_and_extract_url(search_query=keyword)
+                info_df.at[idx, 'url'] = url
+            except:
+                failed_series.append(series)
+                continue
+        if failed_series:
+            print(f"failed_series: {failed_series}")
+        return info_df['url'].to_list(), info_df
 
-
-
-
-
+    
     def get_urls_from_web(self, keywords: set = None) -> list:
-
-        
-        if keywords is None:
-            keywords = self._get_model_keywords_from_mkrt()
         urls_set = set()
         for keyword in tqdm(keywords):
             url = self._search_and_extract_url(search_query=keyword)
             if url is not None:
                 urls_set.add(url)
-        return list(urls_set)
+        urls_list = list(urls_set)        
+        return urls_list
+    
 
     def get_urls_from_inputpath(self, intput_folder_path: str) -> list:
         self.set_data_path(intput_folder_path=intput_folder_path)

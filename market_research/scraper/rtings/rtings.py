@@ -5,7 +5,6 @@ import pandas as pd
 import re
 from tqdm import tqdm
 from tools.file import FileManager
-from market_research.scraper import Specscraper_l, Specscraper_s, Specscraper_se
 from market_research.scraper._scraper_scheme import Scraper
 from market_research.scraper.rtings.rvisualizer import Rvisualizer
 
@@ -24,24 +23,40 @@ class Rtings(Scraper, Rvisualizer):
         self.wait_time = wait_time
         pass
         
+        
+    def get_data(self, urls: list, info_df=None, export_excel=True):
+        def _add_info_columns(df, info_df):
+            return df.assign(
+                model=info_df["model"].iloc[0],
+                year=info_df["year"].iloc[0],
+                series=info_df["series"].iloc[0],
+                size=info_df["size"].iloc[0],
+                grade=info_df["grade"].iloc[0]
+            )
+        
+        def _process_url(url, info_df, data_getter):
+            df = data_getter(url)
+            if info_df is not None:
+                df = _add_info_columns(df, info_df)
+            return df
 
-
-    def get_data(self, urls:list, export_excel=True):
-        scores_df= pd.DataFrame()
+        scores_df = pd.DataFrame()
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
-        url = None
         fail_url_list = []
+
         for url in tqdm(urls):
             try:
-                if self.verbose: print(f"connecting to {url}")
-                df = self._get_score(url)
+                if self.verbose:
+                    print(f"connecting to {url}")
+                
+                df = _process_url(url, info_df, self._get_score)
                 scores_df = pd.concat([scores_df, df], axis=0)
 
-                df = self._get_measurement_reuslts(url)
-                measurement_df =pd.concat([measurement_df, df], axis=0)
+                df = _process_url(url, info_df, self._get_measurement_reuslts)
+                measurement_df = pd.concat([measurement_df, df], axis=0)
 
-                df = self._get_comments(url)
+                df = _process_url(url, info_df, self._get_comments)
                 comments_df = pd.concat([comments_df, df], axis=0)
 
             except Exception as e:
@@ -70,26 +85,12 @@ class Rtings(Scraper, Rvisualizer):
         
 
     def _get_score(self, url:str="https://www.rtings.com/tv/reviews/sony/a95l-oled") :
-        
-        dict_extractors = {"sony":Specscraper_s,
-                           "lg":Specscraper_l,
-                           "samsung":Specscraper_se}
-        extractor = None
+
         url = url.lower()
         driver = self.web_driver.get_chrome()
         driver.get(url)
-        time.sleep(self.wait_time)
-        page_source = driver.page_source        
-        soup = BeautifulSoup(page_source, 'html.parser')
-        title = soup.title.string.lower().replace("\u200b", "")
-        maker = title.split(" ")[0].strip().lower()
-        product = title.replace(maker, "").split("review")[0]
-        models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
-        models_list = models.split(",")
-        for key in dict_extractors.keys():
-            if maker in key:
-                extractor = dict_extractors.get(key)
-        
+        time.sleep(self.wait_time)     
+
 
         # scorecard-row-content 클래스를 가진 요소들을 선택
         elements = driver.find_elements(By.CLASS_NAME, "scorecard-row-content")
@@ -103,22 +104,8 @@ class Rtings(Scraper, Rvisualizer):
             rows = []
             for score_type, score in score_dict.items():
                 rows.append({'category': score_type, 'score': score})
-            scores_df = pd.DataFrame(rows)
-            scores_df['product'] = product
-            scores_df['maker'] = maker
-            scores_list = []
-            for model in models_list:
-                model = model.strip()
-        
-            temp_df = scores_df.copy()
-            temp_df['model'] = model
+            scores_df = pd.DataFrame(rows)           
             
-            if extractor is not None:
-                dict_model = extractor.extract_info_from_model(model)
-                for k, v in dict_model.items():
-                    temp_df[k] = v
-            scores_list.append(temp_df)
-            scores_df = pd.concat(scores_list, ignore_index=True)
             return scores_df
         except Exception as e:
             if self.verbose:
@@ -184,28 +171,14 @@ class Rtings(Scraper, Rvisualizer):
 
     def _get_measurement_reuslts(self, url: str = "https://www.rtings.com/tv/reviews/sony/a95l-oled") ->pd.DataFrame:
         
-        dict_extractors = {"sony":Specscraper_s,
-                           "lg":Specscraper_l,
-                           "samsung":Specscraper_se}
-        extractor = None
-        
+
         url = url.lower()
         driver = self.web_driver.get_chrome()
         driver.get(url)
         time.sleep(self.wait_time)
         page_source = driver.page_source
         driver.quit()
-        
         soup = BeautifulSoup(page_source, 'html.parser')
-        title = soup.title.string.lower().replace("\u200b", "")
-        maker = title.split(" ")[0].strip().lower()
-        product = title.replace(maker, "").split("review")[0]
-        models = title.replace(maker, "").split("review")[1].split(")")[0].replace("(","")
-        models_list = models.split(",")
-        
-        for key in dict_extractors.keys():
-            if maker in key:
-                extractor = dict_extractors.get(key)
 
         results_list = []
         category = ""
@@ -229,12 +202,12 @@ class Rtings(Scraper, Rvisualizer):
                 result_value = test_value.find('span',
                                                class_='test_result_value e-test_result review-value-score').get_text(strip=True)
                 # 딕셔너리에 추가
-                results_list.append([maker, product, category, scores_headder, label, result_value])
+                results_list.append([category, scores_headder, label, result_value])
             # 리스트를 데이터프레임으로 변환
 
 
         results_df = pd.DataFrame(results_list,
-                                  columns=["maker", "product", "category", "scores_header", "label", "result_value"])
+                                  columns=["category", "scores_header", "label", "result_value"])
         
         
         # scores_header_list 생성 및 수정
@@ -254,20 +227,6 @@ class Rtings(Scraper, Rvisualizer):
         scores_header_df["score"] = scores_header_df["score"].map(lambda x:x.replace("(><)", ""))
         # results_df와 scores_header_df 병합
         results_df = pd.concat([results_df, scores_header_df], axis=1)
-        results_df = results_df[["maker", "product", "category", "header", "score", "label", "result_value"]]
+        results_df = results_df[["category", "header", "score", "label", "result_value"]]
         # 결과 확인
-
-        measurement_list = []
-        for model in models_list:
-            model = model.strip()
-    
-            temp_df = results_df.copy()
-            temp_df['model'] = model
-            
-            if extractor is not None:
-                dict_model = extractor.extract_info_from_model(model)
-                for k, v in dict_model.items():
-                    temp_df[k] = v
-            measurement_list.append(temp_df)
-        measurement_df = pd.concat(measurement_list, ignore_index=True)
-        return measurement_df
+        return results_df
