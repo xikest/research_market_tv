@@ -115,10 +115,11 @@ class Rvisualizer(BaseVisualizer):
             'Color Volume':"",
             "Gray Uniformity": "%",
             "Reflections": "%",
-            "Variable Refresh Rate": "Hz",
             "Viewing Angle": "°",
-            "Misc": "W",
-            "Lighting Zone Transitions":""
+            "Pre Calibration":"",
+            "Lighting Zone Transitions":"",
+            "Variable Refresh Rate": "Hz",
+             "Misc": "W"
         } 
         return measurement_selection
 
@@ -129,9 +130,12 @@ class Rvisualizer(BaseVisualizer):
             df = df[df['label'].isin(self.brightness_label)]
         df = df.sort_values(by=['year', 'series'], ascending=[False, False])    
         categories = df['label'].unique()
-        div_group = 2
-        first_group = categories[:2]
-        second_group = categories[2:]
+        if select_label == "Pre Calibration":
+            div_group = 3
+        else:
+            div_group = 2
+        first_group = categories[:div_group]
+        second_group = categories[div_group:]
         measurement_selection_dict = self.get_measurement_selection()
         plot_unit = measurement_selection_dict.get(select_label, "")
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
@@ -180,10 +184,9 @@ class Rvisualizer(BaseVisualizer):
             for col in range(2, len(categories) + 1): 
                 fig.update_yaxes(matches=None, row=1, col=col)
         
-        if select_label in ["HDR Brightness", "SDR Brightness", "Contrast","Lighting Zone Transitions"]:
+        if select_label in ["Contrast","Lighting Zone Transitions"]:
             fig.update_yaxes(type='log')  
-
-        
+            
 
 
 

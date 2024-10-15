@@ -252,7 +252,7 @@ def display_indicators():
                 
                 
         with tabs[1]:
-            sub_tabs = st.tabs(["Total", "Sub", "Heat map","PCA"])
+            sub_tabs = st.tabs(["Total", "Sub", "Heat map"])
             
             with sub_tabs[0]:
                 data = loading_rtings('scores')
@@ -281,14 +281,15 @@ def display_indicators():
                 else:
                     st.write("No information")
                     
-            with sub_tabs[3]:
-                data = loading_rtings('measurement')
-                fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
-                if fig != None:
-                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.write("No information")            
+            # with sub_tabs[3]:
+            #     data = loading_rtings('measurement')
+                
+            #     try:
+            #         fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
+            #         fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+            #         st.plotly_chart(fig, use_container_width=True)
+            #     except:
+            #         st.write("No information")            
                 
                 
         with tabs[2]:
