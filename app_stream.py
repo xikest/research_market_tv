@@ -148,7 +148,7 @@ def display_indicators():
     else:
         st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
  
-    col1, _, col2 = st.columns([3.5,0.2,6.3])
+    col1, _, col2 = st.columns([3,0.2,6.8])
     with col1:
         col1_plot_height = 800
         st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)

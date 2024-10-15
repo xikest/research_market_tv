@@ -13,18 +13,23 @@ class Rvisualizer(BaseVisualizer):
 
     def __init__(self, data:dict=None, maker_filter=None, output_folder_path="results"):
         
-        def initialize_data(data:dict, maker_filter=None, measurement_selection:list=None):
+        def initialize_data(data:dict, maker_filter=None, measurement_selection:dict=None):
             def retrim(ds: pd.Series, mark: str = ","):
                 return ds.str.replace(mark, "")
-            def label_cleaning(df):
+            def label_cleaning(df, measurement_selection: list):
                 def brightness_label(df):
                     select_brightness = df['label'].str.contains("Window") & df['label'].str.contains("Peak")
                     df_brightness = df[select_brightness]
                     df_brightness.loc[:, "label"] = df_brightness["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
                     df_brightness = df_brightness.sort_values(["series", "label"], ascending=True)
                     df_brightness["label"] = df_brightness.label.map(lambda x: str(x) + "%")
+
+                    df.loc[select_brightness, "label"] = df_brightness["label"].values  # .values 사용
                     self.brightness_label = df_brightness['label'].unique()
-                    df[select_brightness] = df_brightness
+
+
+                    # self.brightness_label = df_brightness['label'].unique()
+                    # df[select_brightness] = df_brightness
                     return df
                 
                 df = df.rename(columns={"header":"category", "category": "header"})
@@ -43,7 +48,7 @@ class Rvisualizer(BaseVisualizer):
                 for target, label in label_dict.items():
                     df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
                 df.loc[:, "result_value"] = df.loc[:, "result_value"].map(lambda x:x.lower())    
-                value_dict = {"n/a": "0", "inf": "1000000"}
+                value_dict = {"n/a": "0", "inf": "1000000000"}
                 for target, value in value_dict.items():
                     df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
                 trim_marks = ["cd/m²", ",", "%", "°", "k", "ms", "hz", "db", ": 1", "w"]
@@ -57,18 +62,18 @@ class Rvisualizer(BaseVisualizer):
                 return df
             def drop_nouse_col(df):
                 df.loc[:, 'result_value'] = df['result_value'].astype(float)
-                df = df.drop(['size','model', 'product','grade','header'], axis=1).drop_duplicates()
+                df = df.drop(['size','model', 'grade','header'], axis=1).drop_duplicates()
                 return df         
                 
             data_type = list(data.keys())[0]
             if data_type == 'measurement':
                 df = data.get('measurement')
-                df = label_cleaning(df)
+                df = label_cleaning(df, list(measurement_selection.keys()))
                 df = drop_nouse_col(df)
 
             elif data_type == 'scores':
                 df = data.get('scores')
-                df = df.drop(['size','model', 'product','grade'], axis=1).drop_duplicates().replace("", np.nan).dropna()
+                df = df.drop(['size','model', 'grade'], axis=1).drop_duplicates().replace("", np.nan).dropna()
             else:
                 raise ValueError
             
@@ -97,41 +102,24 @@ class Rvisualizer(BaseVisualizer):
         self.font='Arial, sans-serif'
         self.fontsize= 10
         self.data_detail_dict: dict = {}
-
-        self.title_units_dict = {
-            "HDR Brightness": "cd/m²",
-            "SDR Brightness": "cd/m²",
-            "Black Frame Insertion (BFI)": "Hz",
-            "Black Uniformity": "%",
-            "Color Gamut": "%",
-            "Color Volume": "cd/m²",
-            "Color Volume(ITP)": "%",
-            "Flicker-Free": "Hz",
-            "Gray Uniformity": "%",
-            "HDR Brightness In Game Mode": "cd/m²",
-            "Reflections": "%",
-            "Response Time": "ms",
-            "Stutter": "ms",
-            "Variable Refresh Rate": "Hz",
-            "Viewing Angle": "°",
-            "Misc": "W"
-        } 
         pass
         
     @staticmethod
     def get_measurement_selection():
-        measurement_selection = [ 'HDR Brightness',
-                                    'SDR Brightness',
-                                    'Contrast',
-                                    'Black Uniformity',
-                                    'Color Gamut',
-                                    'Color Volume',
-                                    'Viewing Angle',
-                                    'Reflections',
-                                    'Gray Uniformity',
-                                    'Response Time',
-                                    'Variable Refresh Rate',
-                                    'Misc']
+        measurement_selection = {
+            "HDR Brightness": "cd/m²",
+            "SDR Brightness": "cd/m²",
+            "Black Uniformity": "%",
+            "Contrast": "",
+            "Color Gamut": "%",
+            'Color Volume':"",
+            "Gray Uniformity": "%",
+            "Reflections": "%",
+            "Variable Refresh Rate": "Hz",
+            "Viewing Angle": "°",
+            "Misc": "W",
+            "Lighting Zone Transitions":""
+        } 
         return measurement_selection
 
     def plot_facet_bar(self, select_label, return_fig:bool=False):
@@ -144,7 +132,8 @@ class Rvisualizer(BaseVisualizer):
         div_group = 2
         first_group = categories[:2]
         second_group = categories[2:]
-        plot_unit = self.title_units_dict.get(select_label, "")
+        measurement_selection_dict = self.get_measurement_selection()
+        plot_unit = measurement_selection_dict.get(select_label, "")
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
 
         # 서브플롯 생성
@@ -190,6 +179,13 @@ class Rvisualizer(BaseVisualizer):
 
             for col in range(2, len(categories) + 1): 
                 fig.update_yaxes(matches=None, row=1, col=col)
+        
+        if select_label in ["HDR Brightness", "SDR Brightness", "Contrast","Lighting Zone Transitions"]:
+            fig.update_yaxes(type='log')  
+
+        
+
+
 
         # 연도 드롭다운 버튼 생성
         years = sorted(df_cat['year'].unique(), reverse=True)
@@ -233,6 +229,7 @@ class Rvisualizer(BaseVisualizer):
             width=800,
             showlegend=False,
             margin=dict(b=100)
+            
         )
         
         if return_fig:

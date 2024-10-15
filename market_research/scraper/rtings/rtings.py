@@ -25,19 +25,21 @@ class Rtings(Scraper, Rvisualizer):
         
         
     def get_data(self, urls: list, info_df=None, export_excel=True):
-        def _add_info_columns(df, info_df):
+        def _add_info_columns(df, info_df_row):
             return df.assign(
-                model=info_df["model"].iloc[0],
-                year=info_df["year"].iloc[0],
-                series=info_df["series"].iloc[0],
-                size=info_df["size"].iloc[0],
-                grade=info_df["grade"].iloc[0]
+                maker=info_df_row["maker"].iloc[0],
+                model=info_df_row["model"].iloc[0],
+                year=info_df_row["year"].iloc[0],
+                series=info_df_row["series"].iloc[0],
+                size=info_df_row["size"].iloc[0],
+                grade=info_df_row["grade"].iloc[0]
             )
         
         def _process_url(url, info_df, data_getter):
             df = data_getter(url)
-            if info_df is not None:
-                df = _add_info_columns(df, info_df)
+            if info_df is not None and not info_df[info_df['url'] == url].empty:
+                info_df_row = info_df[info_df['url'] == url].iloc[:1]  # 첫 번째 행만 선택
+                df = _add_info_columns(df, info_df_row)
             return df
 
         scores_df = pd.DataFrame()

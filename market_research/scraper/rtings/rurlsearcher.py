@@ -26,21 +26,13 @@ class Rurlsearcher(Scraper):
             df = df[["model", "year", "series", "size", "grade"]]
             df['maker'] = maker
             info_df = pd.concat([info_df, df], axis=0)
+        
         return info_df
 
-            # for series in df['series'].unique():
-            #     keywords_set.add(f"{maker} {series}")
-                
-        # url = "https://github.com/xikest/research_market_tv/raw/main/json/rtings_keywords.json"
-        # response = requests.get(url)
-        # if response.status_code == 200:
-        #     ex_keywords = response.json() 
-        #     ex_keywords = set(ex_keywords)
-        # keywords_set.update(ex_keywords)   
-        
 
     def get_urls_with_model_info(self) -> Tuple[list, pd.DataFrame]:
         info_df = self._get_model_info_from_mkrt()
+        info_df = info_df.reset_index(drop=True)
         failed_series = []
         for idx, row in tqdm(info_df.iterrows()):
             try:
@@ -49,6 +41,7 @@ class Rurlsearcher(Scraper):
                 keyword = f"{maker} {series}"
                 url = self._search_and_extract_url(search_query=keyword)
                 info_df.at[idx, 'url'] = url
+                
             except:
                 failed_series.append(series)
                 continue
