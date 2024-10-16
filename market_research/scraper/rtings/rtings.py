@@ -28,11 +28,8 @@ class Rtings(Scraper, Rvisualizer):
         def _add_info_columns(df, info_df_row):
             return df.assign(
                 maker=info_df_row["maker"].iloc[0],
-                model=info_df_row["model"].iloc[0],
                 year=info_df_row["year"].iloc[0],
                 series=info_df_row["series"].iloc[0],
-                size=info_df_row["size"].iloc[0],
-                grade=info_df_row["grade"].iloc[0]
             )
         
         def _process_url(url, info_df, data_getter):

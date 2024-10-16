@@ -17,19 +17,17 @@ class Rvisualizer(BaseVisualizer):
             def retrim(ds: pd.Series, mark: str = ","):
                 return ds.str.replace(mark, "")
             def label_cleaning(df, measurement_selection: list):
-                def brightness_label(df):
+                def brightness_label(data):
+                    df = data.copy()
                     select_brightness = df['label'].str.contains("Window") & df['label'].str.contains("Peak")
                     df_brightness = df[select_brightness]
                     df_brightness.loc[:, "label"] = df_brightness["label"].map(lambda x: int(x.split("%")[0].split(" ")[-1]))
                     df_brightness = df_brightness.sort_values(["series", "label"], ascending=True)
                     df_brightness["label"] = df_brightness.label.map(lambda x: str(x) + "%")
-
-                    df.loc[select_brightness, "label"] = df_brightness["label"].values  # .values 사용
-                    self.brightness_label = df_brightness['label'].unique()
-
-
-                    # self.brightness_label = df_brightness['label'].unique()
-                    # df[select_brightness] = df_brightness
+                    df_brightness
+                    for idx in df_brightness.index:
+                        df.loc[idx, "label"] = df_brightness.loc[idx, "label"]
+                    self.brightness_label = df_brightness["label"].unique()
                     return df
                 
                 df = df.rename(columns={"header":"category", "category": "header"})
@@ -62,7 +60,7 @@ class Rvisualizer(BaseVisualizer):
                 return df
             def drop_nouse_col(df):
                 df.loc[:, 'result_value'] = df['result_value'].astype(float)
-                df = df.drop(['size','model', 'grade','header'], axis=1).drop_duplicates()
+                df = df.drop(['header'], axis=1).drop_duplicates()
                 return df         
                 
             data_type = list(data.keys())[0]
@@ -73,7 +71,7 @@ class Rvisualizer(BaseVisualizer):
 
             elif data_type == 'scores':
                 df = data.get('scores')
-                df = df.drop(['size','model', 'grade'], axis=1).drop_duplicates().replace("", np.nan).dropna()
+                df = df.drop_duplicates().replace("", np.nan).dropna()
             else:
                 raise ValueError
             

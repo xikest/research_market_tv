@@ -78,10 +78,6 @@ def loading_rtings(data_src='measurement'):
         elif data_src == 'scores':
             json_path = './json/rtings_scores_data.json'
     data = pd.read_json(json_path, orient='records', lines=True)
-    
-    ################################# temp################################
-    data = data.dropna(subset='year')
-    ######################################################################    
     return {data_src: data}
 
 @st.cache_data
@@ -252,7 +248,7 @@ def display_indicators():
                 
                 
         with tabs[1]:
-            sub_tabs = st.tabs(["Total", "Sub", "Heat map"])
+            sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
             
             with sub_tabs[0]:
                 data = loading_rtings('scores')
@@ -281,15 +277,15 @@ def display_indicators():
                 else:
                     st.write("No information")
                     
-            # with sub_tabs[3]:
-            #     data = loading_rtings('measurement')
+            with sub_tabs[3]:
+                data = loading_rtings('measurement')
                 
-            #     try:
-            #         fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
-            #         fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-            #         st.plotly_chart(fig, use_container_width=True)
-            #     except:
-            #         st.write("No information")            
+                try:
+                    fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
+                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                except:
+                    st.write("No information")            
                 
                 
         with tabs[2]:

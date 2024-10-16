@@ -23,10 +23,10 @@ class Rurlsearcher(Scraper):
             info_df = pd.DataFrame()
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
-            df = df[["model", "year", "series", "size", "grade"]]
+            df = df[[ "year", "series"]]
             df['maker'] = maker
             info_df = pd.concat([info_df, df], axis=0)
-        
+        info_df =info_df.drop_duplicates()
         return info_df
 
 
