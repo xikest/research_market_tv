@@ -5,13 +5,13 @@
 {"category":"HDR Movies","score":"6.8","maker":"sony","year":2024,"series":"s30"}
 {"category":"HDR Gaming","score":"7.2","maker":"sony","year":2024,"series":"s30"}
 {"category":"PC Monitor","score":"7.8","maker":"sony","year":2024,"series":"s30"}
-{"category":"Mixed Usage","score":"8.1","maker":"sony","year":2023,"series":"x90l"}
-{"category":"TV Shows","score":"7.7","maker":"sony","year":2023,"series":"x90l"}
-{"category":"Sports","score":"7.7","maker":"sony","year":2023,"series":"x90l"}
-{"category":"Video Games","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"HDR Movies","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"HDR Gaming","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"PC Monitor","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
+{"category":"Mixed Usage","score":"8.1","maker":"sony","year":2022,"series":"w830k"}
+{"category":"TV Shows","score":"7.7","maker":"sony","year":2022,"series":"w830k"}
+{"category":"Sports","score":"7.7","maker":"sony","year":2022,"series":"w830k"}
+{"category":"Video Games","score":"8.4","maker":"sony","year":2022,"series":"w830k"}
+{"category":"HDR Movies","score":"8.4","maker":"sony","year":2022,"series":"w830k"}
+{"category":"HDR Gaming","score":"8.4","maker":"sony","year":2022,"series":"w830k"}
+{"category":"PC Monitor","score":"8.4","maker":"sony","year":2022,"series":"w830k"}
 {"category":"Mixed Usage","score":"8.8","maker":"sony","year":2023,"series":"a80l"}
 {"category":"TV Shows","score":"8.4","maker":"sony","year":2023,"series":"a80l"}
 {"category":"Sports","score":"8.6","maker":"sony","year":2023,"series":"a80l"}
@@ -40,13 +40,6 @@
 {"category":"HDR Movies","score":"8.7","maker":"sony","year":2022,"series":"a90k"}
 {"category":"HDR Gaming","score":"8.8","maker":"sony","year":2022,"series":"a90k"}
 {"category":"PC Monitor","score":"8.8","maker":"sony","year":2022,"series":"a90k"}
-{"category":"Mixed Usage","score":"8.1","maker":"sony","year":2023,"series":"x90l"}
-{"category":"TV Shows","score":"7.7","maker":"sony","year":2023,"series":"x90l"}
-{"category":"Sports","score":"7.7","maker":"sony","year":2023,"series":"x90l"}
-{"category":"Video Games","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"HDR Movies","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"HDR Gaming","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
-{"category":"PC Monitor","score":"8.4","maker":"sony","year":2023,"series":"x90l"}
 {"category":"Mixed Usage","score":"8.4","maker":"sony","year":2024,"series":"xr70"}
 {"category":"TV Shows","score":"7.7","maker":"sony","year":2024,"series":"xr70"}
 {"category":"Sports","score":"7.7","maker":"sony","year":2024,"series":"xr70"}
@@ -117,13 +110,13 @@
 {"category":"HDR Movies","score":"9.0","maker":"lg","year":2023,"series":"c3"}
 {"category":"HDR Gaming","score":"9.1","maker":"lg","year":2023,"series":"c3"}
 {"category":"PC Monitor","score":"9.4","maker":"lg","year":2023,"series":"c3"}
-{"category":"Mixed Usage","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"TV Shows","score":"6.7","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Sports","score":"6.5","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Video Games","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Movies","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Gaming","score":"7.6","maker":"lg","year":2023,"series":"75ur"}
-{"category":"PC Monitor","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
+{"category":"Mixed Usage","score":"7.1","maker":"lg","year":2022,"series":"80aq"}
+{"category":"TV Shows","score":"6.7","maker":"lg","year":2022,"series":"80aq"}
+{"category":"Sports","score":"6.5","maker":"lg","year":2022,"series":"80aq"}
+{"category":"Video Games","score":"7.4","maker":"lg","year":2022,"series":"80aq"}
+{"category":"HDR Movies","score":"7.4","maker":"lg","year":2022,"series":"80aq"}
+{"category":"HDR Gaming","score":"7.6","maker":"lg","year":2022,"series":"80aq"}
+{"category":"PC Monitor","score":"7.1","maker":"lg","year":2022,"series":"80aq"}
 {"category":"Mixed Usage","score":"6.2","maker":"lg","year":2022,"series":"uq7590"}
 {"category":"TV Shows","score":"6.9","maker":"lg","year":2022,"series":"uq7590"}
 {"category":"Sports","score":"6.3","maker":"lg","year":2022,"series":"uq7590"}
@@ -131,13 +124,13 @@
 {"category":"HDR Movies","score":"5.8","maker":"lg","year":2022,"series":"uq7590"}
 {"category":"HDR Gaming","score":"6.3","maker":"lg","year":2022,"series":"uq7590"}
 {"category":"PC Monitor","score":"6.7","maker":"lg","year":2022,"series":"uq7590"}
-{"category":"Mixed Usage","score":"6.5","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"TV Shows","score":"7.1","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"Sports","score":"7.0","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"Video Games","score":"6.4","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"HDR Movies","score":"5.9","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"HDR Gaming","score":"6.8","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"PC Monitor","score":"7.3","maker":"lg","year":2024,"series":"ut7590"}
+{"category":"Mixed Usage","score":"6.5","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"TV Shows","score":"7.1","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"Sports","score":"7.0","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"Video Games","score":"6.4","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"HDR Movies","score":"5.9","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"HDR Gaming","score":"6.8","maker":"lg","year":2024,"series":"ut7570"}
+{"category":"PC Monitor","score":"7.3","maker":"lg","year":2024,"series":"ut7570"}
 {"category":"Mixed Usage","score":"6.4","maker":"lg","year":2022,"series":"75uq"}
 {"category":"TV Shows","score":"7.2","maker":"lg","year":2022,"series":"75uq"}
 {"category":"Sports","score":"6.9","maker":"lg","year":2022,"series":"75uq"}
@@ -180,34 +173,6 @@
 {"category":"HDR Movies","score":"9.2","maker":"lg","year":2024,"series":"g4"}
 {"category":"HDR Gaming","score":"9.2","maker":"lg","year":2024,"series":"g4"}
 {"category":"PC Monitor","score":"9.6","maker":"lg","year":2024,"series":"g4"}
-{"category":"Mixed Usage","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"TV Shows","score":"6.7","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Sports","score":"6.5","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Video Games","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Movies","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Gaming","score":"7.6","maker":"lg","year":2023,"series":"75ur"}
-{"category":"PC Monitor","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Mixed Usage","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"TV Shows","score":"6.7","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Sports","score":"6.5","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Video Games","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Movies","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Gaming","score":"7.6","maker":"lg","year":2023,"series":"75ur"}
-{"category":"PC Monitor","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Mixed Usage","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"TV Shows","score":"6.7","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Sports","score":"6.5","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Video Games","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Movies","score":"7.4","maker":"lg","year":2023,"series":"75ur"}
-{"category":"HDR Gaming","score":"7.6","maker":"lg","year":2023,"series":"75ur"}
-{"category":"PC Monitor","score":"7.1","maker":"lg","year":2023,"series":"75ur"}
-{"category":"Mixed Usage","score":"6.5","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"TV Shows","score":"7.1","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"Sports","score":"7.0","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"Video Games","score":"6.4","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"HDR Movies","score":"5.9","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"HDR Gaming","score":"6.8","maker":"lg","year":2024,"series":"ut7590"}
-{"category":"PC Monitor","score":"7.3","maker":"lg","year":2024,"series":"ut7590"}
 {"category":"Mixed Usage","score":"7.9","maker":"samsung","year":2022,"series":"ls01b"}
 {"category":"TV Shows","score":"7.6","maker":"samsung","year":2022,"series":"ls01b"}
 {"category":"Sports","score":"7.7","maker":"samsung","year":2022,"series":"ls01b"}
@@ -215,20 +180,20 @@
 {"category":"HDR Movies","score":"7.7","maker":"samsung","year":2022,"series":"ls01b"}
 {"category":"HDR Gaming","score":"8.4","maker":"samsung","year":2022,"series":"ls01b"}
 {"category":"PC Monitor","score":"8.5","maker":"samsung","year":2022,"series":"ls01b"}
-{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"TV Shows","score":"6.9","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"Sports","score":"6.9","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"Video Games","score":"7.2","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"HDR Gaming","score":"7.4","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"PC Monitor","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"TV Shows","score":"7.8","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Sports","score":"7.9","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Video Games","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Movies","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"PC Monitor","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
+{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"TV Shows","score":"6.9","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"Sports","score":"6.9","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"Video Games","score":"7.2","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"HDR Gaming","score":"7.4","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"PC Monitor","score":"7.1","maker":"samsung","year":2023,"series":"qe1c"}
+{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"TV Shows","score":"7.8","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"Sports","score":"7.9","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"Video Games","score":"8.3","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"HDR Movies","score":"8.1","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2024,"series":"lst7d"}
+{"category":"PC Monitor","score":"8.3","maker":"samsung","year":2024,"series":"lst7d"}
 {"category":"Mixed Usage","score":"8.4","maker":"samsung","year":2024,"series":"qn90d"}
 {"category":"TV Shows","score":"8.2","maker":"samsung","year":2024,"series":"qn90d"}
 {"category":"Sports","score":"8.4","maker":"samsung","year":2024,"series":"qn90d"}
@@ -243,13 +208,13 @@
 {"category":"HDR Movies","score":"6.9","maker":"samsung","year":2023,"series":"q80c"}
 {"category":"HDR Gaming","score":"7.9","maker":"samsung","year":2023,"series":"q80c"}
 {"category":"PC Monitor","score":"8.6","maker":"samsung","year":2023,"series":"q80c"}
-{"category":"Mixed Usage","score":"8.2","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"TV Shows","score":"7.9","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"Sports","score":"8.2","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"Video Games","score":"8.7","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"HDR Movies","score":"8.0","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"HDR Gaming","score":"8.7","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"PC Monitor","score":"8.9","maker":"samsung","year":2023,"series":"qn800c"}
+{"category":"Mixed Usage","score":"8.2","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"TV Shows","score":"7.9","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"Sports","score":"8.2","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"Video Games","score":"8.7","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"HDR Movies","score":"8.0","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"HDR Gaming","score":"8.7","maker":"samsung","year":2023,"series":"qn900c"}
+{"category":"PC Monitor","score":"8.9","maker":"samsung","year":2023,"series":"qn900c"}
 {"category":"Mixed Usage","score":"7.9","maker":"samsung","year":2024,"series":"q80d"}
 {"category":"TV Shows","score":"7.4","maker":"samsung","year":2024,"series":"q80d"}
 {"category":"Sports","score":"7.4","maker":"samsung","year":2024,"series":"q80d"}
@@ -257,13 +222,13 @@
 {"category":"HDR Movies","score":"8.2","maker":"samsung","year":2024,"series":"q80d"}
 {"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2024,"series":"q80d"}
 {"category":"PC Monitor","score":"8.2","maker":"samsung","year":2024,"series":"q80d"}
-{"category":"Mixed Usage","score":"6.9","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"TV Shows","score":"7.3","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"Sports","score":"7.2","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"Video Games","score":"7.0","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"HDR Movies","score":"6.2","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"HDR Gaming","score":"7.0","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"PC Monitor","score":"7.7","maker":"samsung","year":2023,"series":"lst9c"}
+{"category":"Mixed Usage","score":"6.9","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"TV Shows","score":"7.3","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"Sports","score":"7.2","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"Video Games","score":"7.0","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"HDR Movies","score":"6.2","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"HDR Gaming","score":"7.0","maker":"samsung","year":2024,"series":"lst9d"}
+{"category":"PC Monitor","score":"7.7","maker":"samsung","year":2024,"series":"lst9d"}
 {"category":"Mixed Usage","score":"9.0","maker":"samsung","year":2023,"series":"s90c"}
 {"category":"TV Shows","score":"8.6","maker":"samsung","year":2023,"series":"s90c"}
 {"category":"Sports","score":"8.9","maker":"samsung","year":2023,"series":"s90c"}
@@ -271,13 +236,13 @@
 {"category":"HDR Movies","score":"8.9","maker":"samsung","year":2023,"series":"s90c"}
 {"category":"HDR Gaming","score":"9.3","maker":"samsung","year":2023,"series":"s90c"}
 {"category":"PC Monitor","score":"9.5","maker":"samsung","year":2023,"series":"s90c"}
-{"category":"Mixed Usage","score":"8.3","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"TV Shows","score":"7.9","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"Sports","score":"8.1","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"Video Games","score":"8.6","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"HDR Gaming","score":"8.6","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"PC Monitor","score":"8.8","maker":"samsung","year":2024,"series":"qn900d"}
+{"category":"Mixed Usage","score":"8.3","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"TV Shows","score":"7.9","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"Sports","score":"8.1","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"Video Games","score":"8.6","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"HDR Gaming","score":"8.6","maker":"samsung","year":2024,"series":"qn800d"}
+{"category":"PC Monitor","score":"8.8","maker":"samsung","year":2024,"series":"qn800d"}
 {"category":"Mixed Usage","score":"7.3","maker":"samsung","year":2024,"series":"q70d"}
 {"category":"TV Shows","score":"7.2","maker":"samsung","year":2024,"series":"q70d"}
 {"category":"Sports","score":"7.2","maker":"samsung","year":2024,"series":"q70d"}
@@ -299,20 +264,6 @@
 {"category":"HDR Movies","score":"8.9","maker":"samsung","year":2023,"series":"s95c"}
 {"category":"HDR Gaming","score":"9.2","maker":"samsung","year":2023,"series":"s95c"}
 {"category":"PC Monitor","score":"9.5","maker":"samsung","year":2023,"series":"s95c"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"TV Shows","score":"7.8","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Sports","score":"7.9","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Video Games","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Movies","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"PC Monitor","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Mixed Usage","score":"6.9","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"TV Shows","score":"7.3","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"Sports","score":"7.2","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"Video Games","score":"7.0","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"HDR Movies","score":"6.2","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"HDR Gaming","score":"7.0","maker":"samsung","year":2023,"series":"lst9c"}
-{"category":"PC Monitor","score":"7.7","maker":"samsung","year":2023,"series":"lst9c"}
 {"category":"Mixed Usage","score":"9.0","maker":"samsung","year":2024,"series":"s90d"}
 {"category":"TV Shows","score":"8.7","maker":"samsung","year":2024,"series":"s90d"}
 {"category":"Sports","score":"8.9","maker":"samsung","year":2024,"series":"s90d"}
@@ -320,55 +271,27 @@
 {"category":"HDR Movies","score":"9.0","maker":"samsung","year":2024,"series":"s90d"}
 {"category":"HDR Gaming","score":"9.3","maker":"samsung","year":2024,"series":"s90d"}
 {"category":"PC Monitor","score":"9.5","maker":"samsung","year":2024,"series":"s90d"}
-{"category":"Mixed Usage","score":"7.9","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"TV Shows","score":"7.7","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Sports","score":"7.8","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"HDR Movies","score":"7.6","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"HDR Gaming","score":"8.4","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"PC Monitor","score":"8.6","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"TV Shows","score":"7.5","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Sports","score":"7.6","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"HDR Gaming","score":"8.5","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"PC Monitor","score":"8.4","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Mixed Usage","score":"7.9","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"TV Shows","score":"7.7","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Sports","score":"7.8","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"HDR Movies","score":"7.6","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"HDR Gaming","score":"8.4","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"PC Monitor","score":"8.6","maker":"samsung","year":2024,"series":"ls03d"}
-{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"TV Shows","score":"6.9","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"Sports","score":"7.0","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"Video Games","score":"7.3","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"HDR Gaming","score":"7.6","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"PC Monitor","score":"7.3","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"TV Shows","score":"7.5","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Sports","score":"7.6","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"HDR Gaming","score":"8.5","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"PC Monitor","score":"8.4","maker":"samsung","year":2024,"series":"qnx1d"}
-{"category":"Mixed Usage","score":"8.3","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"TV Shows","score":"7.9","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"Sports","score":"8.1","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"Video Games","score":"8.6","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"HDR Gaming","score":"8.6","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"PC Monitor","score":"8.8","maker":"samsung","year":2024,"series":"qn900d"}
-{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"TV Shows","score":"6.9","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"Sports","score":"6.9","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"Video Games","score":"7.2","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"HDR Gaming","score":"7.4","maker":"samsung","year":2023,"series":"q60c"}
-{"category":"PC Monitor","score":"7.1","maker":"samsung","year":2023,"series":"q60c"}
+{"category":"Mixed Usage","score":"7.9","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"TV Shows","score":"7.7","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"Sports","score":"7.8","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"HDR Movies","score":"7.6","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"HDR Gaming","score":"8.4","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"PC Monitor","score":"8.6","maker":"samsung","year":2024,"series":"ls01d"}
+{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"TV Shows","score":"7.5","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"Sports","score":"7.6","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"Video Games","score":"8.4","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"HDR Movies","score":"8.3","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"HDR Gaming","score":"8.5","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"PC Monitor","score":"8.4","maker":"samsung","year":2024,"series":"qn85d"}
+{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"TV Shows","score":"6.9","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"Sports","score":"7.0","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"Video Games","score":"7.3","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"HDR Gaming","score":"7.6","maker":"samsung","year":2024,"series":"qe1d"}
+{"category":"PC Monitor","score":"7.3","maker":"samsung","year":2024,"series":"qe1d"}
 {"category":"Mixed Usage","score":"9.0","maker":"samsung","year":2024,"series":"s95d"}
 {"category":"TV Shows","score":"8.6","maker":"samsung","year":2024,"series":"s95d"}
 {"category":"Sports","score":"8.9","maker":"samsung","year":2024,"series":"s95d"}
@@ -376,13 +299,6 @@
 {"category":"HDR Movies","score":"8.9","maker":"samsung","year":2024,"series":"s95d"}
 {"category":"HDR Gaming","score":"9.2","maker":"samsung","year":2024,"series":"s95d"}
 {"category":"PC Monitor","score":"9.5","maker":"samsung","year":2024,"series":"s95d"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"TV Shows","score":"7.8","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Sports","score":"7.9","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Video Games","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Movies","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"PC Monitor","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
 {"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2023,"series":"qn85c"}
 {"category":"TV Shows","score":"7.9","maker":"samsung","year":2023,"series":"qn85c"}
 {"category":"Sports","score":"7.9","maker":"samsung","year":2023,"series":"qn85c"}
@@ -390,20 +306,6 @@
 {"category":"HDR Movies","score":"8.1","maker":"samsung","year":2023,"series":"qn85c"}
 {"category":"HDR Gaming","score":"8.4","maker":"samsung","year":2023,"series":"qn85c"}
 {"category":"PC Monitor","score":"8.7","maker":"samsung","year":2023,"series":"qn85c"}
-{"category":"Mixed Usage","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"TV Shows","score":"7.8","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Sports","score":"7.9","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Video Games","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Movies","score":"8.1","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"HDR Gaming","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"PC Monitor","score":"8.3","maker":"samsung","year":2021,"series":"lst9t"}
-{"category":"Mixed Usage","score":"7.1","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"TV Shows","score":"6.9","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"Sports","score":"7.0","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"Video Games","score":"7.3","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"HDR Movies","score":"7.1","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"HDR Gaming","score":"7.6","maker":"samsung","year":2024,"series":"q60d"}
-{"category":"PC Monitor","score":"7.3","maker":"samsung","year":2024,"series":"q60d"}
 {"category":"Mixed Usage","score":"8.3","maker":"samsung","year":2023,"series":"qn90c"}
 {"category":"TV Shows","score":"8.2","maker":"samsung","year":2023,"series":"qn90c"}
 {"category":"Sports","score":"8.3","maker":"samsung","year":2023,"series":"qn90c"}
@@ -411,13 +313,6 @@
 {"category":"HDR Movies","score":"8.2","maker":"samsung","year":2023,"series":"qn90c"}
 {"category":"HDR Gaming","score":"8.7","maker":"samsung","year":2023,"series":"qn90c"}
 {"category":"PC Monitor","score":"8.9","maker":"samsung","year":2023,"series":"qn90c"}
-{"category":"Mixed Usage","score":"8.2","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"TV Shows","score":"7.9","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"Sports","score":"8.2","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"Video Games","score":"8.7","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"HDR Movies","score":"8.0","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"HDR Gaming","score":"8.7","maker":"samsung","year":2023,"series":"qn800c"}
-{"category":"PC Monitor","score":"8.9","maker":"samsung","year":2023,"series":"qn800c"}
 {"category":"Mixed Usage","score":"7.3","maker":"samsung","year":2023,"series":"q70c"}
 {"category":"TV Shows","score":"7.0","maker":"samsung","year":2023,"series":"q70c"}
 {"category":"Sports","score":"7.2","maker":"samsung","year":2023,"series":"q70c"}
