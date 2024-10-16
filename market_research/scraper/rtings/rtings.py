@@ -102,6 +102,8 @@ class Rtings(Scraper, Rvisualizer):
 
             rows = []
             for score_type, score in score_dict.items():
+                if score_type.lower() == 'movies':
+                    continue
                 rows.append({'category': score_type, 'score': score})
             scores_df = pd.DataFrame(rows)           
             

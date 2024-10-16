@@ -5,8 +5,6 @@ import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
 from typing import Tuple
-# import requests
-
 
 
 class Rurlsearcher(Scraper):
