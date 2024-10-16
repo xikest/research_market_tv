@@ -32,20 +32,22 @@ class Rurlsearcher(Scraper):
         info_df = self._get_model_info_from_mkrt()
         info_df = info_df.reset_index(drop=True)
         failed_series = []
-        for idx, row in tqdm(info_df.iterrows()):
+        info_dict = {}
+        for _, row in tqdm(info_df.iterrows()):
+            maker = row['maker']
+            series = row['series']
+            year = row['year']
             try:
-                maker = row['maker']
-                series = row['series']
-                keyword = f"{maker} {series}"
-                url = self._search_and_extract_url(search_query=keyword)
-                info_df.at[idx, 'url'] = url
-                
+                url = self._search_and_extract_url(search_query=f"{maker} {series}")
+                info_dict[url] = {"maker":maker, 
+                                  "series":series, 
+                                  "year":year}               
             except:
                 failed_series.append(series)
                 continue
         if failed_series:
             print(f"failed_series: {failed_series}")
-        return info_df['url'].to_list(), info_df
+        return info_dict
 
     
     def get_urls_from_web(self, keywords: set = None) -> list:

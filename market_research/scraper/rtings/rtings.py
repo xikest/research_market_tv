@@ -24,38 +24,41 @@ class Rtings(Scraper, Rvisualizer):
         pass
         
         
-    def get_data(self, urls: list, info_df=None, export_excel=True):
-        def _add_info_columns(df, info_df_row):
-            return df.assign(
-                maker=info_df_row["maker"].iloc[0],
-                year=info_df_row["year"].iloc[0],
-                series=info_df_row["series"].iloc[0],
-            )
-        
-        def _process_url(url, info_df, data_getter):
+    def get_data(self, urls:any, export_excel=True):
+
+        def _process_url(url:str, info_dict:dict, data_getter):
+            def _add_info_columns(df, info_dict):
+                return df.assign(
+                    maker=info_dict.get("maker"),
+                    year=info_dict.get("year"),
+                    series=info_dict.get("series"),
+                )
             df = data_getter(url)
-            if info_df is not None and not info_df[info_df['url'] == url].empty:
-                info_df_row = info_df[info_df['url'] == url].iloc[:1]  # 첫 번째 행만 선택
-                df = _add_info_columns(df, info_df_row)
+            df = _add_info_columns(df, info_dict)
             return df
 
         scores_df = pd.DataFrame()
         measurement_df = pd.DataFrame()
         comments_df = pd.DataFrame()
         fail_url_list = []
-
-        for url in tqdm(urls):
+        
+        if isinstance(urls,list):
+            url_list = urls
+        elif isinstance(urls,dict):
+            url_list = list(urls.keys())
+             
+        for url in tqdm(url_list):
             try:
                 if self.verbose:
                     print(f"connecting to {url}")
                 
-                df = _process_url(url, info_df, self._get_score)
+                df = _process_url(url, urls.get(url), self._get_score)
                 scores_df = pd.concat([scores_df, df], axis=0)
 
-                df = _process_url(url, info_df, self._get_measurement_reuslts)
+                df = _process_url(url, urls.get(url), self._get_measurement_reuslts)
                 measurement_df = pd.concat([measurement_df, df], axis=0)
 
-                df = _process_url(url, info_df, self._get_comments)
+                df = _process_url(url, urls.get(url), self._get_comments)
                 comments_df = pd.concat([comments_df, df], axis=0)
 
             except Exception as e:
@@ -65,6 +68,10 @@ class Rtings(Scraper, Rvisualizer):
                     print(e)
                 continue
             
+        scores_df = scores_df.reset_index(drop=True)
+        measurement_df = measurement_df.reset_index(drop=True)
+        comments_df = comments_df.reset_index(drop=True)
+        
         if fail_url_list:
             print(f"failed URL: {fail_url_list}")
         
