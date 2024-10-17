@@ -137,7 +137,8 @@ class Rvisualizer(BaseVisualizer):
         measurement_selection_dict = self.get_measurement_selection()
         plot_unit = measurement_selection_dict.get(select_label, "")
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
-
+        years = sorted(df['year'].unique(), reverse=True)
+        
         # 서브플롯 생성
         if len(categories) <= div_group:
             rows_num = 1
@@ -189,8 +190,6 @@ class Rvisualizer(BaseVisualizer):
 
 
         # 연도 드롭다운 버튼 생성
-        years = sorted(df_cat['year'].unique(), reverse=True)
-        
         initial_year = years[0]
         
         for trace in fig.data:
