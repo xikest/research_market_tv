@@ -441,7 +441,7 @@ class Rvisualizer(BaseVisualizer):
                                 columns=['category', 'label'],
                                 values='result_value',
                                 aggfunc='first')
-
+        df_pivot = df_pivot.dropna(axis=1)
         scaler = StandardScaler()
         X_numeric_scaled = scaler.fit_transform(df_pivot)
 
