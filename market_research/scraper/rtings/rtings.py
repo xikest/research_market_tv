@@ -109,11 +109,9 @@ class Rtings(Scraper, Rvisualizer):
 
             rows = []
             for score_type, score in score_dict.items():
-                if score_type.lower() == 'movies':
-                    continue
                 rows.append({'category': score_type, 'score': score})
             scores_df = pd.DataFrame(rows)           
-            
+            scores_df['url'] = url
             return scores_df
         except Exception as e:
             if self.verbose:
@@ -173,7 +171,7 @@ class Rtings(Scraper, Rvisualizer):
             if self.verbose:
                 print("no comment")
             comments_df = pd.DataFrame([{'idx': 0, 'maker': maker, 'product': product, 'sentences': "No data"}]).set_index("idx")
-
+            comments_df['url'] = url
         return comments_df
 
 
@@ -236,5 +234,5 @@ class Rtings(Scraper, Rvisualizer):
         # results_df와 scores_header_df 병합
         results_df = pd.concat([results_df, scores_header_df], axis=1)
         results_df = results_df[["category", "header", "score", "label", "result_value"]]
-        # 결과 확인
+        results_df['url'] = url
         return results_df
