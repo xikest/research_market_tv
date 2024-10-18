@@ -22,7 +22,7 @@ class Rurlsearcher(Scraper):
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
             df = df[[ "year", "series"]]
-            df['maker'] = maker
+            df.loc[:, 'maker'] = maker
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
         return info_df
@@ -38,7 +38,10 @@ class Rurlsearcher(Scraper):
             series = row['series']
             year = row['year']
             try:
-                url = self._search_and_extract_url(search_query=f"{maker} {series}")
+                keywords = f"{maker} {series}"
+                url = self._search_and_extract_url(search_query=keywords)
+                if self._check_url_with_keywords(url, keywords) is None:
+                  raise ValueError
                 info_dict[url] = {"maker":maker, 
                                   "series":series, 
                                   "year":year}               
@@ -48,6 +51,24 @@ class Rurlsearcher(Scraper):
         if failed_series:
             print(f"failed_series: {failed_series}")
         return info_dict
+
+
+    def _check_url_with_keywords(self, url: str, keywords: list):
+        driver = self.web_driver.get_chrome()
+        driver.get(url)
+        try:
+          page_source = driver.page_source
+          soup = BeautifulSoup(page_source, 'html.parser')
+          if soup.title and soup.title.string:
+            title = soup.title.string.lower().replace("\u200b", "")
+            if all(keyword in title for keyword in keywords.split()):
+              return url 
+            else:
+              raise ValueError
+        except:
+          return None
+        finally:
+          driver.quit()
 
     
     def get_urls_from_web(self, keywords: set = None) -> list:
@@ -60,16 +81,6 @@ class Rurlsearcher(Scraper):
         return urls_list
     
 
-    def get_urls_from_inputpath(self, intput_folder_path: str) -> list:
-        self.set_data_path(intput_folder_path=intput_folder_path)
-
-        urls = []
-        file_list = self.intput_folder.glob('*')
-        excel_files = [file for file in file_list if file.suffix in {'.xlsx', '.xls'}]
-        for excel_file in excel_files:
-            df = pd.read_excel(excel_file)
-            urls.extend(df["urls"])
-        return urls
 
     def _search_and_extract_url(self, search_query: str, base_url="https://www.rtings.com"):
         driver = self.web_driver.get_chrome()
