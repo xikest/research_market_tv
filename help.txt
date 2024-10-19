@@ -1,9 +1,10 @@
 ## 실행하기
 nohup python3 -u get_models.py > get_models.log 2>&1
+python3  get_models.py
 
 
 #실행 중인 쉘 확인 아래는 bot 키워드
-ps -ef|grep bot
+ps -ef|grep app_get_models
 
 
 ## 설치 하기

@@ -16,7 +16,6 @@ class Scraper(ABC):
         output_folder_path="results"
         """
         self.webdriver_path:str
-        self.webdriver_path:str
         self.intput_folder:Path
         self.output_folder:Path
         self.output_xlsx_name = None
@@ -33,8 +32,8 @@ class Scraper(ABC):
         self.browser_path = "./chrome/chrome.exe"
 
         if current_os == "Linux":
-            self.webdriver_path = "/content/chromedriver/chromedriver"
-            self.browser_path = "/content/chrome/chrome"
+            self.webdriver_path = "./content/chromedriver/chromedriver"
+            self.browser_path = "./content/chrome/chrome"
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
         if intput_folder_path is not None:

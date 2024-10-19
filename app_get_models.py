@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
-from .firestoremanager import FirestoreManager
+from tools.db.firestoremanager import FirestoreManager
 
 def main():
     file_path = 'firestore-001.json'
     firestore_manager = FirestoreManager(file_path)
 
-    one_day = 24 * 60 * 60  # 86400초
+    one_day = 30*24 * 60 * 60  # 86400초
 
     while True:
 
