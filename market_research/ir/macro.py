@@ -4,9 +4,10 @@ from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 class MACRO:
     @staticmethod
-    def plot_economic_indicator(key:str):
+    def plot_economic_indicator(key: str):
         today = datetime.now()
         start_date = today.replace(year=today.year - 5)  # 5년 전부터 시작
         end_date = today
@@ -26,8 +27,24 @@ class MACRO:
 
         fig = go.Figure()
 
-        fig.add_trace(go.Bar(x=data_previous.index, y=data_previous.squeeze(), name='Previous Year', opacity=0.5, showlegend=False))
-        fig.add_trace(go.Bar(x=recent_data.index, y=recent_data.squeeze(), name='Current Year', showlegend=False))
+        # 전년 동기 데이터 그래프
+        fig.add_trace(go.Bar(
+            x=data_previous.index,
+            y=data_previous.squeeze(),
+            name='Previous Year',
+            opacity=0.5,
+            showlegend=False,
+            hovertemplate='%{y:.1f}<br>%{x|%Y-Q%q}' 
+        ))
+
+        # 현재 분기 데이터 그래프
+        fig.add_trace(go.Bar(
+            x=recent_data.index,
+            y=recent_data.squeeze(),
+            name='Current Year',
+            showlegend=False,
+            hovertemplate='%{x|%Y-Q%q}<br>Value: %{y:.2f}'  # 연도, 분기, 값 표시
+        ))
 
         # 그래프 레이아웃 설정
         fig.update_layout(
@@ -43,5 +60,9 @@ class MACRO:
             ticktext=[f'Q{((x.month-1)//3)+1}' for x in recent_data.index] + 
                       [f'Q{((x.month-1)//3)+1}' for x in data_previous.index],  # 분기 형식으로 텍스트 설정
         )
+
+        # Y축 로그 형식으로 설정
         fig.update_yaxes(type='log')
+
         return fig
+
