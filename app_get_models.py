@@ -1,11 +1,12 @@
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
 from tools.db.firestoremanager import FirestoreManager
 
 def main():
+    
     file_path = 'firestore-001.json'
     firestore_manager = FirestoreManager(file_path)
 

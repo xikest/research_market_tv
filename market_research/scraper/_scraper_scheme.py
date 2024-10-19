@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-import platform
 from pathlib import Path
 from datetime import date
 from tools.web import WebDriver
+from tools.web import Installer
 
 
 class Scraper(ABC):
@@ -27,13 +27,9 @@ class Scraper(ABC):
         self.wait_time = 1
 
     def _set_webdriver_paths(self):
-        current_os = platform.system()
-        self.webdriver_path = "./chromedriver/chromedriver.exe"
-        self.browser_path = "./chrome/chrome.exe"
-
-        if current_os == "Linux":
-            self.webdriver_path = "./content/chromedriver/chromedriver"
-            self.browser_path = "./content/chrome/chrome"
+        dict_path = Installer.install_chrome_and_driver()
+        self.webdriver_path = dict_path.get('driver_path')
+        self.browser_path = dict_path.get('chrome_path')
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
         if intput_folder_path is not None:

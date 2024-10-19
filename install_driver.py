@@ -63,8 +63,8 @@ class Installer:
 
         current_dir = os.path.abspath(os.getcwd())
         
-        return {"chrome_path": os.path.join(current_dir, "chrome"),
-                "driver_path": os.path.join(current_dir, "chromedriver")}
+        return {"chrome_path": os.path.join(current_dir, "chrome/chrome"),
+                "driver_path": os.path.join(current_dir, "chromedriver/chromedriver")}
 
 
 
@@ -117,9 +117,3 @@ class Installer:
         
         
 
-def main():
-    Installer.install_chrome_and_driver()
-
-
-if __name__ == '__main__':
-    main()
