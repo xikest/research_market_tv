@@ -6,10 +6,12 @@ from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir import Calendar
 from market_research.ir import SONY_IR
+from market_research.ir import MACRO
+
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -151,7 +153,7 @@ def display_indicators():
         data = loading_webdata(selected_maker)
         
         if selected_maker == "sony":
-            sub_tabs = st.tabs(["Specification","Header", "Calendar", "IR"])
+            sub_tabs = st.tabs(["Specification","Header", "Calendar", "IR", "Macro"])
         else:
             sub_tabs = st.tabs(["Specification"])
             
@@ -222,6 +224,49 @@ def display_indicators():
                             with col2_ir:
                                 display_html_table(ir_df_year_strategy, "Strategy")
 
+            with sub_tabs[4]:
+
+                    sub_tabs_height = 150
+                    fig = MACRO.plot_economic_indicator('RSEAS')
+                    fig.update_layout(
+                        width=500,
+                        height=sub_tabs_height,
+                        title='Advance Retail Sales: Electronics and Appliance Stores')
+
+                    st.plotly_chart(fig, use_container_width=True)
+                    fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
+                    fig.update_layout(
+                        width=500,
+                        height=sub_tabs_height,
+                        title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
+                    st.plotly_chart(fig, use_container_width=True)
+            
+                    
+                    fig = MACRO.plot_economic_indicator('CPIAUCSL')
+                    fig.update_layout(
+                        width=500,
+                        height=sub_tabs_height,
+                        title='CPI: for All Urban Consumers')
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    fig = MACRO.plot_economic_indicator('A35SNO')
+                    fig.update_layout(
+                        width=500,
+                        height=sub_tabs_height,
+                        title='New Orders: Electrical Equipment, Appliances and Components')
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    fig = MACRO.plot_economic_indicator('POILBREUSDM')
+                    fig.update_layout(
+                        width=500,
+                        height=sub_tabs_height,
+                        title='Global price of Brent Crude')
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+
+                    
+                    
+                    
     with col2:
         col2_plot_height = 800
         selected_multi_makers = st.multiselect(label="maker_label", options=makers, placeholder='Select Makers', 
