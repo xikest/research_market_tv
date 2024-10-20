@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import date
 from tools.web import WebDriver
 from tools.web import Installer
-
+import logging
         
 
 class Scraper(ABC):
@@ -21,18 +21,22 @@ class Scraper(ABC):
         self.intput_folder:Path
         self.output_folder:Path
         self.output_xlsx_name = None
-
         self._set_webdriver_paths(webdriver_path)
         self._initialize_data_paths(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
         self.web_driver = WebDriver(executable_path=self.webdriver_path, browser_path=self.browser_path, headless=enable_headless)
         self.wait_time = 1
 
-    def _set_webdriver_paths(self, webdriver_path: dict):
-        if webdriver_path.get('driver_path') is None or webdriver_path.get('chrome_path') is None:
-            webdriver_path = Installer.install_chrome_and_driver()
-        self.webdriver_path = webdriver_path.get('driver_path')
-        self.browser_path = webdriver_path.get('chrome_path')
 
+    def _set_webdriver_paths(self, webdriver_path: dict):
+        try:
+            if webdriver_path.get('driver_path') is None or webdriver_path.get('chrome_path') is None:
+                webdriver_path = Installer.install_chrome_and_driver()
+            self.webdriver_path = webdriver_path.get('driver_path')
+            self.browser_path = webdriver_path.get('chrome_path')
+            print(f"{self.webdriver_path}")
+            print(f"{self.browser_path}")
+        except Exception as e:
+            print(e)
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
         if intput_folder_path is not None:

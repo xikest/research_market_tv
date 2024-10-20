@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
-
+import logging
 
 class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
@@ -71,7 +71,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 df_models = pd.read_json('./json/s_scrape_model_data.json', orient='records', lines=True)
             print("operating demo")
         else:
-            print("collecting models")
+            logging.info("collecting")
+            # print("collecting models")
             url_dict = find_urls()
                 
             dict_models = extract_specs(url_dict)
@@ -108,6 +109,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         
                 return url_series
             except CustomException as e:
+                logging.error(f"{e}")
                 pass
             finally:
                 driver.quit()
