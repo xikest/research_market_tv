@@ -16,9 +16,7 @@ logging.basicConfig(level=logging.INFO)
 # firestore_manager = FirestoreManager(file_path)
 
 class ScraperResponse(BaseModel):
-    status: str
-    message: str
-    webdriver_path: dict  
+    data: dict  
 
 @app.post("/run", response_model=ScraperResponse)
 async def run_scraper():
@@ -47,9 +45,9 @@ async def run_scraper():
         # firestore_manager.save_dataframe(df, 'samsung')
 
         print(f"작업 완료: {datetime.now()}")
-        
 
-        return data_dict  # data_dict만 반환
+        return ScraperResponse(data =data_dict)  
+    
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
