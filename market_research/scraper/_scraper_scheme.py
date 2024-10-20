@@ -5,10 +5,11 @@ from datetime import date
 from tools.web import WebDriver
 from tools.web import Installer
 
+        
 
 class Scraper(ABC):
 
-    def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path = None, output_folder_path=None):
+    def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path = None, output_folder_path=None, webdriver_path:dict={"driver_path":None, "chrome_path":None}):
         """
         enable_headless=True,
         export_prefix:str="scaper",
@@ -16,20 +17,22 @@ class Scraper(ABC):
         output_folder_path="results"
         """
         self.webdriver_path:str
+        self.browser_path:str
         self.intput_folder:Path
         self.output_folder:Path
         self.output_xlsx_name = None
 
-        self._set_webdriver_paths()
+        self._set_webdriver_paths(webdriver_path)
         self._initialize_data_paths(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
-
         self.web_driver = WebDriver(executable_path=self.webdriver_path, browser_path=self.browser_path, headless=enable_headless)
         self.wait_time = 1
 
-    def _set_webdriver_paths(self):
-        dict_path = Installer.install_chrome_and_driver()
-        self.webdriver_path = dict_path.get('driver_path')
-        self.browser_path = dict_path.get('chrome_path')
+    def _set_webdriver_paths(self, webdriver_path: dict):
+        if webdriver_path.get('driver_path') is None or webdriver_path.get('chrome_path') is None:
+            webdriver_path = Installer.install_chrome_and_driver()
+        self.webdriver_path = webdriver_path.get('driver_path')
+        self.browser_path = webdriver_path.get('chrome_path')
+
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
         if intput_folder_path is not None:
