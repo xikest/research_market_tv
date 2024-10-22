@@ -4,9 +4,10 @@ from pydantic import BaseModel
 from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
+from tools.db.firestoremanager import FirestoreManager
 import os
 import logging
-from tools.db.firestoremanager import FirestoreManager
+
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +16,6 @@ class SecretResponse(BaseModel):
     secret: str
 
 class ScraperRequest(BaseModel):
-    # 요청에 필요한 필드 정의 (예: 필터, 옵션 등)
     pass
 
 @app.get("/get-secret", response_model=SecretResponse)
@@ -55,7 +55,7 @@ async def run_scraper(scraper_request: ScraperRequest):
         
         logging.info(f"작업 완료: {datetime.now()}")
         return {"status": "ok"}  
-    
+
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
