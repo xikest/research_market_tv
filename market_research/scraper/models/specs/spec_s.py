@@ -13,9 +13,9 @@ import logging
 class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 verbose: bool = False, wait_time=1, demo_mode:bool=False, webdriver_path:dict={"driver_path":None, "chrome_path":None}):
+                 verbose: bool = False, wait_time=1, demo_mode:bool=False):
 
-        Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path, webdriver_path)
+        Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
 
         self.tracking_log = verbose
         self.wait_time = wait_time

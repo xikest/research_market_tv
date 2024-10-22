@@ -6,56 +6,60 @@ from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
 import os
 import logging
-# from tools.db.firestoremanager import FirestoreManager
-
+from tools.db.firestoremanager import FirestoreManager
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-# file_path = 'firestore-001.json'
-# firestore_manager = FirestoreManager(file_path)
+class SecretResponse(BaseModel):
+    secret: str
 
-class ScraperResponse(BaseModel):
-    status: str
-    message: str
-    webdriver_path: dict  
+class ScraperRequest(BaseModel):
+    # 요청에 필요한 필드 정의 (예: 필터, 옵션 등)
+    pass
 
-@app.post("/run", response_model=ScraperResponse)
-async def run_scraper():
-    webdriver_path = {"driver_path": '/usr/local/bin/chromedriver',
-                      "chrome_path": '/usr/bin/google-chrome'}
+@app.get("/get-secret", response_model=SecretResponse)
+async def get_secret():
+    try:
+        secret_file_path = "/keys/firestore"
+
+        if os.path.exists(secret_file_path):
+            with open(secret_file_path, 'r') as secret_file:
+                firestore_secret = secret_file.read().strip()
+                return {"key": firestore_secret}
+        else:
+            raise HTTPException(status_code=404, detail="Secret file not found!")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/run")
+async def run_scraper(scraper_request: ScraperRequest):
+    firestore = await get_secret()
+    firestore_manager = FirestoreManager(firestore.key)
 
     try:
-        # Sony 데이터 수집
-        data_dict= dict()
-        scraper_s = Specscraper_s(webdriver_path=webdriver_path)
+        scraper_s = Specscraper_s()
         df_sony = scraper_s.data.set_index('model')
-        data_dict['sony'] = df_sony.to_dict(orient='records')  # DataFrame을 dict 형태로 변환하여 저장
-        # firestore_manager.save_dataframe(df, 'sony')
+        firestore_manager.save_dataframe(df_sony, 'sony')
+        logging.info("sony finish")
         
-        # LG 데이터 수집
-        scraper_l = Specscraper_l(webdriver_path=webdriver_path)
+        scraper_l = Specscraper_l()
         df_lg = scraper_l.data.set_index('model')
-        data_dict['lg'] = df_lg.to_dict(orient='records')  # DataFrame을 dict 형태로 변환하여 저장
-    
-        # firestore_manager.save_dataframe(df, 'lg')
+        firestore_manager.save_dataframe(df_lg, 'lg')
+        logging.info("lg finish")
         
-        # Samsung 데이터 수집
-        scraper_se = Specscraper_se(webdriver_path=webdriver_path)
+        scraper_se = Specscraper_se()
         df_samsung = scraper_se.data.set_index('model')
-        data_dict['samsung'] = df_samsung.to_dict(orient='records')  # DataFrame을 dict 형태로 변환하여 저장
-        # firestore_manager.save_dataframe(df, 'samsung')
-
-        print(f"작업 완료: {datetime.now()}")
+        firestore_manager.save_dataframe(df_samsung, 'samsung')
+        logging.info("samsung finish")
         
-
-        return data_dict  # data_dict만 반환
+        logging.info(f"작업 완료: {datetime.now()}")
+        return {"status": "ok"}  
+    
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
+        logging.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import os
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
