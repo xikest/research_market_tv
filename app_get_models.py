@@ -58,7 +58,3 @@ async def run_scraper(scraper_request: ScraperRequest):
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080)) 
-    uvicorn.run(app, host="0.0.0.0", port=port)
