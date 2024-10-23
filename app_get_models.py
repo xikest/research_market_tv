@@ -34,23 +34,23 @@ async def get_secret():
 
 @app.post("/run")
 async def run_scraper(scraper_request: ScraperRequest):
-    firestore = await get_secret()
-    firestore_manager = FirestoreManager(firestore.key)
+    # firestore = await get_secret()
+    # firestore_manager = FirestoreManager(firestore.key)
 
     try:
         scraper_s = Specscraper_s()
         df_sony = scraper_s.data.set_index('model')
-        firestore_manager.save_dataframe(df_sony, 'sony')
+        # firestore_manager.save_dataframe(df_sony, 'sony')
         logging.info("sony finish")
         
         scraper_l = Specscraper_l()
         df_lg = scraper_l.data.set_index('model')
-        firestore_manager.save_dataframe(df_lg, 'lg')
+        # firestore_manager.save_dataframe(df_lg, 'lg')
         logging.info("lg finish")
         
         scraper_se = Specscraper_se()
         df_samsung = scraper_se.data.set_index('model')
-        firestore_manager.save_dataframe(df_samsung, 'samsung')
+        # firestore_manager.save_dataframe(df_samsung, 'samsung')
         logging.info("samsung finish")
         
         logging.info(f"작업 완료: {datetime.now()}")
@@ -62,4 +62,4 @@ async def run_scraper(scraper_request: ScraperRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    uvicorn.run(app, port=8080)
