@@ -7,7 +7,7 @@ from market_research.scraper import Specscraper_se
 from tools.db.firestoremanager import FirestoreManager
 import os
 import logging
-
+import uvicorn
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -61,5 +61,5 @@ async def run_scraper(scraper_request: ScraperRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, port=8080)
+    port = int(os.getenv("PORT", 8080)) 
+    uvicorn.run(app, host="0.0.0.0", port=port)
