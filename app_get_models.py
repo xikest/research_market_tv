@@ -34,24 +34,23 @@ async def get_secret():
 
 @app.post("/run")
 async def run_scraper(scraper_request: ScraperRequest):
-    # firestore = await get_secret()
-    # firestore_manager = FirestoreManager(firestore.key)
-
+    firestore = await get_secret()
+    firestore_manager = FirestoreManager(firestore.key)
+    data_dict = {}
     try:
         scraper_s = Specscraper_s()
-        df_sony = scraper_s.data.set_index('model')
-        # firestore_manager.save_dataframe(df_sony, 'sony')
+        data_dict['sony'] = scraper_s.data.set_index('model')
         logging.info("sony finish")
         
         scraper_l = Specscraper_l()
-        df_lg = scraper_l.data.set_index('model')
-        # firestore_manager.save_dataframe(df_lg, 'lg')
+        data_dict['lg']  = scraper_l.data.set_index('model')
         logging.info("lg finish")
         
         scraper_se = Specscraper_se()
-        df_samsung = scraper_se.data.set_index('model')
-        # firestore_manager.save_dataframe(df_samsung, 'samsung')
+        data_dict['samsung'] = scraper_se.data.set_index('model')
         logging.info("samsung finish")
+        
+        firestore_manager.save_dataframe(data_dict, 'tv_maker_web_data')
         
         logging.info(f"작업 완료: {datetime.now()}")
         return {"status": "ok"}  
