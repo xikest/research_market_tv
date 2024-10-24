@@ -60,7 +60,7 @@ def loading_webdata(selected_maker:str):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%233F51B5&color=%234285F4',
+        "sony": f'https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&showTz=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%233F51B5&color=%234285F4',
         "lg": None,
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
