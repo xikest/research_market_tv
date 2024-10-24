@@ -18,24 +18,9 @@ class SecretResponse(BaseModel):
 class ScraperRequest(BaseModel):
     pass
 
-@app.get("/get-secret", response_model=SecretResponse)
-async def get_secret():
-    try:
-        secret_file_path = "/keys/firestore"
-
-        if os.path.exists(secret_file_path):
-            with open(secret_file_path, 'r') as secret_file:
-                firestore_secret = secret_file.read().strip()
-                return {"key": firestore_secret}
-        else:
-            raise HTTPException(status_code=404, detail="Secret file not found!")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/run")
 async def run_scraper(scraper_request: ScraperRequest):
-    firestore = await get_secret()
-    firestore_manager = FirestoreManager(firestore.key)
+    firestore_manager = FirestoreManager()
     data_dict = {}
     try:
         scraper_s = Specscraper_s()
