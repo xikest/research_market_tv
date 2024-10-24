@@ -20,6 +20,7 @@ class ScraperRequest(BaseModel):
 async def run_scraper(scraper_request: ScraperRequest):
     firestore_manager = FirestoreManager()
     data_dict = {}
+    logging.info("start scraping")
     try:
         scraper_s = Specscraper_s()
         data_dict['sony'] = scraper_s.data.set_index('model')
