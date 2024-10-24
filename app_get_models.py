@@ -5,9 +5,7 @@ from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
 from tools.db.firestoremanager import FirestoreManager
-import os
 import logging
-import uvicorn
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
