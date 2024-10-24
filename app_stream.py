@@ -60,7 +60,7 @@ def loading_webdata(selected_maker:str):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?src=0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc%40group.calendar.google.com&ctz=Asia%2FSeoul',
+        "sony": f'https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%233F51B5&color=%234285F4',
         "lg": None,
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
@@ -178,6 +178,8 @@ def display_indicators():
                 calendar_url = loading_calendar(selected_maker)
                 if calendar_url is not None:
                     st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
+                    
+                    
                 else:
                     st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
 
