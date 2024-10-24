@@ -137,14 +137,14 @@ def display_indicators():
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️")
         
-    for _ in range(3):
-        st.sidebar.write("")
+    # for _ in range(3):
+    #     st.sidebar.write("")
         
-    calendar_url = loading_calendar(selected_maker)
-    if calendar_url is not None:
-        st.sidebar.markdown(f'<iframe src="{calendar_url}" width="300" height="300" frameborder="0"></iframe>', unsafe_allow_html=True)
-    else:
-        st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
+    # calendar_url = loading_calendar(selected_maker)
+    # if calendar_url is not None:
+    #     st.sidebar.markdown(f'<iframe src="{calendar_url}" width="300" height="300" frameborder="0"></iframe>', unsafe_allow_html=True)
+    # else:
+    #     st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
  
     col1, _, col2 = st.columns([3,0.2,6.8])
     with col1:
@@ -175,14 +175,22 @@ def display_indicators():
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
             with sub_tabs[2]:
-                    fig = Calendar('AIzaSyD7NPJmSa47mojWeG10llV8odoBsTSHSrA',
-                                   '0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc@group.calendar.google.com').create_events_calendar(return_fig=True)
-                    fig.update_layout(
-                        width=500,
-                        height=col1_plot_height,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
+                calendar_url = loading_calendar(selected_maker)
+                if calendar_url is not None:
+                    st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
+                else:
+                    st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
+
+                                
+                
+                    # fig = Calendar('AIzaSyD7NPJmSa47mojWeG10llV8odoBsTSHSrA',
+                    #                '0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc@group.calendar.google.com').create_events_calendar(return_fig=True)
+                    # fig.update_layout(
+                    #     width=500,
+                    #     height=col1_plot_height,
+                    #     title='',
+                    #     margin=dict(t=20, b=0))
+                    # st.plotly_chart(fig, use_container_width=True)
                      
             with sub_tabs[3]:
                 with st.container(): 
