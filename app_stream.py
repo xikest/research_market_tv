@@ -153,7 +153,7 @@ def display_indicators():
         data = loading_webdata(selected_maker)
         
         if selected_maker == "sony":
-            sub_tabs = st.tabs(["Specification","Header", "Calendar", "IR", "Macro"])
+            sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
         else:
             sub_tabs = st.tabs(["Specification"])
             
