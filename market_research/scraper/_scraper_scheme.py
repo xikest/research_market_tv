@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import date
 from tools.web import WebDriver
 import logging
-        
+import os
 
 class Scraper(ABC):
 
@@ -18,19 +18,9 @@ class Scraper(ABC):
         self.intput_folder:Path
         self.output_folder:Path
         self.output_xlsx_name = None
-        self._set_webdriver_paths()
         self._initialize_data_paths(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
         self.web_driver = WebDriver(headless=enable_headless)
         self.wait_time = 1
-
-
-    def _set_webdriver_paths(self):
-        try:
-
-            print(f"{self.webdriver_path}")
-            print(f"{self.browser_path}")
-        except Exception as e:
-            print(e)
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
         if intput_folder_path is not None:
@@ -46,7 +36,10 @@ class Scraper(ABC):
                 self.output_xlsx_name = self.output_folder /  f"{export_prefix}{date.today().strftime('%Y-%m-%d')}.xlsx"
             else:
                 self.output_xlsx_name = self.output_folder / f"{date.today().strftime('%Y-%m-%d')}.xlsx"
-   
+            logging.info("initialized web driver")
+            
+            
+            
     @property
     def data(self):
         return self._data

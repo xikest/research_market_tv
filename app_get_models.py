@@ -16,7 +16,7 @@ class SecretResponse(BaseModel):
 class ScraperRequest(BaseModel):
     pass
 
-@app.post("/run")
+@app.post("/run_mkretv")
 async def run_scraper(scraper_request: ScraperRequest):
     firestore_manager = FirestoreManager()
     data_dict = {}

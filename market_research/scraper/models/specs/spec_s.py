@@ -13,27 +13,12 @@ import logging
 class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 verbose: bool = False, wait_time=1, demo_mode:bool=False):
-
+                 wait_time=1):
         Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
-
-        self.tracking_log = verbose
         self.wait_time = wait_time
-        self.file_manager = FileManager
-        self.log_dir = "logs/sony/models"
-        if self.tracking_log:
-            FileManager.delete_dir(self.log_dir)
-            FileManager.make_dir(self.log_dir)
-            
-        self._data = self._fetch_model_data(demo_mode=demo_mode)    
-        DataVisualizer.__init__(self, df = self._data, maker='sony')
         pass
     
-    @property
-    def data(self):
-        return self._data
-    
-    def _fetch_model_data(self, demo_mode:bool=False) -> pd.DataFrame:
+    def fetch_model_data(self) -> pd.DataFrame:
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
@@ -41,7 +26,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 url_models_set = self._extract_models_from_series(url=url)
                 url_set.update(url_models_set)
             url_dict = {idx: url for idx, url in enumerate(url_set)}
-            print("total model:", len(url_dict))
+            logging.info(f"Total model: {len(url_dict)}")
             return url_dict
         
         def extract_specs(url_dict):
@@ -63,20 +48,11 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         
-        if demo_mode:
-            # Load existing JSON data
-            try: 
-                df_models = pd.read_json('https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json', orient='records', lines=True)
-            except:
-                df_models = pd.read_json('./json/s_scrape_model_data.json', orient='records', lines=True)
-            print("operating demo")
-        else:
-            logging.info("collecting")
-            # print("collecting models")
-            url_dict = find_urls()
-                
-            dict_models = extract_specs(url_dict)
-            df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
+        
+        logging.info("start collecting data")
+        url_dict = find_urls()
+        dict_models = extract_specs(url_dict)
+        df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
         return df_models
@@ -84,15 +60,13 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     @Scraper.try_loop(2)
     def _get_series_urls(self) -> set:
         def find_series_urls(url:str, prefix:str) -> set:
-            CustomException(message=f"error_find_series_urls: {url}")
+            logging.info(f"Starting to scrape series URLs from: {url}")
             url_series = set()
             url = url
             prefix = prefix
             step = 200
             try:
-                driver = self.web_driver.get_chrome()
-                driver.get(url=url)
-                time.sleep(self.wait_time)
+                driver = self.set_driver(url)
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
 
@@ -106,18 +80,16 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         driver.execute_script(f"window.scrollBy(0, {step});")
                         time.sleep(self.wait_time)
                         scroll_distance += step
-                        
                 return url_series
-            except CustomException as e:
+            except Exception as e:
                 logging.error(f"{e}")
                 pass
             finally:
-                driver.quit()
-                
-                            
+                driver.quit()                  
         url_series = find_series_urls(url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
-        print("The website scan has been completed.")
-        print(f"total series: {len(url_series)}")
+        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        for i, url in enumerate(url_series, start=1):
+            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
         return url_series
     
     @Scraper.try_loop(2)
@@ -126,27 +98,24 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         def extract_model_url(driver)->set:
             url_models_set= set()
             try: 
-                elements = driver.find_element(By.CLASS_NAME,
+                element = driver.find_element(By.CLASS_NAME,
                                                'custom-variant-selector__body')
+                url_elements = element.find_elements(By.TAG_NAME, 'a')
+                for url_element in url_elements:
+                    url = url_element.get_attribute('href')
+                    url_models_set.add(url.strip())
+
+                return url_models_set
             except:
-                pass
-
-            url_elements = elements.find_elements(By.TAG_NAME, 'a')
-            
-            for url_element in url_elements:
-                url = url_element.get_attribute('href')
-                url_models_set.add(url.strip())
-
-            return url_models_set
+                logging.error("error extract_models_from_series")
+                return None
         
         url_models_set = set()
-        CustomException(message=f"error_extract_models_from_series: {url}")
         try:
-            driver = self.web_driver.get_chrome()
-            driver.get(url=url)
-            time.sleep(self.wait_time)
+            driver = self.set_driver(url)
             url_models_set = extract_model_url(driver)
         except CustomException as e:
+            logging.error(f"error_extract_models_from_series: {url}")
             pass
         finally:
             driver.quit()
@@ -201,28 +170,40 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     prices_dict['price_gap'] = float('nan')
             return prices_dict
         
+        def extract_info_from_model(model: str)->dict:
+            dict_info = {}
+            model = model.lower()
+            dict_info["model"] = model
+            dict_info["year"] = model.split("-")[1][-1]
+            dict_info["series"] = model.split("-")[1][2:]
+            dict_info["size"] = model.split("-")[1][:2]
+            dict_info["grade"] = model.split("-")[0]
+                
+            year_mapping = {
+                'l': "2023",
+                'k': "2022",
+                'j': "2021",
+            }
+
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), "2024")
+
+            return dict_info
         
         dict_info = {}
-        CustomException(message=f"error_extract_model_details: {url}")
-        if self.tracking_log: print(" Connecting to", url)
-            
+
+        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
         try:
-            driver = self.web_driver.get_chrome()
-            driver.get(url)
-            time.sleep(self.wait_time)
-            
+            driver = self.set_driver(url)
             
             # Extract model
             dict_info.update(extract_model(driver))
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
-            dict_info.update(ModelScraper_s.extract_info_from_model(dict_info.get("model")))
-            
-            if self.tracking_log:
-                self._dir_model = f"{self.log_dir}/{dict_info['model']}"
-                self.file_manager.make_dir(self._dir_model)
+            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            logging.info(dict_info)
             return dict_info
         except CustomException as e:
+            logging.error(f"error_extract_model_details: {url}")
             pass
         finally:
             driver.quit()
@@ -230,24 +211,20 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     
     @Scraper.try_loop(5)
     def _extract_global_specs(self, url: str) -> dict:
-        def set_driver(url):
-            driver = self.web_driver.get_chrome()
-            driver.get(url=url)
-            time.sleep(self.wait_time)
-            return driver
         
         def find_emphasize_text(driver) -> None:
             time.sleep(self.wait_time)
             see_more_features = False
             for i in range(10):
                 try:
+                    self.remove_popup(driver)
                     see_more_features = driver.find_element(By.CLASS_NAME, 'see_more_features_button.container')
-                except:
-                    if self.tracking_log:
-                        driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_fine_text_{i}_{stamp_today}.png")
+                except:               
+                    if i == 9:
+                        logging.error("error find_emphasize_text")
                     ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
                     pass
-                
+
             self.web_driver.move_element_to_center(see_more_features)
             see_more_features.click()
             time.sleep(self.wait_time)
@@ -306,8 +283,6 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             def find_element_spec(driver) -> None:
                 element_spec = driver.find_element(By.XPATH, '//*[@id="PDPSpecificationsLink"]')
                 self.web_driver.move_element_to_center(element_spec)
-                if self.tracking_log:
-                    driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_1_move_to_spec_{stamp_today}.png")
                 time.sleep(self.wait_time)
                 return None
                 
@@ -317,40 +292,28 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 time.sleep(self.wait_time)
                 return None
             
-            def remove_popup(driver) -> None:
-                for _ in range(5):
-                    try:
-                        # 팝업 닫기 버튼을 기다렸다가 클릭
-                        close_button = driver.find_element(By.XPATH, '//*[@id="contentfulModalClose"]')
-                        close_button.click()
-                        break
-                    except Exception as e:
-                        pass
-                return None 
-
             def act_click_see_more(driver):
+                self.remove_popup(driver)
                 try:
                     element_see_more = driver.find_element(By.XPATH,'//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[3]/button')
                     self.web_driver.move_element_to_center(element_see_more)
                     element_see_more.click()
-                except:
+                    logging.debug("Clicked the 'see more' button from the first locator.")
+                except Exception as e:
+                    logging.error(f"Cannot find the 'see more' button from the first locator: {e}")
                     try:
                         element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
                         self.web_driver.move_element_to_center(element_see_more)
                         element_see_more.click()
-                    except:
-                        if self.tracking_log:
-                            print("Cannot find the 'see more' button on the page")
+                        logging.debug("Clicked the 'see more' button from the second locator.")
+                    except Exception as e:
+                        logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
                 time.sleep(self.wait_time)
                 return None
             
             find_element_spec(driver)
             find_click_spec(driver)
-            if self.tracking_log: driver.save_screenshot( f"./{self._dir_model}/{stamp_url}_2_after_click_specification_{stamp_today}.png")
-            remove_popup(driver)
-            act_click_see_more(driver)    
-            if self.tracking_log:driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_3_after_click_see_more_{stamp_today}.png")
-            
+            act_click_see_more(driver)                
             return None
             
         def extract_specs_detail(driver) -> dict:
@@ -362,11 +325,12 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     h4_tag = soup.find('h4').text.strip()
                     p_tag = soup.find('p').text.strip()
                 except :
+                    logging.warning("First level parsing error, attempting with empty 'p' tag")
                     try:
                         h4_tag = soup.find('h4').text.strip()
                         p_tag = ""
                     except Exception as e:
-                        print("Parser error", e)
+                        logging.error("Parser error", exc_info=e)
                         h4_tag = "Parser error"
                         p_tag = "Parser error"
                 return h4_tag, p_tag
@@ -383,61 +347,54 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         asterisk_count = label.count('*')
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
+                    logging.info(f"[{label}] {content}")
                 ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
             return dict_spec
         
         dict_spec = {}
-        CustomException(message=f"error_extract_global_specs: {url}")
-        
+
         try:
-            driver = set_driver(url)
+            driver = self.set_driver(url)
             find_emphasize_text(driver)   
             dict_spec.update(extract_emphasize_text(driver))
 
-        except CustomException as e:
-            if self.tracking_log:
-                print(f"Failed to get header text from {url}.")
+        except Exception as e:
+            logging.error(f"Failed to get header text from {url}.")
             pass
         finally:
             driver.quit()
             
         try:
-            driver = set_driver(url)
-            if self.tracking_log:
-                stamp_today = self.file_manager.get_datetime_info(include_time=False)
-                stamp_url = self.file_manager.get_name_from_url(url)
-                driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_0_model_{stamp_today}.png")
-                
+            driver = self.set_driver(url)  
             find_spec_tab(driver)   
             dict_spec.update(extract_specs_detail(driver))
-            
-            if self.tracking_log:
-                driver.save_screenshot(f"./{self._dir_model}/{stamp_url}_4_end_{stamp_today}.png")
-                print(f"Received information from {url}")
+            logging.info(f"Received information from {url}")
         except CustomException as e:
             pass
         finally:
             driver.quit()
             
         return dict_spec
+        
+    
+    def remove_popup(self, driver) -> None:
+        for _ in range(5):
+            try:
+                # 팝업 닫기 버튼을 기다렸다가 클릭
+                close_button = driver.find_element(By.XPATH, '//*[@id="contentfulModalClose"]')
+                close_button.click()
+                break
+            except Exception as e:
+                pass
+        return None 
+    
+    
+    def set_driver(self, url):
+        driver = self.web_driver.get_chrome()
+        driver.get(url=url)
+        time.sleep(self.wait_time)
+        self.remove_popup(driver)
+        return driver
+        
             
-    @staticmethod         
-    def extract_info_from_model(model: str)->dict:
-        dict_info = {}
-        model = model.lower()
-        dict_info["model"] = model
-        dict_info["year"] = model.split("-")[1][-1]
-        dict_info["series"] = model.split("-")[1][2:]
-        dict_info["size"] = model.split("-")[1][:2]
-        dict_info["grade"] = model.split("-")[0]
-            
-        year_mapping = {
-            'l': "2023",
-            'k': "2022",
-            'j': "2021",
-        }
-
-        dict_info["year"] = year_mapping.get(dict_info.get("year"), "2024")
-
-        return dict_info

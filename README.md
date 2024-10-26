@@ -1,3 +1,5 @@
+![Python version](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11-blue)
+
 이 프로젝트는 웹사이트에서 제품 모델 사양을 가져오고 분석하는 기능을 제공합니다.
 
 ## 데모 사이트
@@ -28,10 +30,6 @@ pip install -U mkt-retv
 
 다음 코드로 필요한 패키지 및 도구를 설치 합니다.
 
-```python
-from market_research.tools.installer import Installer
-Installer.install_chrome_and_driver()
-```
 
 ## 라이선스
 이 프로젝트는 MIT 라이선스를 따릅니다.
