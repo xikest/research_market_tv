@@ -28,7 +28,7 @@ async def run_scraper(scraper_request: ScraperRequest):
         logging.info("sony finish")
         
         scraper_l = Specscraper_l()
-        df = scraper_l.data.fetch_model_data()
+        df = scraper_l.fetch_model_data()
         data_dict['lg'] = df.set_index('model')
         logging.info("lg finish")
         
