@@ -38,11 +38,6 @@ class Scraper(ABC):
                 self.output_xlsx_name = self.output_folder / f"{date.today().strftime('%Y-%m-%d')}.xlsx"
             logging.info("initialized web driver")
             
-            
-            
-    @property
-    def data(self):
-        return self._data
               
     @staticmethod
     def try_loop(try_total):
