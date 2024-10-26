@@ -62,7 +62,7 @@ class Scraper(ABC):
 class Modeler(ABC):
 
     @abstractmethod
-    def _fetch_model_data(self, demo_mode: bool = False) -> pd.DataFrame:
+    def fetch_model_data(self, demo_mode: bool = False) -> pd.DataFrame:
         """
         Collect model information from URLs and return the data in the desired format.
         """

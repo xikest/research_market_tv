@@ -23,15 +23,18 @@ async def run_scraper(scraper_request: ScraperRequest):
     logging.info("start scraping")
     try:
         scraper_s = Specscraper_s()
-        data_dict['sony'] = scraper_s.data.set_index('model')
+        df = scraper_s.fetch_model_data()
+        data_dict['sony'] = df.set_index('model')
         logging.info("sony finish")
         
         scraper_l = Specscraper_l()
-        data_dict['lg']  = scraper_l.data.set_index('model')
+        df = scraper_l.data.fetch_model_data()
+        data_dict['lg'] = df.set_index('model')
         logging.info("lg finish")
         
         scraper_se = Specscraper_se()
-        data_dict['samsung'] = scraper_se.data.set_index('model')
+        df = scraper_se.fetch_model_data()
+        data_dict['samsung'] = df.set_index('model')
         logging.info("samsung finish")
         
         firestore_manager.save_dataframe(data_dict, 'tv_maker_web_data')
