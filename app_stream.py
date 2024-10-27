@@ -100,8 +100,8 @@ def loading_plot_financials_with_margin():
 @st.cache_data
 def display_html_table(df: pd.DataFrame, title: str):
     if not df.empty:
-        df = df[['quarter', 'url']]
-        df.loc[:,'url'] = df.loc[:,'url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
+        df = df[['Description', 'URL']]
+        df.loc[:,'URL'] = df.loc[:,'URL'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
         st.subheader(title)
         st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
     else:
@@ -220,15 +220,17 @@ def display_indicators():
                             ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
                             ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
                             ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-                            
+                            ir_df_year_bs = ir_df_year[ir_df_year['category'] == "Segment"]
                             with sub_tabs_irs[i]:
-                                col1_ir, col2_ir = st.columns(2)
+                                col1_ir, col2_ir, col3_ir = st.columns(3)
                                 with col1_ir:
                                     display_html_table(ir_df_year_earning, "Earning")
 
                                 with col2_ir:
                                     display_html_table(ir_df_year_strategy, "Strategy")
-
+                                with col3_ir:
+                                    display_html_table(ir_df_year_bs, "Segment")
+                                    
                 with sub_tabs[4]:
 
                         sub_tabs_height = 150
