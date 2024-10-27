@@ -11,7 +11,7 @@ from market_research.ir import MACRO
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -132,230 +132,223 @@ def display_indicators():
         mime='application/vnd.ms-excel',
         use_container_width=True)
     
+    st.sidebar.write("")   
+    options = ["Web", "Multi", "Data"]
+    selected_value = st.sidebar.select_slider(
+        "Select your Focus:",
+        options=options,
+        value="Multi"  # 기본값 설정
+    )
+    
+    st.sidebar.write("")    
     st.sidebar.write("Updated: 1st Oct.")
     with st.sidebar.expander("Hi 😎", expanded=False):
         st.subheader("Like this project? ")
-        st.subheader("Buy me a coffee!☕️")
+        st.subheader("Buy me a coffee!☕️") 
         
-    # for _ in range(3):
-    #     st.sidebar.write("")
+    if selected_value == options[0]:
+        col1 = st.columns(1)[0]
+    elif selected_value == options[2]:
+        col2 = st.columns(1)[0]
+    else:
+        col1, _, col2 = st.columns([3,0.2,6.8])
         
-    # calendar_url = loading_calendar(selected_maker)
-    # if calendar_url is not None:
-    #     st.sidebar.markdown(f'<iframe src="{calendar_url}" width="300" height="300" frameborder="0"></iframe>', unsafe_allow_html=True)
-    # else:
-    #     st.sidebar.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
- 
-    col1, _, col2 = st.columns([3,0.2,6.8])
-    with col1:
-        col1_plot_height = 800
-        st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
-        data = loading_webdata(selected_maker)
-        
-        if selected_maker == "sony":
-            sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
-        else:
-            sub_tabs = st.tabs(["Specification"])
+    if selected_value == options[1] or selected_value == options[0] :
+        with col1:
+            col1_plot_height = 800
+            st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
+            data = loading_webdata(selected_maker)
             
-        with sub_tabs[0]:
-            with st.container(): 
-                fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
-                fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
-                st.plotly_chart(fig, use_container_width=True)            
+            if selected_maker == "sony":
+                sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
+            else:
+                sub_tabs = st.tabs(["Specification"])
                 
+            with sub_tabs[0]:
+                with st.container(): 
+                    fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
+                    fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
+                    st.plotly_chart(fig, use_container_width=True)            
                     
-        if selected_maker == "sony":
-            with sub_tabs[1]:
-                with st.container():              
-                    fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
-                    fig.update_layout(
-                        width=500,
-                        height=col1_plot_height,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-            with sub_tabs[2]:
-                calendar_url = loading_calendar(selected_maker)
-                if calendar_url is not None:
-                    st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
-                    
-                    
-                else:
-                    st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
+                        
+            if selected_maker == "sony":
+                with sub_tabs[1]:
+                    with st.container():              
+                        fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
+                        fig.update_layout(
+                            width=500,
+                            height=col1_plot_height,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                with sub_tabs[2]:
+                    calendar_url = loading_calendar(selected_maker)
+                    if calendar_url is not None:
+                        st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
 
-                                
-                
-                    # fig = Calendar('AIzaSyD7NPJmSa47mojWeG10llV8odoBsTSHSrA',
-                    #                '0c227a75e976c06994e8cc15eef5de98e25fe384b65d057b9edbbb37a7ed7efc@group.calendar.google.com').create_events_calendar(return_fig=True)
-                    # fig.update_layout(
-                    #     width=500,
-                    #     height=col1_plot_height,
-                    #     title='',
-                    #     margin=dict(t=20, b=0))
-                    # st.plotly_chart(fig, use_container_width=True)
-                     
-            with sub_tabs[3]:
-                with st.container(): 
-                    fig = loading_plot_financials_with_margin()
-                    fig.update_layout(
-                        width=500,
-                        height=300,
-                        title='',
-                        margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                with st.container(): 
-                    try:
-                        fig = loading_plot_usd_exchange()
+                    else:
+                        st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
+                        
+                with sub_tabs[3]:
+                    with st.container(): 
+                        fig = loading_plot_financials_with_margin()
                         fig.update_layout(
                             width=500,
                             height=300,
                             title='',
                             margin=dict(t=20, b=0))
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("no working")
                         
-                with st.container(): 
-                    ir_df = loading_ir_script()
-                    years = sorted(ir_df.year.unique(), reverse=True)
-                    sub_tabs_irs = st.tabs(years)
+                    with st.container(): 
+                        try:
+                            fig = loading_plot_usd_exchange()
+                            fig.update_layout(
+                                width=500,
+                                height=300,
+                                title='',
+                                margin=dict(t=20, b=0))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except:
+                            st.write("no working")
+                            
+                    with st.container(): 
+                        ir_df = loading_ir_script()
+                        years = sorted(ir_df.year.unique(), reverse=True)
+                        sub_tabs_irs = st.tabs(years)
 
-                    for i, year in enumerate(years):
-                        ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
-                        ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
-                        ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-                        
-                        with sub_tabs_irs[i]:
-                            col1_ir, col2_ir = st.columns(2)
-                            with col1_ir:
-                                display_html_table(ir_df_year_earning, "Earning")
+                        for i, year in enumerate(years):
+                            ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
+                            ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
+                            ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
+                            
+                            with sub_tabs_irs[i]:
+                                col1_ir, col2_ir = st.columns(2)
+                                with col1_ir:
+                                    display_html_table(ir_df_year_earning, "Earning")
 
-                            with col2_ir:
-                                display_html_table(ir_df_year_strategy, "Strategy")
+                                with col2_ir:
+                                    display_html_table(ir_df_year_strategy, "Strategy")
 
-            with sub_tabs[4]:
+                with sub_tabs[4]:
 
-                    sub_tabs_height = 150
-                    fig = MACRO.plot_economic_indicator('RSEAS')
-                    fig.update_layout(
-                        width=500,
-                        height=sub_tabs_height,
-                        title='Advance Retail Sales: Electronics and Appliance Stores')
+                        sub_tabs_height = 150
+                        fig = MACRO.plot_economic_indicator('RSEAS')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Advance Retail Sales: Electronics and Appliance Stores')
 
-                    st.plotly_chart(fig, use_container_width=True)
-                    fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
-                    fig.update_layout(
-                        width=500,
-                        height=sub_tabs_height,
-                        title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
-                    st.plotly_chart(fig, use_container_width=True)
-            
-                    
-                    fig = MACRO.plot_economic_indicator('CPIAUCSL')
-                    fig.update_layout(
-                        width=500,
-                        height=sub_tabs_height,
-                        title='CPI: for All Urban Consumers')
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    fig = MACRO.plot_economic_indicator('A35SNO')
-                    fig.update_layout(
-                        width=500,
-                        height=sub_tabs_height,
-                        title='New Orders: Electrical Equipment, Appliances and Components')
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    fig = MACRO.plot_economic_indicator('POILBREUSDM')
-                    fig.update_layout(
-                        width=500,
-                        height=sub_tabs_height,
-                        title='Global price of Brent Crude')
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-
-                    
-                    
-                    
-    with col2:
-        col2_plot_height = 800
-        selected_multi_makers = st.multiselect(label="maker_label", options=makers, placeholder='Select Makers', 
-                                                key='key_for_scores', label_visibility='hidden')
-        if not selected_multi_makers: 
-            selected_multi_makers =  selected_maker
-        else:
-            selected_multi_makers = list(map(str.lower, selected_multi_makers))
-            
-        tab_name = [ "Price", "Scores", "Data"]
-        tabs = st.tabs(tab_name)
-
-        with tabs[0]:  
-            with st.container(): 
-                data_price = loading_webdata(selected_multi_makers)
-                fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
-                fig.update_layout(
-                    width=500,
-                    height=col2_plot_height,
-                    title='',
-                    margin=dict(t=20, b=0))
-                st.plotly_chart(fig, use_container_width=True)
-                    
-                
-                
-        with tabs[1]:
-            sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
-            
-            with sub_tabs[0]:
-                data = loading_rtings('scores')
-                fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-                if fig != None:
-                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.write("No information")
-                    
-            with sub_tabs[1]:
-                data = loading_rtings( 'measurement')
-                fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-                if fig != None:
-                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.write("No information")
-                    
-            with sub_tabs[2]:
-                data = loading_rtings('measurement')
-                fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
-                if fig != None:
-                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.write("No information")
-                    
-            with sub_tabs[3]:
-                data = loading_rtings('measurement')
-                
-                try:
-                    fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
-                    fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                except:
-                    st.write("No information")            
-                
-                
-        with tabs[2]:
-            sub_category = Rvisualizer.get_measurement_selection()
-            sub_tabs = st.tabs(sub_category)
-            
-            for i, category in enumerate(sub_category):
-                with sub_tabs[i]:
-                    data = loading_rtings('measurement')
-                    fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
-                    if fig != None:
-                        fig.update_layout(width=600, height=col2_plot_height, 
-                                          margin=dict(t=0, r=0, b=20))
-                        
                         st.plotly_chart(fig, use_container_width=True)
+                        fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
+                        st.plotly_chart(fig, use_container_width=True)
+                
+                        
+                        fig = MACRO.plot_economic_indicator('CPIAUCSL')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='CPI: for All Urban Consumers')
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        fig = MACRO.plot_economic_indicator('A35SNO')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='New Orders: Electrical Equipment, Appliances and Components')
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        fig = MACRO.plot_economic_indicator('POILBREUSDM')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Global price of Brent Crude')
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+    if selected_value == options[1] or selected_value == options[2] :
+                               
+        with col2:
+            col2_plot_height = 800
+            selected_multi_makers = st.multiselect(label="maker_label", options=makers, placeholder='Select Makers', 
+                                                    key='key_for_scores', label_visibility='hidden')
+            if not selected_multi_makers: 
+                selected_multi_makers =  selected_maker
+            else:
+                selected_multi_makers = list(map(str.lower, selected_multi_makers))
+                
+            tab_name = [ "Price", "Scores", "Data"]
+            tabs = st.tabs(tab_name)
+
+            with tabs[0]:  
+                with st.container(): 
+                    data_price = loading_webdata(selected_multi_makers)
+                    fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
+                    fig.update_layout(
+                        width=500,
+                        height=col2_plot_height,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                        
+                    
+                    
+            with tabs[1]:
+                sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
+                
+                with sub_tabs[0]:
+                    data = loading_rtings('scores')
+                    fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                    if fig != None:
+                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.write("No information")
+                        
+                with sub_tabs[1]:
+                    data = loading_rtings( 'measurement')
+                    fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                    if fig != None:
+                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.write("No information")
+                        
+                with sub_tabs[2]:
+                    data = loading_rtings('measurement')
+                    fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
+                    if fig != None:
+                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.write("No information")
+                        
+                with sub_tabs[3]:
+                    data = loading_rtings('measurement')
+                    
+                    try:
+                        fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
+                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                        st.plotly_chart(fig, use_container_width=True)
+                    except:
+                        st.write("No information")            
+                    
+                    
+            with tabs[2]:
+                sub_category = Rvisualizer.get_measurement_selection()
+                sub_tabs = st.tabs(sub_category)
+                
+                for i, category in enumerate(sub_category):
+                    with sub_tabs[i]:
+                        data = loading_rtings('measurement')
+                        fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
+                        if fig != None:
+                            fig.update_layout(width=600, height=col2_plot_height, 
+                                            margin=dict(t=0, r=0, b=20))
+                            
+                            st.plotly_chart(fig, use_container_width=True)
 
                     
 

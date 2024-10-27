@@ -10,15 +10,13 @@ import logging
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-class SecretResponse(BaseModel):
-    secret: str
-
 class ScraperRequest(BaseModel):
     pass
 
 @app.post("/run_mkretv")
 async def run_scraper(scraper_request: ScraperRequest):
-    firestore_manager = FirestoreManager()
+    firestore_secret = read_firestore_secret()
+    firestore_manager = FirestoreManager(firestore_secret)
     data_dict = {}
     logging.info("start scraping")
     try:
@@ -45,3 +43,12 @@ async def run_scraper(scraper_request: ScraperRequest):
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def read_firestore_secret():
+    try:
+        with open('/run/secrets/firestore_secret', 'r') as secret_file:
+            secret_value = secret_file.read().strip()
+            return secret_value
+    except FileNotFoundError:
+        print("Secret file not found")
+        return None
