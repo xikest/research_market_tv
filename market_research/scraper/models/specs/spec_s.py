@@ -15,9 +15,10 @@ import logging
 class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 wait_time=1):
+                 wait_time=1 ,verbose=False):
         Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
         self.wait_time = wait_time
+        self.verbose = verbose
         pass
     
     def fetch_model_data(self) -> pd.DataFrame:
@@ -28,7 +29,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 url_models_set = self._extract_models_from_series(url=url)
                 url_set.update(url_models_set)
             url_dict = {idx: url for idx, url in enumerate(url_set)}
-            logging.info(f"Total model: {len(url_dict)}")
+            print(f"Total model: {len(url_dict)}")
             return url_dict
         
         def extract_specs(url_dict):
@@ -51,7 +52,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             return df_models
         
         
-        logging.info("start collecting data")
+        print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_specs(url_dict)
         df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
@@ -62,14 +63,13 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     @Scraper.try_loop(2)
     def _get_series_urls(self) -> set:
         def find_series_urls(url:str, prefix:str) -> set:
-            logging.info(f"Starting to scrape series URLs from: {url}")
+            print(f"Starting to scrape series URLs from: {url}")
             url_series = set()
             url = url
             prefix = prefix
             step = 200
             try:
                 driver = self.set_driver(url)
-                driver.save_screenshot("get_series.png") #s
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
 
@@ -83,23 +83,23 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         driver.execute_script(f"window.scrollBy(0, {step});")
                         time.sleep(self.wait_time)
                         scroll_distance += step
-                        driver.save_screenshot(f"get_series_{step}.png") #s
                 return url_series
             except Exception as e:
-                logging.error(f"{e}")
+                if self.verbose == True:
+                    print(f"{e}")
                 pass
             finally:
                 driver.quit()                  
         url_series = find_series_urls(url = "http://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
-        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
-            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
+            print(f"Series: [{i}] {url.split('/')[-1]}")
         return url_series
     
     @Scraper.try_loop(2)
     def _extract_models_from_series(self, url: str) -> set:
         url_models_set = set()
-        logging.info(f"Trying to extract models from series: {url}")
+        print(f"Trying to extract models from series: {url}")
         
         driver = self.set_driver(url)        
         try: 
@@ -109,10 +109,10 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 model_url = url_element.get_attribute('href')
                 if model_url:  
                     url_models_set.add(model_url.strip())
-            logging.info("Extracted models from series")        
+            print("Extracted models from series")        
         except Exception as e:
-            driver.save_screenshot(f"Error extracting models from series_{url}.png") #s
-            logging.error(f"Error extracting models from series: {e}")
+            if self.verbose == True:
+                print(f"Error extracting models from series: {e}")
         finally:
             driver.quit()  # 드라이버 종료
         
@@ -190,7 +190,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         
         dict_info = {}
 
-        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
+        print(f"Connecting to {url.split('/')[-1]}: {url}")
         try:
             driver = self.set_driver(url)
             
@@ -199,11 +199,12 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
             dict_info.update(extract_info_from_model(dict_info.get("model")))
-            logging.info(dict_info)
+            if self.verbose == True: 
+                print(dict_info)
             return dict_info
         except CustomException as e:
-            driver.save_screenshot(f"error_extract_model_details_{url}.png") #s
-            logging.error(f"error_extract_model_details: {url}")
+            if self.verbose == True:
+                print(f"error_extract_model_details: {url}")
             pass
         finally:
             driver.quit()
@@ -221,7 +222,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     see_more_features = driver.find_element(By.CLASS_NAME, 'see_more_features_button.container')
                 except:               
                     if i == 9:
-                        logging.error("error find_emphasize_text")
+                        if self.verbose == True:
+                            print("error find_emphasize_text")
                     ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
                     pass
 
@@ -300,14 +302,16 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     element_see_more.click()
                     logging.debug("Clicked the 'see more' button from the first locator.")
                 except Exception as e:
-                    logging.error(f"Cannot find the 'see more' button from the first locator: {e}")
+                    if self.verbose == True:
+                        print(f"Cannot find the 'see more' button from the first locator: {e}")
                     try:
                         element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
                         self.web_driver.move_element_to_center(element_see_more)
                         element_see_more.click()
                         logging.debug("Clicked the 'see more' button from the second locator.")
                     except Exception as e:
-                        logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
+                        if self.verbose == True:
+                            print(f"Cannot find the 'see more' button from the second locator: {e}")
                 time.sleep(self.wait_time)
                 return None
             
@@ -330,7 +334,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         h4_tag = soup.find('h4').text.strip()
                         p_tag = ""
                     except Exception as e:
-                        logging.error("Parser error", exc_info=e)
+                        if self.verbose == True:
+                            print("Parser error", exc_info=e)
                         h4_tag = "Parser error"
                         p_tag = "Parser error"
                 return h4_tag, p_tag
@@ -347,7 +352,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         asterisk_count = label.count('*')
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
-                    logging.info(f"[{label}] {content}")
+                    if self.verbose == True: 
+                        print(f"[{label}] {content}")
                 ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
             return dict_spec
@@ -360,8 +366,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_spec.update(extract_emphasize_text(driver))
 
         except Exception as e:
-            driver.save_screenshot(f"Failed to get header text from_{url}.png") #s
-            logging.error(f"Failed to get header text from {url}.")
+            if self.verbose == True:    
+                print(f"Failed to get header text from {url}.")
             pass
         finally:
             driver.quit()
@@ -370,9 +376,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             driver = self.set_driver(url)
             find_spec_tab(driver)   
             dict_spec.update(extract_specs_detail(driver))
-            logging.info(f"Received information from {url}")
+            print(f"Received information from {url}")
         except CustomException as e:
-            driver.save_screenshot(f"ERROR_Received information from from_{url}.png") #s
             pass
         finally:
             driver.quit()
@@ -388,7 +393,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 close_button = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, '//*[@id="contentfulModalClose"]')))
                 close_button.click() 
-                logging.info("Pop up removed")
+                print("Pop up removed")
                 WebDriverWait(driver, 3).until(
                     EC.invisibility_of_element(close_button))
                 break  

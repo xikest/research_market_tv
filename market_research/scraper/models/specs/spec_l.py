@@ -14,11 +14,11 @@ from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomExce
 class ModelScraper_l(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="lge_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 wait_time=2):
+                 wait_time=2, verbose=False):
 
         Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
-        
         self.wait_time = wait_time
+        self.verbose = verbose
         pass
 
     def fetch_model_data(self) -> pd.DataFrame:
@@ -30,7 +30,7 @@ class ModelScraper_l(Scraper, Modeler):
                 url_models_set = self._extract_models_from_series(url=url)
                 url_set.update(url_models_set)
             url_dict = {idx: url for idx, url in enumerate(url_set)}
-            logging.info(f"Total model: {len(url_dict)}")
+            print(f"Total model: {len(url_dict)}")
             return url_dict
         
         def extract_sepcs(url_dict):
@@ -43,8 +43,9 @@ class ModelScraper_l(Scraper, Modeler):
                     dict_models[key].update(dict_spec)
                     dict_models['url'] = url
                 except Exception as e:
-                    logging.error(f"fail to collect: {url}")
-                    logging.error(e)
+                    if self.verbose == True:
+                        print(f"fail to collect: {url}")
+                        print(e)
             return dict_models
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
@@ -54,7 +55,7 @@ class ModelScraper_l(Scraper, Modeler):
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
             
-        logging.info("start collecting data")
+        print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
         df_models = transform_format(dict_models, json_file_name="l_scrape_model_data.json")
@@ -66,7 +67,7 @@ class ModelScraper_l(Scraper, Modeler):
     def _get_series_urls(self) -> set:
 
         def find_series_urls(url, prefix) -> set:
-            logging.info(f"Starting to scrape series URLs from: {url}")
+            print(f"Starting to scrape series URLs from: {url}")
             url_series = set()
             url = url
             prefix = prefix
@@ -93,9 +94,9 @@ class ModelScraper_l(Scraper, Modeler):
                 driver.quit()
         
         url_series = find_series_urls( url = "https://www.lg.com/us/tvs", prefix = "https://www.lg.com/")
-        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
-            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
+            print(f"Series: [{i}] {url.split('/')[-1]}")
         return url_series
 
     @Scraper.try_loop(try_total=5)
@@ -108,7 +109,8 @@ class ModelScraper_l(Scraper, Modeler):
                     url = prefix + element['href']
                     url_models_set.add(url.strip())
                 except Exception as e:
-                    logging.error(f"Getting series error ({e})")
+                    if self.verbose == True:
+                        print(f"Getting series error ({e})")
                     pass
             return url_models_set
             
@@ -253,7 +255,7 @@ class ModelScraper_l(Scraper, Modeler):
 
         
         dict_info = {}
-        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
+        print(f"Connecting to {url.split('/')[-1]}: {url}")
         response = requests.get(url)
         page_content = response.text
         soup = BeautifulSoup(page_content, 'html.parser')
@@ -318,7 +320,7 @@ class ModelScraper_l(Scraper, Modeler):
                         asterisk_count = label.count('*')
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
-                    logging.info(f"[{label}] {content}")
+                    print(f"[{label}] {content}")
 
             dict_spec.pop("*", None)            
             return dict_spec
@@ -329,7 +331,7 @@ class ModelScraper_l(Scraper, Modeler):
             driver = self.set_driver(url)           
             find_spec_tab(driver)   
             dict_spec = extract_spec_detail(driver)
-            logging.info(f"Received information from {url}")
+            print(f"Received information from {url}")
             return dict_spec
         except CustomException as e:
             pass

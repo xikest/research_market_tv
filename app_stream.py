@@ -174,7 +174,7 @@ def display_indicators():
             if selected_maker == "sony":
                 with sub_tabs[1]:
                     with st.container():              
-                        fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(data, return_fig=True)  
+                        fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(return_fig=True)  
                         fig.update_layout(
                             width=500,
                             height=col1_plot_height,

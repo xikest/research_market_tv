@@ -12,9 +12,10 @@ from tools.file import FileManager
 class ModelScraper_se(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="sse_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 wait_time=2):
+                 wait_time=2, verbose=False):
         Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
         self.wait_time = wait_time
+        self.verbose = verbose
 
         pass
     
@@ -29,7 +30,7 @@ class ModelScraper_se(Scraper, Modeler):
                 url_models_set = self._extract_models_from_series(url=url)
                 url_set.update(url_models_set)
             url_dict = {idx: url for idx, url in enumerate(url_set)}
-            logging.info(f"Total model: {len(url_dict)}")
+            print(f"Total model: {len(url_dict)}")
             return url_dict
         
         def extract_sepcs(url_dict):
@@ -42,8 +43,9 @@ class ModelScraper_se(Scraper, Modeler):
                     dict_models[key].update(dict_spec)
                     dict_models['url'] = url
                 except Exception as e:
-                    logging.error(f"fail to collect: {url}")
-                    logging.error(e)
+                    if self.verbose == True:
+                        print(f"fail to collect: {url}")
+                        print(e)
                     pass
             return dict_models
         
@@ -60,7 +62,7 @@ class ModelScraper_se(Scraper, Modeler):
             return df_models
             
 
-        logging.info("start collecting data")
+        print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
@@ -86,7 +88,7 @@ class ModelScraper_se(Scraper, Modeler):
             return url_series   
         
         def find_series_urls(url:str, prefix:str) -> set:
-            logging.info(f"Starting to scrape series URLs from: {url}")
+            print(f"Starting to scrape series URLs from: {url}")
             prefix = "https://www.samsung.com"
             url_series = set()
             url = url
@@ -115,9 +117,9 @@ class ModelScraper_se(Scraper, Modeler):
                 driver.quit()
                
         url_series = extract_urls_from_segments()
-        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
-            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
+            print(f"Series: [{i}] {url.split('/')[-1]}")
         return url_series
     
     @Scraper.try_loop(2)
@@ -140,7 +142,8 @@ class ModelScraper_se(Scraper, Modeler):
             driver = self.set_driver(url)
             url_models_set =  extract_model_url(driver)  
         except CustomException as e:
-            logging.error(e)
+            if self.verbose == True:
+                print(e)
         return url_models_set
             
     @Scraper.try_loop(2)
@@ -243,7 +246,7 @@ class ModelScraper_se(Scraper, Modeler):
         
         dict_info = {}
         CustomException(message=f"error_extract_model_details: {url}")
-        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
+        print(f"Connecting to {url.split('/')[-1]}: {url}")
         try: 
             driver = self.set_driver(url)
             
@@ -308,7 +311,7 @@ class ModelScraper_se(Scraper, Modeler):
                     asterisk_count = label.count('*')
                     label = f"{original_label}{'*' * (asterisk_count + 1)}"
                 dict_spec[label] = content
-                logging.info(f"[{label}] {content}")
+                print(f"[{label}] {content}")
             return dict_spec
     
         dict_spec = {}
@@ -318,7 +321,7 @@ class ModelScraper_se(Scraper, Modeler):
             find_spec_tab(driver)
             dict_spec = extract_spec_detail(driver)
             
-            logging.info(f"Received information from {url}")
+            print(f"Received information from {url}")
             return dict_spec
         except CustomException as e:
             pass
