@@ -5,6 +5,8 @@ import pandas as pd
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
 from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
@@ -67,6 +69,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             step = 200
             try:
                 driver = self.set_driver(url)
+                driver.save_screenshot("get_series.png") #s
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
 
@@ -80,13 +83,14 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         driver.execute_script(f"window.scrollBy(0, {step});")
                         time.sleep(self.wait_time)
                         scroll_distance += step
+                        driver.save_screenshot(f"get_series_{step}.png") #s
                 return url_series
             except Exception as e:
                 logging.error(f"{e}")
                 pass
             finally:
                 driver.quit()                  
-        url_series = find_series_urls(url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
+        url_series = find_series_urls(url = "http://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
         logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             logging.info(f"Series: [{i}] {url.split('/')[-1]}")
@@ -94,32 +98,27 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     
     @Scraper.try_loop(2)
     def _extract_models_from_series(self, url: str) -> set:
-        
-        def extract_model_url(driver)->set:
-            url_models_set= set()
-            try: 
-                element = driver.find_element(By.CLASS_NAME,
-                                               'custom-variant-selector__body')
-                url_elements = element.find_elements(By.TAG_NAME, 'a')
-                for url_element in url_elements:
-                    url = url_element.get_attribute('href')
-                    url_models_set.add(url.strip())
-
-                return url_models_set
-            except:
-                logging.error("error extract_models_from_series")
-                return None
-        
         url_models_set = set()
-        try:
-            driver = self.set_driver(url)
-            url_models_set = extract_model_url(driver)
-        except CustomException as e:
-            logging.error(f"error_extract_models_from_series: {url}")
-            pass
+        logging.info(f"Trying to extract models from series: {url}")
+        
+        driver = self.set_driver(url)        
+        try: 
+            element = driver.find_element(By.CLASS_NAME, 'custom-variant-selector__body')
+            url_elements = element.find_elements(By.TAG_NAME, 'a')
+            for url_element in url_elements:
+                model_url = url_element.get_attribute('href')
+                if model_url:  
+                    url_models_set.add(model_url.strip())
+            logging.info("Extracted models from series")        
+        except Exception as e:
+            driver.save_screenshot(f"Error extracting models from series_{url}.png") #s
+            logging.error(f"Error extracting models from series: {e}")
         finally:
-            driver.quit()
+            driver.quit()  # 드라이버 종료
+        
         return url_models_set
+        
+    
             
     @Scraper.try_loop(2)
     def _extract_model_details(self, url: str) -> dict:
@@ -203,6 +202,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             logging.info(dict_info)
             return dict_info
         except CustomException as e:
+            driver.save_screenshot(f"error_extract_model_details_{url}.png") #s
             logging.error(f"error_extract_model_details: {url}")
             pass
         finally:
@@ -360,41 +360,44 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_spec.update(extract_emphasize_text(driver))
 
         except Exception as e:
+            driver.save_screenshot(f"Failed to get header text from_{url}.png") #s
             logging.error(f"Failed to get header text from {url}.")
             pass
         finally:
             driver.quit()
             
         try:
-            driver = self.set_driver(url)  
+            driver = self.set_driver(url)
             find_spec_tab(driver)   
             dict_spec.update(extract_specs_detail(driver))
             logging.info(f"Received information from {url}")
         except CustomException as e:
+            driver.save_screenshot(f"ERROR_Received information from from_{url}.png") #s
             pass
         finally:
             driver.quit()
             
         return dict_spec
         
-    
+
+
+
     def remove_popup(self, driver) -> None:
         for _ in range(5):
             try:
-                # 팝업 닫기 버튼을 기다렸다가 클릭
-                close_button = driver.find_element(By.XPATH, '//*[@id="contentfulModalClose"]')
-                close_button.click()
-                break
+                close_button = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, '//*[@id="contentfulModalClose"]')))
+                close_button.click() 
+                logging.info("Pop up removed")
+                WebDriverWait(driver, 3).until(
+                    EC.invisibility_of_element(close_button))
+                break  
             except Exception as e:
                 pass
-        return None 
-    
-    
+
     def set_driver(self, url):
         driver = self.web_driver.get_chrome()
         driver.get(url=url)
         time.sleep(self.wait_time)
         self.remove_popup(driver)
         return driver
-        
-            

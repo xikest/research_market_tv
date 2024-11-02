@@ -24,7 +24,16 @@ class SONY_IR():
         start_date = today.replace(year=today.year - 4)
 
         file_dict = {}
-        
+        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/er/pdf/"
+        years = range(start_date.year, today.year + 1)  
+        quarters = range(1, 5)
+        for year in years:
+            for quarter in quarters:
+                filename = f"{year%100}q{quarter}_sonyspeech"  
+                url = f"{base_url}{filename}.pdf"
+                if check_url_exists(url):  # URL 
+                                file_dict[f"20{filename.upper()}"] = url
+
         base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/er/pdf/"
         years = range(start_date.year, today.year + 1)  
         quarters = range(1, 5)
@@ -40,16 +49,36 @@ class SONY_IR():
 
         for year in years:
             for quarter in quarters:
+                filename = f"{year}/speech_E"
+                url = f"{base_url}/{filename}.pdf"
+                if check_url_exists(url):  # URL
+                    file_dict[filename.replace('/', '_').upper()] = url
+
+        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/strategy/pdf"
+        years = range(2020, today.year + 1)  
+
+        for year in years:
+            for quarter in quarters:
                 filename = f"{year}/qa_E"
                 url = f"{base_url}/{filename}.pdf"
                 if check_url_exists(url):  # URL
                     file_dict[filename.replace('/', '_').upper()] = url
 
-        df = pd.DataFrame(list(file_dict.items()), columns=['filename', 'url'])
+        base_url = "https://www.sony.com/en/SonyInfo/IR/library/presen/business_segment_meeting/pdf"
+        years = range(2020, today.year + 1)  
+
+        for year in years:
+            for quarter in quarters:
+                filename = f"{year}/presen_E"
+                url = f"{base_url}/{filename}.pdf"
+                if check_url_exists(url):  # URL
+                    file_dict[filename.replace('/', '_').upper()] = url
+
+        df = pd.DataFrame(list(file_dict.items()), columns=['filename', 'URL'])
         df.loc[:,'year'] = df.filename.map(lambda x: x[:4])
-        df.loc[:,"category"] = df.filename.map(lambda x:  "Strategy" if x[-1] == "E" else "Earning")
-        df.loc[:,"quarter"]= df[df["category"] == "Earning"].filename.map(lambda x: x[4:6].upper())
-        df.loc[:,"quarter"] = df["quarter"].fillna("-")
+        df.loc[:,"category"] = df['URL'].map(lambda x:  x.split('/')[8].replace("_"," ").replace("er","earning").replace("business segment meeting","segment").capitalize())
+        df.loc[:,"Description"]= df['filename'].map(lambda x: x[4:].lower().replace("sony","").replace("qa","Q&A").replace("speech","Speech").replace("_e","").replace("_"," ").replace("presen", "present").capitalize())
+        df.loc[:,"Description"] = df["Description"].fillna("-")
         return df 
 
         

@@ -1,54 +1,40 @@
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from market_research.scraper import Specscraper_s
 from market_research.scraper import Specscraper_l
 from market_research.scraper import Specscraper_se
-from tools.db.firestoremanager import FirestoreManager
+from tools.gcp.firestoremanager import FirestoreManager
 import logging
+import os 
+import uvicorn 
+
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-class ScraperRequest(BaseModel):
-    pass
 
-@app.post("/run_mkretv")
-async def run_scraper(scraper_request: ScraperRequest):
-    firestore_secret = read_firestore_secret()
-    firestore_manager = FirestoreManager(firestore_secret)
+@app.get("/run_mkretv")
+async def run_scraper():
+    secret_path = "web-driver.json"
+    firestore_manager = FirestoreManager(credentials_file=secret_path)
     data_dict = {}
-    logging.info("start scraping")
-    try:
-        scraper_s = Specscraper_s()
-        df = scraper_s.fetch_model_data()
-        data_dict['sony'] = df.set_index('model')
-        logging.info("sony finish")
+    makers = {"sony":Specscraper_s, "lg":Specscraper_l, "samsung":Specscraper_se}
+    finished =[]
+    for maker, scraper in makers.items():
+        try:
+            logging.info("start scraping")
+            scraper = scraper()
+            df = scraper.fetch_model_data()
+            data_dict[maker] = df.set_index('model')
+            logging.info(f"{maker} finish")
+            firestore_manager.save_dataframe(data_dict, 'tv_maker_web_data')
+            logging.info(f"finish upload {maker}: {datetime.now()}")
+            finished.append(maker)
+        except Exception as e:
+            logging.error(f"Error occurred for {maker}: {str(e)}")
+            continue
+    return {"finished": finished}
         
-        scraper_l = Specscraper_l()
-        df = scraper_l.fetch_model_data()
-        data_dict['lg'] = df.set_index('model')
-        logging.info("lg finish")
-        
-        scraper_se = Specscraper_se()
-        df = scraper_se.fetch_model_data()
-        data_dict['samsung'] = df.set_index('model')
-        logging.info("samsung finish")
-        
-        firestore_manager.save_dataframe(data_dict, 'tv_maker_web_data')
-        
-        logging.info(f"작업 완료: {datetime.now()}")
-        return {"status": "ok"}  
 
-    except Exception as e:
-        logging.error(f"Error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-def read_firestore_secret():
-    try:
-        with open('/run/secrets/firestore_secret', 'r') as secret_file:
-            secret_value = secret_file.read().strip()
-            return secret_value
-    except FileNotFoundError:
-        print("Secret file not found")
-        return None
+# if __name__ == "__main__":
+#     uvicorn.run("app_get_models:app", host="0.0.0.0", port=8001)

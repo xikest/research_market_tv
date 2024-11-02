@@ -20,6 +20,7 @@ class Scraper(ABC):
         self.output_xlsx_name = None
         self._initialize_data_paths(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
         self.web_driver = WebDriver(headless=enable_headless)
+        logging.info("initialized web driver")
         self.wait_time = 1
 
     def _initialize_data_paths(self,export_prefix:str=None, intput_folder_path:str=None, output_folder_path:str=None):
@@ -36,7 +37,7 @@ class Scraper(ABC):
                 self.output_xlsx_name = self.output_folder /  f"{export_prefix}{date.today().strftime('%Y-%m-%d')}.xlsx"
             else:
                 self.output_xlsx_name = self.output_folder / f"{date.today().strftime('%Y-%m-%d')}.xlsx"
-            logging.info("initialized web driver")
+            
             
               
     @staticmethod
