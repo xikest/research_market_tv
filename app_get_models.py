@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.get("/run_mkretv")
 async def run_scraper():
-    secret_path = "web-driver.json"
+    secret_path = os.environ.get("AUTH_PATH")
     firestore_manager = FirestoreManager(credentials_file=secret_path)
     data_dict = {}
     makers = {"sony":Specscraper_s, "lg":Specscraper_l, "samsung":Specscraper_se}

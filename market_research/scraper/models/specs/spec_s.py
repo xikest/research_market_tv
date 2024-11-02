@@ -85,7 +85,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         scroll_distance += step
                 return url_series
             except Exception as e:
-                if self.verbose == True:
+                if self.verbose:
                     print(f"{e}")
                 pass
             finally:
@@ -111,7 +111,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     url_models_set.add(model_url.strip())
             print("Extracted models from series")        
         except Exception as e:
-            if self.verbose == True:
+            if self.verbose:
                 print(f"Error extracting models from series: {e}")
         finally:
             driver.quit()  # 드라이버 종료
@@ -189,8 +189,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             return dict_info
         
         dict_info = {}
-
-        print(f"Connecting to {url.split('/')[-1]}: {url}")
+        if self.verbose:
+            print(f"Connecting to {url.split('/')[-1]}: {url}")
         try:
             driver = self.set_driver(url)
             
@@ -199,11 +199,11 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
             dict_info.update(extract_info_from_model(dict_info.get("model")))
-            if self.verbose == True: 
+            if self.verbose: 
                 print(dict_info)
             return dict_info
         except CustomException as e:
-            if self.verbose == True:
+            if self.verbose:
                 print(f"error_extract_model_details: {url}")
             pass
         finally:
@@ -222,7 +222,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     see_more_features = driver.find_element(By.CLASS_NAME, 'see_more_features_button.container')
                 except:               
                     if i == 9:
-                        if self.verbose == True:
+                        if self.verbose:
                             print("error find_emphasize_text")
                     ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
                     pass
@@ -302,7 +302,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     element_see_more.click()
                     logging.debug("Clicked the 'see more' button from the first locator.")
                 except Exception as e:
-                    if self.verbose == True:
+                    if self.verbose:
                         print(f"Cannot find the 'see more' button from the first locator: {e}")
                     try:
                         element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
@@ -310,7 +310,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         element_see_more.click()
                         logging.debug("Clicked the 'see more' button from the second locator.")
                     except Exception as e:
-                        if self.verbose == True:
+                        if self.verbose:
                             print(f"Cannot find the 'see more' button from the second locator: {e}")
                 time.sleep(self.wait_time)
                 return None
@@ -334,7 +334,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         h4_tag = soup.find('h4').text.strip()
                         p_tag = ""
                     except Exception as e:
-                        if self.verbose == True:
+                        if self.verbose:
                             print("Parser error", exc_info=e)
                         h4_tag = "Parser error"
                         p_tag = "Parser error"
@@ -352,8 +352,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                         asterisk_count = label.count('*')
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
-                    if self.verbose == True: 
-                        print(f"[{label}] {content}")
+                    # if self.verbose: 
+                        # print(f"[{label}] {content}")
                 ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
             return dict_spec
@@ -366,7 +366,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_spec.update(extract_emphasize_text(driver))
 
         except Exception as e:
-            if self.verbose == True:    
+            if self.verbose:    
                 print(f"Failed to get header text from {url}.")
             pass
         finally:
@@ -376,7 +376,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             driver = self.set_driver(url)
             find_spec_tab(driver)   
             dict_spec.update(extract_specs_detail(driver))
-            print(f"Received information from {url}")
+            if self.verbose:
+                print(f"Received information from {url}")
         except CustomException as e:
             pass
         finally:
@@ -393,7 +394,8 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 close_button = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, '//*[@id="contentfulModalClose"]')))
                 close_button.click() 
-                print("Pop up removed")
+                if self.verbose:
+                    print("Pop up removed")
                 WebDriverWait(driver, 3).until(
                     EC.invisibility_of_element(close_button))
                 break  
