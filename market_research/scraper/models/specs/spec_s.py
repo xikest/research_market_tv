@@ -30,6 +30,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 url_set.update(url_models_set)
             url_dict = {idx: url for idx, url in enumerate(url_set)}
             print(f"Total model: {len(url_dict)}")
+            logging.info(f"Total model: {len(url_dict)}")
             return url_dict
         
         def extract_specs(url_dict):
@@ -53,6 +54,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         
         
         print("start collecting data")
+        logging.info("start collecting data")
         url_dict = find_urls()
         dict_models = extract_specs(url_dict)
         df_models = transform_format(dict_models, json_file_name="s_scrape_model_data.json")
@@ -64,6 +66,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
     def _get_series_urls(self) -> set:
         def find_series_urls(url:str, prefix:str) -> set:
             print(f"Starting to scrape series URLs from: {url}")
+            logging.info(f"Starting to scrape series URLs from: {url}")
             url_series = set()
             url = url
             prefix = prefix
@@ -87,19 +90,24 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             except Exception as e:
                 if self.verbose:
                     print(f"{e}")
+                logging.error(f"{e}")
                 pass
             finally:
-                driver.quit()                  
-        url_series = find_series_urls(url = "http://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
+                if driver:  
+                    driver.quit()                 
+        url_series = find_series_urls(url = "https://electronics.sony.com/tv-video/televisions/c/all-tvs/", prefix = "https://electronics.sony.com/")
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-1]}")
+            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
         return url_series
     
     @Scraper.try_loop(2)
     def _extract_models_from_series(self, url: str) -> set:
         url_models_set = set()
         print(f"Trying to extract models from series: {url}")
+        logging.info(f"Trying to extract models from series: {url}")
         
         driver = self.set_driver(url)        
         try: 
@@ -109,13 +117,16 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 model_url = url_element.get_attribute('href')
                 if model_url:  
                     url_models_set.add(model_url.strip())
-            print("Extracted models from series")        
+            print("Extracted models from series")
+            logging.info(f"Trying to extract models from series: {url}")
         except Exception as e:
             if self.verbose:
                 print(f"Error extracting models from series: {e}")
+            logging.error(f"Error extracting models from series: {e}")
         finally:
-            driver.quit()  # 드라이버 종료
-        
+            if driver:  
+                driver.quit()  
+                
         return url_models_set
         
     
@@ -191,6 +202,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         dict_info = {}
         if self.verbose:
             print(f"Connecting to {url.split('/')[-1]}: {url}")
+        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
         try:
             driver = self.set_driver(url)
             
@@ -201,13 +213,16 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_info.update(extract_info_from_model(dict_info.get("model")))
             if self.verbose: 
                 print(dict_info)
+            logging.info(dict_info)
             return dict_info
         except CustomException as e:
             if self.verbose:
                 print(f"error_extract_model_details: {url}")
+            logging.error(f"error_extract_model_details: {url}")
             pass
         finally:
-            driver.quit()
+            if driver:  
+                driver.quit()  
     
     
     @Scraper.try_loop(5)
@@ -224,6 +239,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     if i == 9:
                         if self.verbose:
                             print("error find_emphasize_text")
+                        logging.error("error find_emphasize_text")
                     ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
                     pass
 
@@ -304,6 +320,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 except Exception as e:
                     if self.verbose:
                         print(f"Cannot find the 'see more' button from the first locator: {e}")
+                    logging.error(f"Cannot find the 'see more' button from the first locator: {e}")
                     try:
                         element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
                         self.web_driver.move_element_to_center(element_see_more)
@@ -312,6 +329,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     except Exception as e:
                         if self.verbose:
                             print(f"Cannot find the 'see more' button from the second locator: {e}")
+                        logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
                 time.sleep(self.wait_time)
                 return None
             
@@ -329,13 +347,13 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     h4_tag = soup.find('h4').text.strip()
                     p_tag = soup.find('p').text.strip()
                 except :
-                    logging.warning("First level parsing error, attempting with empty 'p' tag")
                     try:
                         h4_tag = soup.find('h4').text.strip()
                         p_tag = ""
                     except Exception as e:
                         if self.verbose:
                             print("Parser error", exc_info=e)
+                        logging.error("Parser error", exc_info=e)
                         h4_tag = "Parser error"
                         p_tag = "Parser error"
                 return h4_tag, p_tag
@@ -368,9 +386,11 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         except Exception as e:
             if self.verbose:    
                 print(f"Failed to get header text from {url}.")
+            logging.error(f"Failed to get header text from {url}.")
             pass
         finally:
-            driver.quit()
+            if driver:  
+                driver.quit()  
             
         try:
             driver = self.set_driver(url)
@@ -378,29 +398,28 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             dict_spec.update(extract_specs_detail(driver))
             if self.verbose:
                 print(f"Received information from {url}")
+            logging.info(f"Received information from {url}")
         except CustomException as e:
             pass
         finally:
-            driver.quit()
+            if driver:  
+                driver.quit()  
             
         return dict_spec
         
 
-
-
     def remove_popup(self, driver) -> None:
-        for _ in range(5):
-            try:
-                close_button = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, '//*[@id="contentfulModalClose"]')))
-                close_button.click() 
-                if self.verbose:
-                    print("Pop up removed")
-                WebDriverWait(driver, 3).until(
-                    EC.invisibility_of_element(close_button))
-                break  
-            except Exception as e:
-                pass
+        try:
+            close_button = WebDriverWait(driver, 3).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="contentfulModalClose"]')))
+            close_button.click() 
+            if self.verbose:
+                print("Pop up removed")
+            logging.info("Pop up removed")
+            WebDriverWait(driver, 1).until(
+                EC.invisibility_of_element(close_button))
+        except Exception as e:
+            pass
 
     def set_driver(self, url):
         driver = self.web_driver.get_chrome()

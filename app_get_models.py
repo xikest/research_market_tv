@@ -15,8 +15,8 @@ logging.basicConfig(level=logging.INFO)
 
 @app.get("/run_mkretv")
 async def run_scraper():
-    secret_path = os.environ.get("AUTH_PATH")
-    firestore_manager = FirestoreManager(credentials_file=secret_path)
+    AUTH_PATH = "web-scraper.json"
+    firestore_manager = FirestoreManager(credentials_file=AUTH_PATH)
     data_dict = {}
     makers = {"sony":Specscraper_s, "lg":Specscraper_l, "samsung":Specscraper_se}
     finished =[]
@@ -37,4 +37,4 @@ async def run_scraper():
         
 
 # if __name__ == "__main__":
-#     uvicorn.run("app_get_models:app", host="0.0.0.0", port=8001)
+#     uvicorn.run("app_get_models:app", host="0.0.0.0", port=8000)
