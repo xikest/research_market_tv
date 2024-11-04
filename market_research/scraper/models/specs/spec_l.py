@@ -40,8 +40,8 @@ class ModelScraper_l(Scraper, Modeler):
                     dict_info = self._extract_model_details(url)
                     dict_models[key] = dict_info
                     dict_spec = self._extract_global_specs(url=url)
+                    dict_spec['url'] = url
                     dict_models[key].update(dict_spec)
-                    dict_models['url'] = url
                 except Exception as e:
                     if self.verbose == True:
                         print(f"fail to collect: {url}")
