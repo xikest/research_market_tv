@@ -16,18 +16,19 @@ pio.templates.default='ggplot2'
 
 
 
+def get_recent_data_from_git(file_name):
+    recent_files = []
+    file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
+    for file in file_list:
+        if file_name in file:
+            recent_files.append(file)
+    recent_files.sort()
+    return recent_files[-1]
 
 
 @st.cache_data
 def loading_webdata(selected_maker:str):
-    def get_recent_data_from_git(file_name):
-        recent_files = []
-        file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
-        for file in file_list:
-            if file_name in file:
-                recent_files.append(file)
-        recent_files.sort()
-        return recent_files[-1]
+
     
     if ONLINE:
         web_data = {
@@ -83,14 +84,14 @@ def loading_calendar(indicator_type):
 def loading_rtings(data_src='measurement'):
     if ONLINE:
         if data_src == 'measurement':
-            json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_measurement_data.json'
+            json_path = get_recent_data_from_git("rtings_measurement_data")
         elif data_src == 'scores':
-            json_path = 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/rtings_scores_data.json'
+            json_path = get_recent_data_from_git("rtings_scores_data")
     else:
         if data_src == 'measurement':
-            json_path = './json/rtings_measurement_data.json'
+            json_path = './json/rtings_measurement_data_241001.json'
         elif data_src == 'scores':
-            json_path = './json/rtings_scores_data.json'
+            json_path = './json/rtings_scores_data_241001.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
