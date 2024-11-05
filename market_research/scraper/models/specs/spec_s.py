@@ -320,7 +320,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 except Exception as e:
                     if self.verbose:
                         print(f"Cannot find the 'see more' button from the first locator: {e}")
-                    logging.error(f"Cannot find the 'see more' button from the first locator: {e}")
+                        logging.error(f"Cannot find the 'see more' button from the first locator: {e}")
                     try:
                         element_see_more = driver.find_element(By.XPATH, '//*[@id="cx-main"]/app-product-details-page/div/app-product-specification/div/div[2]/div[2]/button')
                         self.web_driver.move_element_to_center(element_see_more)
@@ -329,7 +329,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     except Exception as e:
                         if self.verbose:
                             print(f"Cannot find the 'see more' button from the second locator: {e}")
-                        logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
+                            logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
                 time.sleep(self.wait_time)
                 return None
             
@@ -353,7 +353,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                     except Exception as e:
                         if self.verbose:
                             print("Parser error", exc_info=e)
-                        logging.error("Parser error", exc_info=e)
+                            logging.error("Parser error", exc_info=e)
                         h4_tag = "Parser error"
                         p_tag = "Parser error"
                 return h4_tag, p_tag
@@ -400,6 +400,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
                 print(f"Received information from {url}")
             logging.info(f"Received information from {url}")
         except CustomException as e:
+            print(f"error extract_specs_detail from {url}")
             pass
         finally:
             if driver:  

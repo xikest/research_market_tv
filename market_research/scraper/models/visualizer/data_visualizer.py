@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tools.file import FileManager
 import plotly.graph_objs as go
-from .data_cleaner import DataCleaner
+from market_research.scraper.models.visualizer.data_cleaner import DataCleaner
 from market_research.scraper._visualization_scheme import BaseVisualizer
 import requests
 import plotly.io as pio
@@ -10,7 +10,7 @@ import plotly.express as px
 
 
 class DataVisualizer(BaseVisualizer):
-    def __init__(self, df:pd.DataFrame=None, maker="", output_folder_path="results"):
+    def __init__(self, df:pd.DataFrame, maker:str,  output_folder_path="results"):
         
         pio.templates.default='ggplot2'
         self.colors = px.colors.qualitative.Plotly 
@@ -383,7 +383,7 @@ class DataVisualizer(BaseVisualizer):
         if data is not None and isinstance(data, pd.DataFrame):   
             data = data
         else:
-            data = self.dc.get_price_df().copy()
+            data = self.dc.get_df_cleaned().reset_index().copy()
 
         data['year'] = data['year'].astype('str')
         data = data[['year', 'series', 'text0']].drop_duplicates().dropna()

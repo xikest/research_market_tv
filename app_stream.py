@@ -7,26 +7,38 @@ from market_research.scraper import Rvisualizer
 from market_research.ir import Calendar
 from market_research.ir import SONY_IR
 from market_research.ir import MACRO
-
+from tools.file.github import GitMgt
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
+
 
 
 
 
 @st.cache_data
 def loading_webdata(selected_maker:str):
+    def get_recent_data_from_git(file_name):
+        recent_files = []
+        file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
+        for file in file_list:
+            if file_name in file:
+                recent_files.append(file)
+        recent_files.sort()
+        return recent_files[-1]
+    
     if ONLINE:
         web_data = {
-                "sony": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json',
-                "lg": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json',
-                "samsung": 'https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json'}
+                "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
+                "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
+                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}'
+                }
+
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data.json',
+                "sony": './json/s_scrape_model_data_241105.json',
                 "lg": './json/l_scrape_model_data.json',
                 "samsung": './json/se_scrape_model_data.json'}
         
