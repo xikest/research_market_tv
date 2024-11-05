@@ -22,7 +22,7 @@ def get_recent_data_from_git(file_name):
     for file in file_list:
         if file_name in file:
             recent_files.append(file)
-    recent_files.sort()
+    recent_files = recent_files.sort()
     return recent_files[-1]
 
 
@@ -40,8 +40,8 @@ def loading_webdata(selected_maker:str):
     else:
         web_data = {
                 "sony": './json/s_scrape_model_data_241105.json',
-                "lg": './json/l_scrape_model_data.json',
-                "samsung": './json/se_scrape_model_data.json'}
+                "lg": './json/l_scrape_model_data_241001.json',
+                "samsung": './json/se_scrape_model_data_241001.json'}
         
     data_all = pd.DataFrame()
     if isinstance(selected_maker, list):
