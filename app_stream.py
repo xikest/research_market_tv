@@ -21,8 +21,7 @@ def get_recent_data_from_git(file_name):
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
-    file_urls.sort()     
-    
+    file_urls.sort()          
     return file_urls[-1]
 
 @st.cache_data
@@ -77,7 +76,6 @@ def loading_calendar(indicator_type):
         "samsung": None}
     calendar_url = calendar_dict.get(indicator_type)
     return calendar_url
-      
       
      
 @st.cache_data
@@ -173,31 +171,19 @@ def display_indicators():
             data = loading_webdata(selected_maker)
             
             if selected_maker == "sony":
-                sub_tabs = st.tabs(["Specification","Price", "Header", "News", "IR", "Macro"])
+                sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
             else:
-                sub_tabs = st.tabs(["Specification", "Price"])
+                sub_tabs = st.tabs(["Specification"])
                 
             with sub_tabs[0]:
                 with st.container(): 
                     fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
                     fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
-                    st.plotly_chart(fig, use_container_width=True)  
-                              
-                with tabs[1]:  
-                    with st.container(): 
-                        data_price = loading_webdata(selected_multi_makers)
-                        fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
-                        fig.update_layout(
-                            width=500,
-                            height=col2_plot_height,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
-                    
+                    st.plotly_chart(fig, use_container_width=True)            
                     
                         
             if selected_maker == "sony":
-                with sub_tabs[2]:
+                with sub_tabs[1]:
                     with st.container():              
                         fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(return_fig=True)  
                         fig.update_layout(
@@ -206,7 +192,7 @@ def display_indicators():
                             title='',
                             margin=dict(t=20, b=0))
                         st.plotly_chart(fig, use_container_width=True)
-                with sub_tabs[3]:
+                with sub_tabs[2]:
                     calendar_url = loading_calendar(selected_maker)
                     if calendar_url is not None:
                         st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
@@ -214,7 +200,7 @@ def display_indicators():
                     else:
                         st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
                         
-                with sub_tabs[4]:
+                with sub_tabs[3]:
                     with st.container(): 
                         fig = loading_plot_financials_with_margin()
                         fig.update_layout(
@@ -306,11 +292,23 @@ def display_indicators():
             else:
                 selected_multi_makers = list(map(str.lower, selected_multi_makers))
                 
-            tab_name = ["Scores", "Data"]
+            tab_name = [ "Price", "Scores", "Data"]
             tabs = st.tabs(tab_name)
 
-                   
-            with tabs[0]:
+            with tabs[0]:  
+                with st.container(): 
+                    data_price = loading_webdata(selected_multi_makers)
+                    fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
+                    fig.update_layout(
+                        width=500,
+                        height=col2_plot_height,
+                        title='',
+                        margin=dict(t=20, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                        
+                    
+                    
+            with tabs[1]:
                 sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
                 
                 with sub_tabs[0]:
@@ -351,7 +349,7 @@ def display_indicators():
                         st.write("No information")            
                     
                     
-            with tabs[1]:
+            with tabs[2]:
                 sub_category = Rvisualizer.get_measurement_selection()
                 sub_tabs = st.tabs(sub_category)
                 
