@@ -78,6 +78,7 @@ def loading_calendar(indicator_type):
     calendar_url = calendar_dict.get(indicator_type)
     return calendar_url
       
+      
      
 @st.cache_data
 def loading_rtings(data_src='measurement'):
