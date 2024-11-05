@@ -15,16 +15,14 @@ ONLINE = True
 pio.templates.default='ggplot2'
 
 
-
 def get_recent_data_from_git(file_name):
-    recent_files = []
+    file_urls = []
     file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
-    for file in file_list:
-        if file_name in file:
-            recent_files.append(file)
-    recent_files = recent_files.sort()
-    return recent_files[-1]
-
+    for file_url in file_list:
+        if file_name in file_url:
+            file_urls.append(file_url)  
+    file_urls.sort()          
+    return file_urls[-1]
 
 @st.cache_data
 def loading_webdata(selected_maker:str):
