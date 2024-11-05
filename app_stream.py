@@ -15,6 +15,7 @@ ONLINE = True
 pio.templates.default='ggplot2'
 
 
+
 def get_recent_data_from_git(file_name):
     file_urls = []
     file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
