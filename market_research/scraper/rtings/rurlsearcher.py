@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 from market_research.scraper._scraper_scheme import Scraper
 from typing import Tuple
+from tools.file.github import GitMgt
 
 
 class Rurlsearcher(Scraper):
@@ -12,12 +13,25 @@ class Rurlsearcher(Scraper):
         super().__init__(enable_headless=enable_headless)
         self.wait_time = 2
         
+
+        
     def _get_model_info_from_mkrt(self, path_dict:dict=None) ->set:
+        def get_recent_data_from_git(file_name):
+            file_urls = []
+            file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
+            for file_url in file_list:
+                if file_name in file_url:
+                    file_urls.append(file_url)  
+            file_urls.sort()          
+            return file_urls[-1]
+                
         if path_dict is None:
-            path_dict={"sony": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/s_scrape_model_data.json",
-                    "lg": "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/l_scrape_model_data.json",
-                    "samsung":"https://raw.githubusercontent.com/xikest/research_market_tv/main/json/se_scrape_model_data.json"
+            path_dict = {
+                    "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
+                    "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
+                    "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}'
                     }
+            
             info_df = pd.DataFrame()
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
