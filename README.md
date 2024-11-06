@@ -12,9 +12,9 @@
 > [market model information](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_market_models.ipynb)  
 > [model scores & measurement](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_market_rtings.ipynb)  
 > [text analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_textanalysis.ipynb) 
-> [image analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_imganalysis.ipynb)
-> 
+> [image analysis](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_imganalysis.ipynb)  
 > [updater](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_updater.ipynb)
+
 
 
 ## 주의사항
