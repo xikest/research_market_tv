@@ -311,7 +311,7 @@ class ModelScraper_se(Scraper, Modeler):
                     asterisk_count = label.count('*')
                     label = f"{original_label}{'*' * (asterisk_count + 1)}"
                 dict_spec[label] = content
-                print(f"[{label}] {content}")
+                # print(f"[{label}] {content}")
             return dict_spec
     
         dict_spec = {}
