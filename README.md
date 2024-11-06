@@ -16,6 +16,7 @@
 > 
 > [updater](https://colab.research.google.com/github/xikest/research_market_tv/blob/main/quickguide_updater.ipynb)
 
+
 ## 주의사항
 Selenium을 사용하여 웹 스크래핑을 수행하므로 Chrome 웹 드라이버가 필요합니다.   
 Chrome 웹 드라이버를 설치하고 경로를 올바르게 설정해야 합니다.
