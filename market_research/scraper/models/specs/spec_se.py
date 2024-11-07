@@ -99,12 +99,12 @@ class ModelScraper_se(Scraper, Modeler):
                 driver = self.set_driver(url)
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
-
+                
                 while scroll_distance < scroll_distance_total:
                     for _ in range(2):
                         html = driver.page_source
                         soup = BeautifulSoup(html, 'html.parser')
-                        elements = soup.find_all('a', class_="ProductCard-learnMore-1030346118 isTvPf")
+                        elements = soup.find_all('a', class_="StarReview-review-1813701344 undefined")
                         for element in elements:
                             url_series.add(prefix + element['href'].strip())
                         driver.execute_script(f"window.scrollBy(0, {step});")
@@ -112,6 +112,8 @@ class ModelScraper_se(Scraper, Modeler):
                         scroll_distance += step
                 return url_series
             except Exception as e:
+                if self.verbose:
+                    print(f"error find_series_urls: {e}")
                 pass
             finally:
                 driver.quit()
