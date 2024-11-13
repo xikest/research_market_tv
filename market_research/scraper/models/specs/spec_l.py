@@ -7,7 +7,7 @@ import re
 import logging
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
+from market_research.scraper._scraper_scheme import Scraper, Modeler
 
 
 
@@ -43,7 +43,7 @@ class ModelScraper_l(Scraper, Modeler):
                     dict_spec['url'] = url
                     dict_models[key].update(dict_spec)
                 except Exception as e:
-                    if self.verbose == True:
+                    if self.verbose:
                         print(f"fail to collect: {url}")
                         print(e)
             return dict_models
@@ -82,6 +82,7 @@ class ModelScraper_l(Scraper, Modeler):
                         html = driver.page_source
                         soup = BeautifulSoup(html, 'html.parser')
                         elements = soup.find_all('a', class_="css-11xg6yi")
+                        
                         for element in elements:
                             url_series.add(prefix + element['href'].strip())
                         driver.execute_script(f"window.scrollBy(0, {step});")
@@ -93,7 +94,7 @@ class ModelScraper_l(Scraper, Modeler):
             finally:
                 driver.quit()
         
-        url_series = find_series_urls( url = "https://www.lg.com/us/tvs", prefix = "https://www.lg.com/")
+        url_series = find_series_urls( url = "https://www.lg.com/us/tvs", prefix = "https://www.lg.com")
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-1]}")
@@ -115,12 +116,11 @@ class ModelScraper_l(Scraper, Modeler):
             return url_models_set
             
         url_models_set = set()
-        CustomException(message=f"error_extract_models_from_series: {url}")
         try:
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
             elements = soup.find_all('a', class_='css-1a0ki8h')
             url_models_set = extract_model_url(elements)
-        except CustomException as e:
+        except Exception as e:
             pass
         finally:
             pass
@@ -255,17 +255,31 @@ class ModelScraper_l(Scraper, Modeler):
 
         
         dict_info = {}
-        print(f"Connecting to {url.split('/')[-1]}: {url}")
-        response = requests.get(url)
-        page_content = response.text
-        soup = BeautifulSoup(page_content, 'html.parser')
-        
-        dict_info.update(extract_model(soup))
-        dict_info.update(extract_prices(soup))
-        dict_info.update(extract_description(soup))
-        dict_info.update(extract_info_from_model(dict_info.get("model")))
-           
-        return dict_info
+        if self.verbose:
+            print(f"Connecting to {url.split('/')[-1]}: {url}")
+        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
+        try:
+            response = requests.get(url)
+            page_content = response.text
+            soup = BeautifulSoup(page_content, 'html.parser')
+            
+            dict_info.update(extract_model(soup))
+            dict_info.update(extract_prices(soup))
+            dict_info.update(extract_description(soup))
+            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            if self.verbose: 
+                print(dict_info)
+            logging.info(dict_info)            
+        except Exception as e:
+            if self.verbose:
+                print(f"error_extract_model_details: {url}")
+            logging.error(f"error_extract_model_details: {url}")
+            pass
+        finally:
+            return dict_info
+    
+    
+    
 
     @Scraper.try_loop(try_total=10)
     def _extract_global_specs(self, url: str) -> dict:
@@ -309,10 +323,6 @@ class ModelScraper_l(Scraper, Modeler):
                                                     'MuiTypography-root.MuiTypography-body3.css-byc8c0').text.strip()
                     content = spec_element.find_element(By.CLASS_NAME,
                                                     'MuiTypography-root.MuiTypography-body2.css-1yx8hz4').text.strip()
-
-                
-                
-
                 if label != '':
                     
                     original_label = label
@@ -326,17 +336,23 @@ class ModelScraper_l(Scraper, Modeler):
             return dict_spec
        
         dict_spec = dict()
-        CustomException(message=f"error_extract_global_specs: {url}")
         try:
             driver = self.set_driver(url)           
             find_spec_tab(driver)   
             dict_spec = extract_spec_detail(driver)
-            print(f"Received information from {url}")
-            return dict_spec
-        except CustomException as e:
+            if self.verbose:
+                print(f"Received information from {url}")
+            logging.info(f"Received information from {url}")
+        except Exception as e:
+            print(f"error extract_specs_detail from {url}")
             pass
         finally:
-            driver.quit()
+            if driver:  
+                driver.quit()    
+        return dict_spec
+            
+
+            
             
     def set_driver(self, url):
         driver = self.web_driver.get_chrome()

@@ -4,7 +4,6 @@ from pathlib import Path
 from datetime import date
 from tools.web import WebDriver
 import logging
-import os
 
 class Scraper(ABC):
 

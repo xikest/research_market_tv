@@ -8,11 +8,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
-from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
+from market_research.scraper._scraper_scheme import Scraper, Modeler
+
 import logging
 
-class ModelScraper_s(Scraper, Modeler, DataVisualizer):
+class ModelScraper_s(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="sony_model_info_web", intput_folder_path="input", output_folder_path="results",
                  wait_time=1 ,verbose=False):
@@ -214,8 +214,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             if self.verbose: 
                 print(dict_info)
             logging.info(dict_info)
-            return dict_info
-        except CustomException as e:
+        except Exception as e:
             if self.verbose:
                 print(f"error_extract_model_details: {url}")
             logging.error(f"error_extract_model_details: {url}")
@@ -223,7 +222,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
         finally:
             if driver:  
                 driver.quit()  
-    
+        return dict_info
     
     @Scraper.try_loop(5)
     def _extract_global_specs(self, url: str) -> dict:
@@ -399,7 +398,7 @@ class ModelScraper_s(Scraper, Modeler, DataVisualizer):
             if self.verbose:
                 print(f"Received information from {url}")
             logging.info(f"Received information from {url}")
-        except CustomException as e:
+        except Exception as e:
             print(f"error extract_specs_detail from {url}")
             pass
         finally:

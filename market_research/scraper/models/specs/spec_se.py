@@ -5,7 +5,8 @@ from tqdm import tqdm
 import re
 import logging
 from selenium.webdriver.common.by import By
-from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
+from selenium.webdriver.common.action_chains import ActionChains
+from market_research.scraper._scraper_scheme import Scraper, Modeler
 from tools.file import FileManager
 
 
@@ -39,11 +40,11 @@ class ModelScraper_se(Scraper, Modeler):
                 try:
                     dict_info = self._extract_model_details(url)
                     dict_models[key] = dict_info
-                    dict_spec['url'] = url
                     dict_spec = self._extract_global_specs(url=url)
+                    dict_spec['url'] = url
                     dict_models[key].update(dict_spec)
                 except Exception as e:
-                    if self.verbose == True:
+                    if self.verbose:
                         print(f"fail to collect: {url}")
                         print(e)
                     pass
@@ -56,15 +57,12 @@ class ModelScraper_se(Scraper, Modeler):
             df_models = df_models.dropna(subset=['price'])
             valid_indices = df_models['Color*'].dropna().index
             df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
-
-            
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
-            
-
         print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
+        
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
@@ -121,7 +119,7 @@ class ModelScraper_se(Scraper, Modeler):
         url_series = extract_urls_from_segments()
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
-            print(f"Series: [{i}] {url.split('/')[-1]}")
+            print(f"Series: [{i}] {url.split('/')[-2]}")
         return url_series
     
     @Scraper.try_loop(2)
@@ -131,54 +129,62 @@ class ModelScraper_se(Scraper, Modeler):
             url_models_set= set()
             radio_btns = driver.find_elements(By.CSS_SELECTOR, '.SizeTile_button_wrapper__rIeR3')
             for btn in radio_btns:
-                self.web_driver.move_element_to_center(btn)
-                btn.click()
-                time.sleep(self.wait_time)
+                ActionChains(driver).move_to_element(btn).click().perform()
                 url =  driver.current_url
                 url_models_set.add(url.strip())
             return url_models_set
-        
         url_models_set = set()
-        CustomException(message=f"error_extract_models_from_series: {url}")
         try: 
             driver = self.set_driver(url)
             url_models_set =  extract_model_url(driver)  
-        except CustomException as e:
-            if self.verbose == True:
-                print(e)
+        except Exception as e:
+            if self.verbose:
+                print(f"error_extract_models_from_series {url}")
         return url_models_set
             
-    @Scraper.try_loop(2)
+    @Scraper.try_loop(5)
     def _extract_model_details(self, url: str='') -> dict:
     
         def extract_model(driver):
-            label_element = driver.find_element(By.CLASS_NAME,"Header_sku__PBGyN")
+            label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
             label = label_element.text
             model = label.split()[-1]
+            print(f"label: {label}")
             return {"model": model}
             
         def extract_description(driver)->dict: 
-            descriptionn = driver.find_element(By.CLASS_NAME,'Header_productTitle__48wOA').text        
-            return {"description": descriptionn}
+            description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
+            print(f"description: {description}")    
+            return {"description": description}
              
         def extract_prices(driver)->dict:
             prices_dict = dict()
             try:
-                price = driver.find_element(By.CLASS_NAME,'Header_newdesc__NRnRP')          
-                split_price = price.text.split('$')
-                prices = split_price
+                price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
+                # split_price = price.text.split('\n')
+                split_price = re.split(r'[\n\s]+', price.text)
+                prices = []
+                # print(split_price)
+                for price_text in split_price:
+                    try:
+                        cleaned_price = price_text.replace('$', '').replace(',', '')
+                        # print(cleaned_price)
+                        prices.append(float(cleaned_price))
+                        # print(prices)
+                    except ValueError:
+                        continue  
+                # print(prices)
                 if len(prices) > 2:
-                    
-                    price_now = float(prices[-2].replace(',', ''))
-                    price_original = float(prices[-1].replace(',', ''))
-                    price_gap = price_original - price_now
-                    dict_info["price"] = price_now
-                    dict_info["price_original"] = price_original
-                    dict_info["price_gap"] = round(price_gap, 1)
+                    # price_now = float(prices[-2].replace(',', ''))
+                    # price_original = float(prices[-1].replace(',', ''))
+                    # price_gap = price_original - price_now
+                    dict_info["price"] = prices[0]
+                    dict_info["price_original"] = prices[1]
+                    dict_info["price_gap"] = prices[2]
                 else:
-                    price_now = float(prices[-1].replace(',', ''))
-                    dict_info["price"] = price_now
-                    prices_dict['price_original'] = price_now
+                    # price_now = float(prices[-1].replace(',', ''))
+                    dict_info["price"] = prices[0]
+                    prices_dict['price_original'] = prices[0]
                     prices_dict['price_gap'] = 0.0
             except:
                 prices_dict['price'] = float('nan')
@@ -247,8 +253,9 @@ class ModelScraper_se(Scraper, Modeler):
             return dict_info
         
         dict_info = {}
-        CustomException(message=f"error_extract_model_details: {url}")
-        print(f"Connecting to {url.split('/')[-1]}: {url}")
+        if self.verbose:
+            print(f"Connecting to {url.split('/')[-2]}: {url}")
+        logging.info(f"Connecting to {url.split('/')[-2]}: {url}")
         try: 
             driver = self.set_driver(url)
             
@@ -257,42 +264,53 @@ class ModelScraper_se(Scraper, Modeler):
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
             dict_info.update(extract_info_from_model(dict_info.get("model")))
-            return dict_info
-        except CustomException as e:
+            if self.verbose: 
+                print(dict_info)
+            logging.info(dict_info)
+            
+            
+        except Exception as e:
+            if self.verbose:
+                print(f"error_extract_model_details: {url}")
+            logging.error(f"error_extract_model_details: {url}")
             pass
         finally:
-            driver.quit()
+            if driver:  
+                driver.quit()    
+        return dict_info
 
-    @Scraper.try_loop(5)
+
+    @Scraper.try_loop(3)
     def _extract_global_specs(self, url: str) -> dict:
-       
-
-        
         def find_spec_tab(driver) -> None:
             try: 
-                element_specs = driver.find_element(By.CLASS_NAME, f"tl-btn-expand")
-                self.web_driver.move_element_to_center(element_specs)
-                time.sleep(self.wait_time)
+                # JavaScript로 'Specs' 링크 클릭
+                driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "#specsLink"))
                 
-                element_specs.click()
+                # 'See All Specs' 버튼 클릭
+                driver.execute_script("arguments[0].click();", driver.find_element(By.CSS_SELECTOR, ".keyboard_navigateable.tl-btn-expand.Specs_expandBtn__0BNA_"))
+                
                 time.sleep(self.wait_time)
-            except:
+            except Exception as e :
+                if self.verbose:
+                    print(f"error find_spec_tab {e}")
                 pass
                 time.sleep(self.wait_time)
             return None 
-            
+
         def extract_spec_detail(driver) -> dict:  
             dict_spec = {}
             try:
-                table_elements= driver.find_elements(By.CLASS_NAME, "subSpecsItem.Specs_subSpecsItem__acKTN")
-            except:                
+                table_elements = driver.find_elements(By.CLASS_NAME, "subSpecsItem.Specs_subSpecsItem__acKTN")
+            except:
                 try:
-                    table_elements= driver.find_elements(By.CLASS_NAME, "Specs_specRow__e9Ife.Specs_specDetailList__StjuR")
+                    table_elements = driver.find_elements(By.CLASS_NAME, "Specs_specRow__e9Ife.Specs_specDetailList__StjuR")
                 except:
-                    table_elements= driver.find_elements(By.CLASS_NAME, "spec-highlight__container")
-                    
-                
-                
+                    try:
+                        table_elements = driver.find_elements(By.CLASS_NAME, "spec-highlight__container")
+                    except Exception as e:
+                        print(f"error extract_spec_detail_click {e}")
+
             for element in table_elements:
                 try:
                     item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4').text
@@ -302,10 +320,12 @@ class ModelScraper_se(Scraper, Modeler):
                         item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4.Specs_type-p2__s07Sd').text
                         item_value = element.find_element(By.CLASS_NAME, 'Specs_type-p2__s07Sd.Specs_subSpecsItemValue__oWnMq').text 
                     except:
-                        item_name = element.find_element(By.CLASS_NAME, "spec-highlight__title").text
-                        item_value = element.find_element(By.CLASS_NAME, "spec-highlight__value").text 
+                        try:
+                            item_name = element.find_element(By.CLASS_NAME, "spec-highlight__title").text
+                            item_value = element.find_element(By.CLASS_NAME, "spec-highlight__value").text 
+                        except Exception as e:
+                            print(f"error extract_spec_detail_table {e}")  
 
-                     
                 label = re.sub(r'[\n?]', '', item_name)
                 content = re.sub(r'[\n?]', '', item_value)
                 original_label = label
@@ -313,22 +333,26 @@ class ModelScraper_se(Scraper, Modeler):
                     asterisk_count = label.count('*')
                     label = f"{original_label}{'*' * (asterisk_count + 1)}"
                 dict_spec[label] = content
-                # print(f"[{label}] {content}")
+                if self.verbose:
+                    print(f"[{label}] {content}")
             return dict_spec
     
         dict_spec = {}
-        CustomException(message=f"error_extract_global_specs: {url}")
         try:
             driver = self.set_driver(url)
             find_spec_tab(driver)
             dict_spec = extract_spec_detail(driver)
             
-            print(f"Received information from {url}")
-            return dict_spec
-        except CustomException as e:
+            if self.verbose:
+                print(f"Received information from {url}")
+            logging.info(f"Received information from {url}")
+        except Exception as e:
+            print(f"error extract_specs_detail from {url}")
             pass
         finally:
-            driver.quit()
+            driver.quit()  
+        return dict_spec
+
 
 
     def set_driver(self, url):
