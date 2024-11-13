@@ -370,7 +370,8 @@ class ModelScraper_s(Scraper, Modeler):
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
                     if self.verbose: 
-                        print(f"[{label}] {content}")
+                        if label == "" and content == "":
+                            print(f"[{label}] {content}")
                 ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
 
             return dict_spec

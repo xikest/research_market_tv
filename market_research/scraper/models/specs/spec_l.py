@@ -331,7 +331,8 @@ class ModelScraper_l(Scraper, Modeler):
                         label = f"{original_label}{'*' * (asterisk_count + 1)}"
                     dict_spec[label] = content
                     if self.verbose: 
-                        print(f"[{label}] {content}")
+                        if label == "" and content == "":
+                            print(f"[{label}] {content}")
 
             dict_spec.pop("*", None)            
             return dict_spec
