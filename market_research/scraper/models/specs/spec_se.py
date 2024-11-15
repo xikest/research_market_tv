@@ -151,12 +151,14 @@ class ModelScraper_se(Scraper, Modeler):
             label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
             label = label_element.text
             model = label.split()[-1]
-            print(f"label: {label}")
+            # if self.verbose:
+                # print(f"label: {label}")
             return {"model": model}
             
         def extract_description(driver)->dict: 
             description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
-            print(f"description: {description}")    
+            # if self.verbose:
+                # print(f"description: {description}")    
             return {"description": description}
              
         def extract_prices(driver)->dict:
