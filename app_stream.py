@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 
 
@@ -41,9 +41,9 @@ def loading_webdata_version(selected_maker:str):
     
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data_241105.json',
-                "lg": './json/l_scrape_model_data_241001.json',
-                "samsung": './json/se_scrape_model_data_241001.json'}
+                "sony": './json/s_scrape_model_data_241114.json',
+                "lg": './json/l_scrape_model_data_241114.json',
+                "samsung": './json/se_scrape_model_data_241114.json'}
 
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
