@@ -8,10 +8,13 @@ from market_research.ir import Calendar
 from market_research.ir import SONY_IR
 from market_research.ir import MACRO
 from tools.file.github import GitMgt
+from datetime import datetime
+
+
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -22,8 +25,29 @@ def get_recent_data_from_git(file_name):
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
-    file_urls.sort()          
+    file_urls.sort()   
+    st.write(file_urls)       
     return file_urls[-1]
+
+
+@st.cache_data
+def loading_webdata_version(selected_maker:str):
+    if ONLINE:
+        web_data = {
+                "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
+                "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
+                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}'
+                }
+    
+    else:
+        web_data = {
+                "sony": './json/s_scrape_model_data_241105.json',
+                "lg": './json/l_scrape_model_data_241001.json',
+                "samsung": './json/se_scrape_model_data_241001.json'}
+
+    version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
+    version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
+    return version_info
 
 @st.cache_data
 def loading_webdata(selected_maker:str):
@@ -38,7 +62,7 @@ def loading_webdata(selected_maker:str):
 
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data_241105.json',
+                "sony": './json/s_scrape_model_data_241001.json',
                 "lg": './json/l_scrape_model_data_241001.json',
                 "samsung": './json/se_scrape_model_data_241001.json'}
         
@@ -137,23 +161,28 @@ def download_data():
 
 def display_indicators():
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
-    st.sidebar.download_button(
-        label="DOWNLOAD DATA",
-        data=download_data(),
-        file_name=f'{selected_maker}_web_sepcs_241001.xlsx',
-        mime='application/vnd.ms-excel',
-        use_container_width=True)
+    
+    st.sidebar.write("")    
+    version = loading_webdata_version(selected_maker)
+    st.sidebar.write(f'Updated: {version}')
     
     st.sidebar.write("")   
     options = ["Web", "Multi", "Data"]
     selected_value = st.sidebar.select_slider(
         "Select your Focus:",
         options=options,
-        value="Multi"  # 기본값 설정
-    )
+        value="Multi" )
+    
+    st.sidebar.write("")   
+    today_date = datetime.now().strftime("%d_%m_%Y")
+    st.sidebar.download_button(
+        label="DOWNLOAD DATA",
+        data=download_data(),
+        file_name = f'{selected_maker}_web_sepcs_{today_date}.xlsx',
+        mime='application/vnd.ms-excel',
+        use_container_width=True)
     
     st.sidebar.write("")    
-    st.sidebar.write("Updated: 1st Oct.")
     with st.sidebar.expander("Hi 😎", expanded=False):
         st.subheader("Like this project? ")
         st.subheader("Buy me a coffee!☕️") 

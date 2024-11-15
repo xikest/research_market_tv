@@ -52,7 +52,7 @@ class ModelScraper_se(Scraper, Modeler):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            df_models = df_models.drop(['','Series'], axis=1)
+            df_models = df_models.drop(['Series'], axis=1)
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
             valid_indices = df_models['Color*'].dropna().index
