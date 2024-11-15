@@ -25,8 +25,7 @@ def get_recent_data_from_git(file_name):
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
-    file_urls.sort()   
-    st.write(file_urls)       
+    file_urls.sort()        
     return file_urls[-1]
 
 
