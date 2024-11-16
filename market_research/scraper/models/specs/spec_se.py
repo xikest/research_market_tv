@@ -25,13 +25,15 @@ class ModelScraper_se(Scraper, Modeler):
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
+            ###   
+            adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
+            url_series_set.add(adding_ex_url)
+            ###
+            
             for url in tqdm(url_series_set):
                 url_models_set = self._extract_models_from_series(url=url)
                 url_set.update(url_models_set)
-            ###   
-            adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
-            url_set.add(adding_ex_url)
-            ###
+
             url_dict = {idx: url for idx, url in enumerate(url_set)}
             print(f"Total model: {len(url_dict)}")
             return url_dict
