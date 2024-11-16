@@ -25,10 +25,7 @@ class ModelScraper_se(Scraper, Modeler):
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
-            ###   
-            adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
-            url_series_set.add(adding_ex_url)
-            ###
+
             
             for url in tqdm(url_series_set):
                 url_models_set = self._extract_models_from_series(url=url)
@@ -121,6 +118,10 @@ class ModelScraper_se(Scraper, Modeler):
                 driver.quit()
                
         url_series = extract_urls_from_segments()
+        ###   
+        adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
+        url_series.add(adding_ex_url)
+        ###
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-2]}")
