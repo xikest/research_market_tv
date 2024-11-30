@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.io as pio
 from io import BytesIO
+import requests
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.ir import Calendar
@@ -21,7 +22,10 @@ pio.templates.default='ggplot2'
 
 def get_recent_data_from_git(file_name):
     file_urls = []
-    file_list = GitMgt.get_github_folder_files("xikest", "research_market_tv", "json")
+    url  = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/stream_data_list.json"
+    response = requests.get(url)
+    data = response.json()
+    file_list = list(data.values())
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
