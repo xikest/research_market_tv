@@ -1,16 +1,11 @@
-from bs4 import BeautifulSoup
 import time
 from tqdm import tqdm
 import pandas as pd
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+import logging
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler
 
-import logging
 
 class ModelScraper_p(Scraper, Modeler):
     def __init__(self, enable_headless=True,
@@ -44,7 +39,6 @@ class ModelScraper_p(Scraper, Modeler):
                     dict_models[key].update(dict_spec)
                 except Exception as e:
                     pass
-            # print(dict_models) ##ss
             return dict_models
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
@@ -57,7 +51,6 @@ class ModelScraper_p(Scraper, Modeler):
         print("start collecting data")
         logging.info("start collecting data")
         url_dict = find_urls()
-        # url_dict = {"0":"https://shop.panasonic.com/products/panasonic-led-tv-w95a-series"}
         dict_models = extract_specs(url_dict)
         df_models = transform_format(dict_models, json_file_name="p_scrape_model_data.json")
 

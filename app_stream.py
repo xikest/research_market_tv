@@ -39,14 +39,16 @@ def loading_webdata_version(selected_maker:str):
         web_data = {
                 "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
                 "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
-                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}'
+                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
+                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}'
                 }
     
     else:
         web_data = {
                 "sony": './json/s_scrape_model_data_241114.json',
                 "lg": './json/l_scrape_model_data_241114.json',
-                "samsung": './json/se_scrape_model_data_241114.json'}
+                "samsung": './json/se_scrape_model_data_241114.json',
+                "panasonic": './json/p_scrape_model_data_250104.json'}
 
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
@@ -60,14 +62,16 @@ def loading_webdata(selected_maker:str):
         web_data = {
                 "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
                 "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
-                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}'
+                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
+                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}'
                 }
 
     else:
         web_data = {
                 "sony": './json/s_scrape_model_data_241001.json',
                 "lg": './json/l_scrape_model_data_241001.json',
-                "samsung": './json/se_scrape_model_data_241001.json'}
+                "samsung": './json/se_scrape_model_data_241001.json',
+                "panasonic": './json/p_scrape_model_data_250104.json'}
         
     data_all = pd.DataFrame()
     if isinstance(selected_maker, list):
@@ -99,9 +103,10 @@ def loading_webdata(selected_maker:str):
 def loading_calendar(indicator_type):
     calendar_url = None
     calendar_dict = {
-        "sony": f'https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&showTz=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%233F51B5&color=%234285F4',
+        "sony": f'"https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&showTabs=0&showCalendars=0&showTz=0&showTitle=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23D50000&color=%234285F4" style="border-width:0" width="800" height="600" frameborder="0" scrolling="no"',
         "lg": None,
-        "samsung": None}
+        "samsung": None,
+        "panasonic": None}
     calendar_url = calendar_dict.get(indicator_type)
     return calendar_url
       
