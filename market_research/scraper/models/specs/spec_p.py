@@ -1,151 +1,274 @@
-import time
 from bs4 import BeautifulSoup
+import time
 from tqdm import tqdm
-from collections import OrderedDict
 import pandas as pd
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from tools.file import FileManager
-from market_research.scraper._scraper_scheme import Scraper, Modeler, CustomException
-from market_research.scraper.models.visualizer.data_visualizer import DataVisualizer
+from market_research.scraper._scraper_scheme import Scraper, Modeler
 
-class ModelScraper_p(Scraper, Modeler, DataVisualizer):
+import logging
 
+class ModelScraper_p(Scraper, Modeler):
     def __init__(self, enable_headless=True,
-                 export_prefix="pana_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 verbose: bool = False, wait_time=1):
-        super().__init__(enable_headless=enable_headless, export_prefix=export_prefix,
-                         intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
-        self.tracking_log = verbose
+                 export_prefix="panasonic_model_info_web", intput_folder_path="input", output_folder_path="results",
+                 wait_time=1 ,verbose=False):
+        Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
         self.wait_time = wait_time
-
-
-    def get_models_info(self, format_df: bool = True, show_visit:bool=False):
-        print("collecting models")
-        setUrlSeries = self._get_spec_series()
-        ## 웹페이지의 모든 모델 url을 추출
-        print("collecting spec")
-        visit_url_dict = {}
-        dictModels = OrderedDict()
-        cnt_loop=2
-        for cnt in range(cnt_loop):#main try
-            for model, url in tqdm(setUrlSeries.items()):
+        self.verbose = verbose
+        pass
+    
+    def fetch_model_data(self) -> pd.DataFrame:
+        def find_urls() -> dict:
+            url_set = set()
+            url_series_set = self._get_series_urls()
+            for url in url_series_set:
+                url_models_set = self._extract_models_from_series(url=url)
+                url_set.update(url_models_set)
+            url_dict = {idx: url for idx, url in enumerate(url_set)}
+            print(f"Total model: {len(url_dict)}")
+            logging.info(f"Total model: {len(url_dict)}")
+            return url_dict
+        
+        def extract_specs(url_dict):
+            dict_models = {}
+            for key, url in tqdm(url_dict.items()):
                 try:
-                    # print(model,":", url)
-                    modelspec = self._get_spec_global(url=url)
-                    modelspec["url"] = url
-                    dictModels[model] = modelspec
-
-                    visit_url_dict[model] = url
+                    dict_info = self._extract_model_details(url)
+                    dict_models[key] = dict_info
+                    dict_spec = self._extract_global_specs(url=url)
+                    dict_spec['url'] = url
+                    dict_models[key].update(dict_spec)
                 except Exception as e:
-                    if cnt == cnt_loop - 1 :
-                        print(f"\nFailed to get info from {model}")
-                        print(e)
                     pass
-            break
-        if show_visit:
-            print("\n")
-            for model, url in visit_url_dict.items():  print(f"{model}: {url}")
-            # print("Number of all Series:", len(dictModels))
-
-        if format_df:
-            df_models = pd.DataFrame.from_dict(dictModels).T
-            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name, sheet_name="raw_na", mode='w')
+            # print(dict_models) ##ss
+            return dict_models
+        
+        def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
+            df_models = pd.DataFrame.from_dict(dict_models).T
+            df_models = df_models.dropna(subset=['price'])
+            df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
-        else:
-            return dictModels
+        
+        
+        print("start collecting data")
+        logging.info("start collecting data")
+        url_dict = find_urls()
+        # url_dict = {"0":"https://shop.panasonic.com/products/panasonic-led-tv-w95a-series"}
+        dict_models = extract_specs(url_dict)
+        df_models = transform_format(dict_models, json_file_name="p_scrape_model_data.json")
 
-    ###=====================get info main page====================================##
-    def _get_spec_series(self, url: str = "https://www.panasonic.com/uk/consumer/televisions/4K-OLED-TV.html") -> dict:
-        step: int = 200
-        series_dict = OrderedDict()
+        FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
+        return df_models
+    
+    @Scraper.try_loop(2)
+    def _get_series_urls(self) -> set:
+        def find_series_urls(url:str, prefix:str) -> set:
+            print(f"Starting to scrape series URLs from: {url}")
+            logging.info(f"Starting to scrape series URLs from: {url}")
+            url_series = set()
+            url = url
+            prefix = prefix
+            step = 200
+            try:
+                driver = self.set_driver(url)
+                scroll_distance_total = self.web_driver.get_scroll_distance_total()
+                scroll_distance = 0
+
+                while scroll_distance < scroll_distance_total:
+                    for _ in range(2):
+                        elements = driver.find_elements(By.CLASS_NAME, "product-card__figure")
+                        for element in elements:
+                            try:
+                                a_tag = element.find_element(By.TAG_NAME, 'a')  # `a` 태그를 찾음
+                                link = a_tag.get_attribute('href')  # href 속성 가져오기
+                                if link:  # 유효한 링크인지 확인
+                                    url_series.add(link.strip())
+                            except Exception as e:
+                                print(f"Error extracting href: {e}")
+                        driver.execute_script(f"window.scrollBy(0, {step});")
+                        time.sleep(self.wait_time)
+                        scroll_distance += step
+                return url_series
+            except Exception as e:
+                if self.verbose:
+                    print(f"{e}")
+                logging.error(f"{e}")
+                pass
+            finally:
+                if driver:  
+                    driver.quit()                 
+        url_series = find_series_urls(url = "https://shop.panasonic.com/collections/televisions", prefix = "https://shop.panasonic.com/")
+        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        logging.info(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        for i, url in enumerate(url_series, start=1):
+            print(f"Series: [{i}] {url.split('/')[-1]}")
+            logging.info(f"Series: [{i}] {url.split('/')[-1]}")
+        return url_series
+    
+    @Scraper.try_loop(2)
+    def _extract_models_from_series(self, url: str) -> set:
+        url_models_set = set()
+        print(f"Trying to extract models from series: {url}")
+        logging.info(f"Trying to extract models from series: {url}")
+        
+        driver = self.set_driver(url)        
+        try: 
+            elements = driver.find_elements(By.CLASS_NAME, 'block-swatch')
+            
+            for element in elements:
+                element.click()  # 
+                time.sleep(2)  #
+                current_url = driver.current_url
+                if current_url:  
+                    url_models_set.add(current_url.strip())
+            print("Extracted models from series")
+            logging.info(f"Trying to extract models from series: {url}")
+        except Exception as e:
+            if self.verbose:
+                print(f"Error extracting models from series: {e}")
+            logging.error(f"Error extracting models from series: {e}")
+        finally:
+            if driver:  
+                driver.quit()  
+                
+        return url_models_set
+        
+    
+            
+    @Scraper.try_loop(2)
+    def _extract_model_details(self, url: str) -> dict:
+        
+        def extract_model(driver):
+            model = driver.find_element(By.CSS_SELECTOR, ".product-info__sku.text-16.text-subdued")
+            model = model.text.split(":")[-1].strip()
+            return {"model": model}
+        
+        def extract_description(driver)->dict:
+            try:
+                description= driver.find_element(By.CSS_SELECTOR, "h1.product-info__title").text
+            except:
+                description = ""
+            return {"description": description}
+        
+        def extract_prices(driver)->dict:
+            prices_dict = dict()
+
+            try:
+                price_now = driver.find_element(By.CSS_SELECTOR, "price-list .text-lg").text
+                price_now = price_now.split("$")[-1]
+                price_now = float(price_now.replace('$', '').replace(',', ''))
+                prices_dict['price'] = price_now
+                prices_dict['price_original'] = price_now
+                prices_dict['price_gap'] = 0.0
+            except Exception as e:
+                print(e)
+                prices_dict['price'] = float('nan')
+                prices_dict['price_original'] = float('nan')
+                prices_dict['price_gap'] = float('nan')
+            return prices_dict
+        
+        def extract_info_from_model(model: str)->dict:
+            dict_info = {}
+            model = model.lower()
+            dict_info["model"] = model
+            dict_info["year"] = model.split("-")[-1]
+            dict_info["series"] = model.split("-")[1][2:]
+            dict_info["size"] = model.split("-")[1][:2]
+            # dict_info["grade"] = model.split("-")[0]
+                
+            year_mapping = {
+                't': "2024",
+            }
+
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), "2025")
+
+            return dict_info
+        
+        dict_info = {}
+        if self.verbose:
+            print(f"Connecting to {url.split('/')[-1]}: {url}")
+        logging.info(f"Connecting to {url.split('/')[-1]}: {url}")
+        try:
+            driver = self.set_driver(url)
+            
+            # Extract model
+            dict_info.update(extract_model(driver))
+            dict_info.update(extract_description(driver))
+            dict_info.update(extract_prices(driver))
+            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            if self.verbose: 
+                print(dict_info)
+            logging.info(dict_info)
+        except Exception as e:
+            print(e)
+            if self.verbose:
+                print(f"error_extract_model_details: {url}")
+            logging.error(f"error_extract_model_details: {url}")
+            pass
+        finally:
+            if driver:  
+                driver.quit()  
+        return dict_info
+    
+    @Scraper.try_loop(5)
+    def _extract_global_specs(self, url: str) -> dict:
+        
+        
+        def find_spec_tab(driver) -> None:
+            def act_click_see_more(driver):
+                try: 
+                    element = driver.find_element(By.CLASS_NAME,'feature-chart__toggle')
+                    element_see_more = element.find_element(By.CLASS_NAME, 'text-with-icon.group')
+                    # self.web_driver.move_element_to_center(element_see_more)
+                    element_see_more.click()
+                    logging.debug("Clicked the 'see more' button from the first locator.")
+                    driver.save_screenshot("41act_click_see_more.png")                
+                except Exception as e:
+                    if self.verbose:
+                        print(f"Cannot find the 'see more' button from the second locator: {e}")
+                        logging.error(f"Cannot find the 'see more' button from the second locator: {e}")
+                time.sleep(self.wait_time)
+                return None
+            
+            act_click_see_more(driver)       
+            return None
+            
+        def extract_specs_detail(driver) -> dict:
+            dict_spec = {}
+            table = driver.find_element(By.CLASS_NAME, 'section-stack.section-stack--horizontal ')
+            rows = table.find_elements(By.CLASS_NAME, 'feature-chart__table-row')
+            for row in rows:
+                text = row.text.split('\n')
+                label = text[0]
+                value = text[-1] 
+                dict_spec[label] = value        
+            return dict_spec
+        
+        dict_specs = {}
+            
+        try:
+            driver = self.set_driver(url)
+            find_spec_tab(driver)   
+            dict_specs.update(extract_specs_detail(driver))
+            if self.verbose:
+                print(f"Received information from {url}")
+            logging.info(f"Received information from {url}")
+        except Exception as e:
+            print(f"error extract_specs_detail from {url}")
+            print(e)
+            pass
+        finally:
+            if driver:  
+                driver.quit()  
+        return dict_specs
+        
+        
+    def set_driver(self, url):
         driver = self.web_driver.get_chrome()
         driver.get(url=url)
         time.sleep(self.wait_time)
-        scroll_distance_total = self.web_driver.get_scroll_distance_total()
-        scroll_distance = 0  # 현재까지 스크롤한 거리
-
-        while scroll_distance < scroll_distance_total:
-            html = driver.page_source
-            series_dict.update(self._get_spec_series_extact(html))
-            # 한 step씩 스크롤 내리기
-            driver.execute_script(f"window.scrollBy(0, {step});")
-            time.sleep(self.wait_time)  # 스크롤이 내려가는 동안 대기
-            scroll_distance += step
-        driver.quit()
-        # print(f"number of total Series: {len(series_dict)}")
-        return series_dict
-
-
-    def _get_spec_series_extact(self, html) -> dict:
-        soup = BeautifulSoup(html, 'html.parser')
-        results = {}
-        prefix = "https://www.panasonic.com"
-        items = soup.find_all('div', class_='categorybrowse-results-items__col')
-        for item in items:
-            link = item.find('a', class_='linkarea')
-            title = item.find('div', class_='common-productbox-product__title')
-            if link and title:
-                link_url = link['href']
-                title_text = title.text.strip()
-                results[title_text] = prefix + link_url
-        return results
-
-    def _get_spec_global(self, url: str) -> dict:
-        cntTryTotal = 20
-        driver = None
-        for cntTry in range(cntTryTotal):
-            model = url.rsplit('/', 1)[-1]
-
-            try:
-                driver = self.web_driver.get_chrome()
-                driver.get(url=url)
-                # Selenium을 사용하여 페이지 소스 가져오기
-                page_source = driver.page_source
-                # BeautifulSoup를 사용하여 페이지 소스 파싱
-                soup = BeautifulSoup(page_source, 'html.parser')
-                dictSpec = self._extract_data_from_page(soup)
-                return dictSpec
-
-            except Exception as e:
-                if self.tracking_log:
-                    print(f"getPage3rd error: {model} try {cntTry + 1}/{cntTryTotal}")
-                    print(e)
-                driver.quit()
-                pass
-
-    def _extract_data_from_page(self, soup):
-        # <li class="speclist__item lv2"> 요소 찾기
-        # items = soup.find_all('li', class_=className)
-
-        # 딕셔너리 초기화
-        result_dict = {}
-        hierarchy = self._extract_hierarchy(soup, [['speclist__item lv1'], ['speclist__item lv2'], ['speclist__item lv3'],['speclist__item lv4']])
-        return hierarchy
-
-    def _extract_hierarchy(self, element, classNames=['speclist__item lv1'], cnt=0):
-        hierarchy = {}
-        lv1_elements = element.find_all('li', class_=classNames[cnt])  # 최상위
-        cnt += 1
-        for lv1_element in lv1_elements:
-            key_element = lv1_element.find('div', class_='speclist__item__ttl')
-            if key_element is not None:
-                key = key_element.get_text(strip=True)
-                try:
-                    lv2_element = lv1_element.find('ul', class_='speclist__item')
-                    hierarchy[key] = self._extract_hierarchy(lv2_element, classNames=classNames, cnt=cnt)
-                except:
-                    data_element = lv1_element.find('div', class_='speclist__item__data')
-                    hierarchy[key] = data_element.get_text(strip=True)
-
-            siblings = lv1_element.find_next_siblings(['ul', 'li'], class_=['speclist__item', classNames[cnt]])
-            for sibling in siblings:
-                sibling_key_element = sibling.find('div', class_='speclist__item__ttl')
-                if sibling_key_element is not None:
-                    sibling_key = sibling_key_element.get_text(strip=True)
-                    try:
-                        sibling_lv2_element = sibling.find('ul', class_='speclist__item')
-                        hierarchy[sibling_key] = self._extract_hierarchy(sibling_lv2_element, classNames=classNames,
-                                                                           cnt=cnt)
-                    except:
-                        sibling_data_element = sibling.find('div', class_='speclist__item__data')
-                        hierarchy[sibling_key] = sibling_data_element.get_text(strip=True)
-        return hierarchy
+        return driver
