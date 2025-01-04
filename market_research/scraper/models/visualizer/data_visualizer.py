@@ -7,7 +7,7 @@ from market_research.scraper._visualization_scheme import BaseVisualizer
 import requests
 import plotly.io as pio
 import plotly.express as px
-
+import streamlit as st  ##ss
 
 class DataVisualizer(BaseVisualizer):
     def __init__(self, df:pd.DataFrame, maker:str,  output_folder_path="results"):
@@ -281,9 +281,9 @@ class DataVisualizer(BaseVisualizer):
                 print(col)
 
         data_df = data_df[available_columns]
-        if display_types is not None:
-            condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
-            data_df = data_df[condition]
+        # if display_types is not None:
+        #     condition = data_df.index.get_level_values('display type').str.contains('|'.join(display_types), case=False, na=False)
+        #     data_df = data_df[condition]
         data_df = data_df.mask(data_df == '-', 0)
         data_df = data_df.fillna(0)
         
@@ -305,7 +305,6 @@ class DataVisualizer(BaseVisualizer):
         mask_data = mask_data.replace(0, '').set_index(idx_names).sort_index(ascending=True).T
         
         x_labels = [f"{str(idx[1]).upper()} ({str(idx[0])})" for idx in heatmap_data.columns]
-        
         years = sorted(heatmap_data.columns.get_level_values(0).unique(), reverse=True)        
         year_heatmapdf_dict = {}
         year_mask_dict = {}
@@ -318,7 +317,7 @@ class DataVisualizer(BaseVisualizer):
         initial_year = years[0]
         fig = go.Figure(data=go.Heatmap(
             z=year_heatmapdf_dict.get(initial_year).values,  
-            x=[f"{str(idx[0]).upper()} ({initial_year})" for idx in year_heatmapdf_dict.get(initial_year).columns],  
+            x=[f"{str(idx).upper()} ({initial_year})" for idx in year_heatmapdf_dict.get(initial_year).columns],  
             y=year_heatmapdf_dict.get(initial_year).index.str.capitalize(),   
             colorscale=cmap,         
             showscale=False,

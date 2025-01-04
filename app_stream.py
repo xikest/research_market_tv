@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG", "PANASONIC"]
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -283,41 +283,42 @@ def display_indicators():
                 with sub_tabs[4]:
 
                         sub_tabs_height = 150
-                        fig = MACRO.plot_economic_indicator('RSEAS')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Advance Retail Sales: Electronics and Appliance Stores')
+                        st.write("fixing")
+                        # fig = MACRO.plot_economic_indicator('RSEAS')
+                        # fig.update_layout(
+                        #     width=500,
+                        #     height=sub_tabs_height,
+                        #     title='Advance Retail Sales: Electronics and Appliance Stores')
 
-                        st.plotly_chart(fig, use_container_width=True)
-                        fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
-                        st.plotly_chart(fig, use_container_width=True)
+                        # st.plotly_chart(fig, use_container_width=True)
+                        # fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
+                        # fig.update_layout(
+                        #     width=500,
+                        #     height=sub_tabs_height,
+                        #     title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
+                        # st.plotly_chart(fig, use_container_width=True)
                 
                         
-                        fig = MACRO.plot_economic_indicator('CPIAUCSL')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='CPI: for All Urban Consumers')
-                        st.plotly_chart(fig, use_container_width=True)
+                        # fig = MACRO.plot_economic_indicator('CPIAUCSL')
+                        # fig.update_layout(
+                        #     width=500,
+                        #     height=sub_tabs_height,
+                        #     title='CPI: for All Urban Consumers')
+                        # st.plotly_chart(fig, use_container_width=True)
                         
-                        fig = MACRO.plot_economic_indicator('A35SNO')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='New Orders: Electrical Equipment, Appliances and Components')
-                        st.plotly_chart(fig, use_container_width=True)
+                        # fig = MACRO.plot_economic_indicator('A35SNO')
+                        # fig.update_layout(
+                        #     width=500,
+                        #     height=sub_tabs_height,
+                        #     title='New Orders: Electrical Equipment, Appliances and Components')
+                        # st.plotly_chart(fig, use_container_width=True)
                         
-                        fig = MACRO.plot_economic_indicator('POILBREUSDM')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Global price of Brent Crude')
-                        st.plotly_chart(fig, use_container_width=True)
+                        # fig = MACRO.plot_economic_indicator('POILBREUSDM')
+                        # fig.update_layout(
+                        #     width=500,
+                        #     height=sub_tabs_height,
+                        #     title='Global price of Brent Crude')
+                        # st.plotly_chart(fig, use_container_width=True)
                         
     if selected_value == options[1] or selected_value == options[2] :
                                
