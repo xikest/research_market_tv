@@ -8,7 +8,6 @@ from market_research.scraper import Rvisualizer
 from market_research.ir import Calendar
 from market_research.ir import SONY_IR
 from market_research.ir import MACRO
-from tools.file.github import GitMgt
 from datetime import datetime
 
 
@@ -27,7 +26,6 @@ def get_recent_data_from_git(file_name):
     response = requests.get(url)
     data = response.json()
     file_list = list(data.values())
-    st.write(file_list)
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
