@@ -254,7 +254,7 @@ class DataVisualizer(BaseVisualizer):
     def heatmap_spec(self, col_selected:list=None, display_types:str=None, cmap="Blues", return_fig=False):
         if col_selected is None:
             try:
-                file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/col_heatmap.json"                
+                file_path = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/col_heatmap.json"              
                 response = requests.get(file_path)
                 data = response.json()
                 col_selected = data.get(self.maker)

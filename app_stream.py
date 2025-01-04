@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 makers = ["SONY", "LG", "SAMSUNG", "PANASONIC"]
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 
 
@@ -85,7 +85,7 @@ def loading_webdata(selected_maker:str):
                     selected_data.columns = selected_data.columns.str.lower().str.strip()
                     selected_data.loc[:, 'series'] = f"[{maker}] " + selected_data['series']
                     selected_data = selected_data.dropna(subset=['price'])
-                    data_all = pd.concat([data_all, selected_data[["year", "display type", "size", "series", "model", "grade", "price", "price_original", "price_gap", "description"]]], axis=0)
+                    data_all = pd.concat([data_all, selected_data[["year", "size", "series", "price", "price_original", "price_gap", "description"]]], axis=0)
                 except:
                     continue
             
@@ -346,63 +346,70 @@ def display_indicators():
                     st.plotly_chart(fig, use_container_width=True)
                         
                     
+            if selected_maker == 'panasonic': ## temp
+                with tabs[1]:
+                    st.write("now preparing")
+                with tabs[2]:
+                    st.write("now preparing")
                     
-            with tabs[1]:
-                sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
-                
-                with sub_tabs[0]:
-                    data = loading_rtings('scores')
-                    fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-                    if fig != None:
-                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.write("No information")
-                        
-                with sub_tabs[1]:
-                    data = loading_rtings( 'measurement')
-                    fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
-                    if fig != None:
-                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.write("No information")
-                        
-                with sub_tabs[2]:
-                    data = loading_rtings('measurement')
-                    fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
-                    if fig != None:
-                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.write("No information")
-                        
-                with sub_tabs[3]:
-                    data = loading_rtings('measurement')
-                    
-                    try:
-                        fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
-                        fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                        st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("No information")            
-                    
-                    
-            with tabs[2]:
-                sub_category = Rvisualizer.get_measurement_selection()
-                sub_tabs = st.tabs(sub_category)
-                
-                for i, category in enumerate(sub_category):
-                    with sub_tabs[i]:
-                        data = loading_rtings('measurement')
-                        fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
-                        if fig != None:
-                            fig.update_layout(width=600, height=col2_plot_height, 
-                                            margin=dict(t=0, r=0, b=20))
-                            
-                            st.plotly_chart(fig, use_container_width=True)
+            else:     
+                with tabs[1]:
 
+                    sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
                     
+                    with sub_tabs[0]:
+                        data = loading_rtings('scores')
+                        fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                        if fig != None:
+                            fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.write("No information")
+                            
+                    with sub_tabs[1]:
+                        data = loading_rtings( 'measurement')
+                        fig = Rvisualizer(data, selected_multi_makers).radar_scores(return_fig=True)   
+                        if fig != None:
+                            fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.write("No information")
+                            
+                    with sub_tabs[2]:
+                        data = loading_rtings('measurement')
+                        fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
+                        if fig != None:
+                            fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.write("No information")
+                            
+                    with sub_tabs[3]:
+                        data = loading_rtings('measurement')
+                        
+                        try:
+                            fig = Rvisualizer(data, selected_multi_makers).plot_pca(return_fig=True)   
+                            fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except:
+                            st.write("No information")            
+                        
+                        
+                with tabs[2]:
+                    sub_category = Rvisualizer.get_measurement_selection()
+                    sub_tabs = st.tabs(sub_category)
+                    
+                    for i, category in enumerate(sub_category):
+                        with sub_tabs[i]:
+                            data = loading_rtings('measurement')
+                            fig = Rvisualizer(data, selected_multi_makers).plot_facet_bar(category, return_fig=True)   
+                            if fig != None:
+                                fig.update_layout(width=600, height=col2_plot_height, 
+                                                margin=dict(t=0, r=0, b=20))
+                                
+                                st.plotly_chart(fig, use_container_width=True)
+
+                        
 
 if __name__ == "__main__":
     display_indicators()

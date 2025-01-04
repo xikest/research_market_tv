@@ -40,7 +40,7 @@ class DataCleaner:
 
     def get_price_df(self):
             df = self.df[
-                ["year", "size", "series", "model", "price", "price_original", "price_gap", "description"]]
+                ["year", "size", "series", "price", "price_original", "price_gap", "description"]]
             df = df.sort_values(["price", "year", "series", "size", ], ascending=False)
             df = df.dropna(subset=['price'])  #
             df['price_gap'] = df['price_gap'].fillna(0)
@@ -70,9 +70,7 @@ class DataCleaner:
     def get_df_cleaned(self):
         if self.df is not None:
             df = self.df
-            # df["display type"] = df["display type"].str.replace(r'display|4k ', '', regex=True)
-            df = df.set_index(["year", "series"]).drop(
-                ["model"], axis=1)
+            df = df.set_index(["year", "series"])
             df = df.fillna("-")
             
             return df
