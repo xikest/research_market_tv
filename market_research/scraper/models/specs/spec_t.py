@@ -2,14 +2,9 @@ from bs4 import BeautifulSoup
 import time
 from tqdm import tqdm
 import pandas as pd
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler
-
 import logging
 
 class ModelScraper_t(Scraper, Modeler):
@@ -57,7 +52,7 @@ class ModelScraper_t(Scraper, Modeler):
         print("start collecting data")
         logging.info("start collecting data")
         url_dict = find_urls()
-        ## 여기까지 함
+        # url_dict = {"0":"https://www.tcl.com/us/en/products/home-theater/qm8-class/65-class-4k-qd-mini-led-qled-hdr-google-tv-65qm851g"} ##SS
         dict_models = extract_specs(url_dict)
         df_models = transform_format(dict_models, json_file_name="t_scrape_model_data.json")
             
@@ -227,53 +222,30 @@ class ModelScraper_t(Scraper, Modeler):
                 
             return None 
             
-        def extract_specs_detail(driver) -> dict:
-            def convert_soup_to_dict(soup):
-                """
-                Convert BeautifulSoup soup to dictionary.
-                """
-                try:
-                    h4_tag = soup.find('h4').text.strip()
-                    p_tag = soup.find('p').text.strip()
-                except :
-                    try:
-                        h4_tag = soup.find('h4').text.strip()
-                        p_tag = ""
-                    except Exception as e:
-                        if self.verbose:
-                            print("Parser error", exc_info=e)
-                            logging.error("Parser error", exc_info=e)
-                        h4_tag = "Parser error"
-                        p_tag = "Parser error"
-                return h4_tag, p_tag
-            
+        def extract_specs_detail(driver) -> dict:         
             dict_spec = {}
-            # driver.find_element(By.ID, "ngb-nav-0-panel").click()
-            for _ in range(15):
-                elements = driver.find_elements(By.CLASS_NAME,"table aem-GridColumn aem-GridColumn--default--12")
+            try:
+                elements = driver.find_elements(By.CLASS_NAME,"table.aem-GridColumn.aem-GridColumn--default--12")
                 for element in elements:
                     soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
-                    label, content  = convert_soup_to_dict(soup)
-                    original_label = label
-                    while label in dict_spec and dict_spec.get(label)!=content:
-                        asterisk_count = label.count('*')
-                        label = f"{original_label}{'*' * (asterisk_count + 1)}"
-                    dict_spec[label] = content
-                    if self.verbose: 
-                        if label == "" and content == "":
-                            print(f"[{label}] {content}")
-                ActionChains(driver).key_down(Keys.PAGE_DOWN).perform()
-
-            return dict_spec
-        
-        dict_spec = {}
-
+                    table = soup.find('table')
+                    rows = table.find_all('tr')
+                    for row in rows:
+                        columns = row.find_all('td')
+                        if len(columns) == 2:
+                            label = columns[0].find('p').get_text(strip=True)
+                            value = columns[1].get_text(strip=True)
+                            dict_spec[label] = value
+                return dict_spec
+            except Exception as e:
+                print(e)
+                
+        dict_specs = {}
         try:
             driver = self.set_driver(url)
             find_spec_tab(driver)   
             driver.save_screenshot(f'{url}.png')
-            ## 여기까지 함
-            dict_spec.update(extract_specs_detail(driver))
+            dict_specs.update(extract_specs_detail(driver))
             if self.verbose:
                 print(f"Received information from {url}")
             logging.info(f"Received information from {url}")
@@ -284,7 +256,7 @@ class ModelScraper_t(Scraper, Modeler):
             if driver:  
                 driver.quit()  
             
-        return dict_spec
+        return dict_specs
         
 
     def set_driver(self, url):
