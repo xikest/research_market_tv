@@ -79,9 +79,8 @@ class ModelScraper_se(Scraper, Modeler):
                 "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
                 "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
                 "crystal_uhd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
-                "hd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=HD+TVs",
-                "micro_led":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Micro+Led"
-            }
+                "hd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=HD+TVs"
+                }
             url_series = set()
             
             for seg, seg_url in seg_urls.items():

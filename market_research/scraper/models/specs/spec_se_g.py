@@ -75,16 +75,9 @@ class ModelScraper_se_g(Scraper, Modeler):
 
         def extract_urls_from_segments():
             seg_urls = {
-                "flat": "https://www.samsung.com/us/computing/monitors/all-monitors/?technology=Flat",
-                "high_resolution": "https://www.samsung.com/us/computing/monitors/uhd-and-wqhd/",
-                "oled_gaming": "https://www.samsung.com/us/computing/monitors/oled-monitor/",
-                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/",
-                "smart": "https://www.samsung.com/us/computing/monitors/smart-monitors/",
-                "curved": "https://www.samsung.com/us/computing/monitors/all-monitors/?technology=Curved",
-                "5k":"https://www.samsung.com/us/computing/monitors/all-monitors/?technology=5K"
-                
-                
-            }
+                "featured_gaming_monitors": "https://www.samsung.com/us/computing/monitors/gaming/?technology=Featured-gaming-monitors",
+                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
+                }
             url_series = set()
             
             for seg, seg_url in seg_urls.items():
