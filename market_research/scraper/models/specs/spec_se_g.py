@@ -8,9 +8,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from market_research.scraper._scraper_scheme import Scraper, Modeler
 from tools.file import FileManager
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
-
-class ModelScraper_se(Scraper, Modeler):
+class ModelScraper_se_g(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="sse_model_info_web", intput_folder_path="input", output_folder_path="results",
                  wait_time=2, verbose=False):
@@ -74,13 +75,15 @@ class ModelScraper_se(Scraper, Modeler):
 
         def extract_urls_from_segments():
             seg_urls = {
-                "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
-                "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
-                "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
-                "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
-                "crystal_uhd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
-                "hd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=HD+TVs",
-                "micro_led":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Micro+Led"
+                "flat": "https://www.samsung.com/us/computing/monitors/all-monitors/?technology=Flat",
+                "high_resolution": "https://www.samsung.com/us/computing/monitors/uhd-and-wqhd/",
+                "oled_gaming": "https://www.samsung.com/us/computing/monitors/oled-monitor/",
+                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/",
+                "smart": "https://www.samsung.com/us/computing/monitors/smart-monitors/",
+                "curved": "https://www.samsung.com/us/computing/monitors/all-monitors/?technology=Curved",
+                "5k":"https://www.samsung.com/us/computing/monitors/all-monitors/?technology=5K"
+                
+                
             }
             url_series = set()
             
@@ -106,8 +109,10 @@ class ModelScraper_se(Scraper, Modeler):
                 except Exception as e:
                     # print(e)
                     clickalble = False
-            
+        
+                
         def find_series_urls(url:str, prefix:str) -> set:
+        
             print(f"Starting to scrape series URLs from: {url}")
             prefix = "https://www.samsung.com"
             url_series = set()
@@ -118,6 +123,7 @@ class ModelScraper_se(Scraper, Modeler):
             try:
                 driver = self.set_driver(url)
                 click_view_all(driver)
+
                 
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0

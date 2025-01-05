@@ -8,10 +8,10 @@ import logging
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler
-from selenium.webdriver.common.action_chains import ActionChains
 
 
-class ModelScraper_l(Scraper, Modeler):
+
+class ModelScraper_l_g(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="lge_model_info_web", intput_folder_path="input", output_folder_path="results",
                  wait_time=2, verbose=False):
@@ -58,7 +58,7 @@ class ModelScraper_l(Scraper, Modeler):
         print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
-        df_models = transform_format(dict_models, json_file_name="l_scrape_model_data.json")
+        df_models = transform_format(dict_models, json_file_name="l_g_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
         return df_models
@@ -77,17 +77,18 @@ class ModelScraper_l(Scraper, Modeler):
                     # self.web_driver.move_element_to_center(switch_element)
                 except Exception as e:
                     clickalble = False
-
+                
         def find_series_urls(url, prefix) -> set:
             print(f"Starting to scrape series URLs from: {url}")
             url_series = set()
             url = url
             prefix = prefix
             step = 200
+            
             try:
                 driver = self.set_driver(url)
-                
                 click_view_all(driver)
+                
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
 
@@ -108,7 +109,7 @@ class ModelScraper_l(Scraper, Modeler):
             finally:
                 driver.quit()
         
-        url_series = find_series_urls( url = "https://www.lg.com/us/tvs", prefix = "https://www.lg.com")
+        url_series = find_series_urls( url = "https://www.lg.com/us/monitors", prefix = "https://www.lg.com")
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-1]}")
