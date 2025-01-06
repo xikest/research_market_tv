@@ -94,14 +94,7 @@ class ModelScraper_se(Scraper, Modeler):
                 try:
                     switch_element = driver.find_element(By.XPATH, '//*[@id="results"]/div/div/div/div[4]/div[3]/div[2]')
                     driver.execute_script("arguments[0].click();", switch_element)
-                    # self.web_driver.click_action(switch_element)
                     time.sleep(1)
-                    
-                    # actions = ActionChains(driver)
-                    # for i in range(10):  
-                    #     actions.send_keys(Keys.PAGE_DOWN).perform()
-                    #     time.sleep(1)
-                    #     driver.save_screenshot(f"click_view_all{i}.png")
                 except Exception as e:
                     # print(e)
                     clickalble = False
@@ -140,10 +133,8 @@ class ModelScraper_se(Scraper, Modeler):
                 driver.quit()
                
         url_series = extract_urls_from_segments()
-        ###   
         adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
         url_series.add(adding_ex_url)
-        ###
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-2]}")
@@ -197,21 +188,14 @@ class ModelScraper_se(Scraper, Modeler):
                 for price_text in split_price:
                     try:
                         cleaned_price = price_text.replace('$', '').replace(',', '')
-                        # print(cleaned_price)
                         prices.append(float(cleaned_price))
-                        # print(prices)
                     except ValueError:
                         continue  
-                # print(prices)
                 if len(prices) > 2:
-                    # price_now = float(prices[-2].replace(',', ''))
-                    # price_original = float(prices[-1].replace(',', ''))
-                    # price_gap = price_original - price_now
                     dict_info["price"] = prices[0]
                     dict_info["price_original"] = prices[1]
                     dict_info["price_gap"] = prices[2]
                 else:
-                    # price_now = float(prices[-1].replace(',', ''))
                     dict_info["price"] = prices[0]
                     prices_dict['price_original'] = prices[0]
                     prices_dict['price_gap'] = 0.0

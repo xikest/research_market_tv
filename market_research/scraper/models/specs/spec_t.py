@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import time
 from tqdm import tqdm
 import pandas as pd
+import re 
 from selenium.webdriver.common.by import By
 from tools.file import FileManager
 from market_research.scraper._scraper_scheme import Scraper, Modeler
@@ -52,7 +53,6 @@ class ModelScraper_t(Scraper, Modeler):
         print("start collecting data")
         logging.info("start collecting data")
         url_dict = find_urls()
-        # url_dict = {"0":"https://www.tcl.com/us/en/products/home-theater/qm8-class/65-class-4k-qd-mini-led-qled-hdr-google-tv-65qm851g"} ##SS
         dict_models = extract_specs(url_dict)
         df_models = transform_format(dict_models, json_file_name="t_scrape_model_data.json")
             
@@ -163,23 +163,24 @@ class ModelScraper_t(Scraper, Modeler):
                 prices_dict['price_gap'] = float('nan')
             return prices_dict
         
+
+
         def extract_info_from_model(model: str)->dict:
+            model = model.lower()  # 대소문자 구분 제거
             dict_info = {}
-            model = model.lower()
-            dict_info["model"] = model
-            dict_info["year"] = model.split("-")[1][-1]
-            dict_info["series"] = model.split("-")[1][2:]
-            dict_info["size"] = model.split("-")[1][:2]
-            dict_info["grade"] = model.split("-")[0]
-                
-            year_mapping = {
-                'l': "2023",
-                'k': "2022",
-                'j': "2021",
-            }
 
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), "2024")
+            # 연도 매핑
+            year_mapping =  {'0': "2023",
+                            '1': "2024",
+                            '2': "2025",
+                            }
 
+            match = re.match(r"^(\d+)([A-Za-z].*)$", model)      
+
+            dict_info["size"] = match.group(1)
+            dict_info["series"] = match.group(2)
+            dict_info["year"] = match.group(2)[-2]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
             return dict_info
         
         dict_info = {}
@@ -193,7 +194,7 @@ class ModelScraper_t(Scraper, Modeler):
             dict_info.update(extract_model(driver))
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
-            # dict_info.update(extract_info_from_model(dict_info.get("model")))
+            dict_info.update(extract_info_from_model(dict_info.get("model")))
             if self.verbose: 
                 print(dict_info)
             logging.info(dict_info)

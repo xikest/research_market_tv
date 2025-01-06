@@ -180,15 +180,15 @@ class ModelScraper_s_g(Scraper, Modeler):
                     prices_dict['price_gap'] = float('nan')
             return prices_dict
         
-        def extract_info_from_model(model: str)->dict:
+        def extract_info_from_model(model: str, description:str)->dict:
             dict_info = {}
             model = model.lower()
             dict_info["model"] = model
-            dict_info["year"] = model.split("-")[1][-1]
-            dict_info["series"] = model.split("-")[1][2:]
-            dict_info["size"] = model.split("-")[1][:2]
+            dict_info["year"] = None
+            dict_info["series"] = model.split(" ")[1]
+            dict_info["size"] = description.split(" ")[0]
             dict_info["grade"] = model.split("-")[0]
-                
+
             year_mapping = {
                 'l': "2023",
                 'k': "2022",
@@ -210,7 +210,7 @@ class ModelScraper_s_g(Scraper, Modeler):
             dict_info.update(extract_model(driver))
             dict_info.update(extract_description(driver))
             dict_info.update(extract_prices(driver))
-            dict_info.update(extract_info_from_model(dict_info.get("model")))
+            dict_info.update(extract_info_from_model(dict_info.get("model"), dict_info.get("description")))
             if self.verbose: 
                 print(dict_info)
             logging.info(dict_info)

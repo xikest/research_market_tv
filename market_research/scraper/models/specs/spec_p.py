@@ -172,7 +172,6 @@ class ModelScraper_p(Scraper, Modeler):
             dict_info["series"] = model.split("-")[1][2:]
             dict_info["size"] = model.split("-")[1][:2]
             dict_info["display type"] = dict_info["series"][:1]
-            # dict_info["grade"] = model.split("-")[0]
                 
             year_mapping = {
                 't': "2024",
@@ -181,9 +180,8 @@ class ModelScraper_p(Scraper, Modeler):
                 'z':'oled',
                 'w':'mini-LED'
             }
-
             dict_info["year"] = year_mapping.get(dict_info.get("year"), "2025")
-
+            dict_info["display type"] = display_mapping.get(dict_info.get("display type"), "")
             return dict_info
         
         dict_info = {}

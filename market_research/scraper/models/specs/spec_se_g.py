@@ -91,14 +91,7 @@ class ModelScraper_se_g(Scraper, Modeler):
                 try:
                     switch_element = driver.find_element(By.XPATH, '//*[@id="results"]/div/div/div/div[4]/div[3]/div[2]')
                     driver.execute_script("arguments[0].click();", switch_element)
-                    # self.web_driver.click_action(switch_element)
                     time.sleep(1)
-                    
-                    # actions = ActionChains(driver)
-                    # for i in range(10):  
-                    #     actions.send_keys(Keys.PAGE_DOWN).perform()
-                    #     time.sleep(1)
-                    #     driver.save_screenshot(f"click_view_all{i}.png")
                 except Exception as e:
                     # print(e)
                     clickalble = False
@@ -190,28 +183,19 @@ class ModelScraper_se_g(Scraper, Modeler):
             prices_dict = dict()
             try:
                 price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
-                # split_price = price.text.split('\n')
                 split_price = re.split(r'[\n\s]+', price.text)
                 prices = []
-                # print(split_price)
                 for price_text in split_price:
                     try:
                         cleaned_price = price_text.replace('$', '').replace(',', '')
-                        # print(cleaned_price)
                         prices.append(float(cleaned_price))
-                        # print(prices)
                     except ValueError:
                         continue  
-                # print(prices)
                 if len(prices) > 2:
-                    # price_now = float(prices[-2].replace(',', ''))
-                    # price_original = float(prices[-1].replace(',', ''))
-                    # price_gap = price_original - price_now
                     dict_info["price"] = prices[0]
                     dict_info["price_original"] = prices[1]
                     dict_info["price_gap"] = prices[2]
                 else:
-                    # price_now = float(prices[-1].replace(',', ''))
                     dict_info["price"] = prices[0]
                     prices_dict['price_original'] = prices[0]
                     prices_dict['price_gap'] = 0.0
@@ -222,63 +206,20 @@ class ModelScraper_se_g(Scraper, Modeler):
             return prices_dict
             
         def extract_info_from_model(model: str)->dict:
-        
-            def extract_grade_and_model(model: str):
-                grade = model[:2] 
-                model=  model[2:]    
-                return grade, model
-                
-            def extract_size_and_model(model: str):
-                match = re.match(r'\d+', model)
-                if match:
-                    leading_number = match.group()  # 앞의 숫자 부분
-                    rest = re.sub(r'^\d+', '', model)   # 숫자 제거 후 나머지 부분
-                    return leading_number, rest
-                else:
-                    return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
-
-            def extract_year_and_model(model: str):
-            
-                match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
-                if match:
-                    year = match.group(2) if len(match.group(2)) <= 1 else match.group(2)[0]
-                    model = match.group(1)  
-                    return year, model+year
-                else:
-                    return None, model    
-
-
-            dict_info = {}
             model = model.lower()  # 대소문자 구분 제거
-            model = model[:-4]
             dict_info = {}
-            year_mapping = {'qn':
-                                {
-                                't': "2021",    
-                                'b': "2022",
-                                'c': "2023",
-                                'd': "2024",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026"},
-                            'un':{ 
-                                'c': "2023",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026",
-                                }
-                            }
-            dict_info["grade"], model = extract_grade_and_model(model) 
-            dict_info["size"], model = extract_size_and_model(model)
-            dict_info["year"], model = extract_year_and_model(model)
-            dict_info["series"] = model
-            
-            if "qn" in dict_info["grade"] or "kq" in dict_info["grade"]:         
-                dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], None)
-            elif "un" in dict_info["grade"] :
-                dict_info["year"] = year_mapping.get('un').get(dict_info["year"], None)
-            else:
-                dict_info["year"] = None
+
+            # 연도 매핑
+            year_mapping =  {'a': "2021",
+                            'b': "2022",
+                            'c': "2023",
+                            'd': "2024"}
+                        
+            dict_info["size"] = model[2:4]
+            dict_info["year"] = model[4]
+            dict_info["grade"] = model[:2]
+            dict_info["series"] = model.split("-")[0]
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
             return dict_info
         
         dict_info = {}
