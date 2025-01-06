@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mkt-retv',
-    version='1.598',
+    version='1.599',
     author='xikest',
     description='market research TV ',
     packages=find_packages(),
