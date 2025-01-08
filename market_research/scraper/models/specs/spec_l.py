@@ -65,50 +65,53 @@ class ModelScraper_l(Scraper, Modeler):
     
     @Scraper.try_loop(2)
     def _get_series_urls(self) -> set:
-        
-        def click_view_all(driver):
-            clickalble = True
-            while clickalble:
+        def extract_urls_from_segments():
+            def find_series_urls(url, prefix) -> set:
+                print(f"Starting to scrape series URLs from: {url}")
+                url_series = set()
+                url = url
+                prefix = prefix
+                step = 200
                 try:
-                    switch_element = driver.find_element(By.XPATH, '//*[@id="GlobalLayoutContainer"]/div[5]/div/div/div[2]/div/div/div[2]/div/div[1]/div/div[1]/div/div/span/span[1]/input')
-                    driver.execute_script("arguments[0].click();", switch_element)
-                    # self.web_driver.click_action(switch_element)
-                    time.sleep(1)
-                    # self.web_driver.move_element_to_center(switch_element)
+                    driver = self.set_driver(url)
+                    
+                    # click_view_all(driver)
+                    scroll_distance_total = self.web_driver.get_scroll_distance_total()
+                    scroll_distance = 0
+
+                    while scroll_distance < scroll_distance_total:
+                        for _ in range(2):
+                            html = driver.page_source
+                            soup = BeautifulSoup(html, 'html.parser')
+                            elements = soup.find_all('a', class_="css-11xg6yi")
+                            
+                            for element in elements:
+                                url_series.add(prefix + element['href'].strip())
+                            driver.execute_script(f"window.scrollBy(0, {step});")
+                            time.sleep(self.wait_time)
+                            scroll_distance += step
+                    return url_series
                 except Exception as e:
-                    clickalble = False
+                    pass
+                finally:
+                    driver.quit()
+            
 
-        def find_series_urls(url, prefix) -> set:
-            print(f"Starting to scrape series URLs from: {url}")
+            seg_urls = {
+                "oled-evo": "https://www.lg.com/us/oled-evo-tvs",
+                "oled": "https://www.lg.com/us/oled-tvs",
+                "qned": "https://www.lg.com/us/qned-tvs",
+                "uhd-4k": "https://www.lg.com/us/uhd-4k-tvs",
+                "nanocell":"https://www.lg.com/us/nanocell-tvs",
+                }
             url_series = set()
-            url = url
-            prefix = prefix
-            step = 200
-            try:
-                driver = self.set_driver(url)
-                
-                click_view_all(driver)
-                scroll_distance_total = self.web_driver.get_scroll_distance_total()
-                scroll_distance = 0
-
-                while scroll_distance < scroll_distance_total:
-                    for _ in range(2):
-                        html = driver.page_source
-                        soup = BeautifulSoup(html, 'html.parser')
-                        elements = soup.find_all('a', class_="css-11xg6yi")
-                        
-                        for element in elements:
-                            url_series.add(prefix + element['href'].strip())
-                        driver.execute_script(f"window.scrollBy(0, {step});")
-                        time.sleep(self.wait_time)
-                        scroll_distance += step
-                return url_series
-            except Exception as e:
-                pass
-            finally:
-                driver.quit()
+            
+            for seg, seg_url in seg_urls.items():
+                urls=find_series_urls(seg_url, prefix = "https://www.lg.com")
+                url_series.update(urls)
+            return url_series   
         
-        url_series = find_series_urls( url = "https://www.lg.com/us/tvs", prefix = "https://www.lg.com")
+        url_series = extract_urls_from_segments( )
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-1]}")

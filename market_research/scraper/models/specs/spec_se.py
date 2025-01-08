@@ -56,8 +56,12 @@ class ModelScraper_se(Scraper, Modeler):
             df_models = df_models.drop(['Series'], axis=1)
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
-            valid_indices = df_models['Color*'].dropna().index
-            df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
+            try:
+                valid_indices = df_models['Color*'].dropna().index
+                df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
+            except Exception as e:
+                pass
+            
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         print("start collecting data")
