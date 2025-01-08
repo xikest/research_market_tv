@@ -13,7 +13,7 @@ from datetime import datetime
 
 
 st.set_page_config(layout="wide")  
-makers = ["SONY", "LG", "SAMSUNG", "PANASONIC"]
+
 ONLINE = True
 pio.templates.default='ggplot2'
 
@@ -153,7 +153,7 @@ def display_html_table(df: pd.DataFrame, title: str):
 
                        
 
-def download_data():
+def download_data(makers):
     def to_excel(df_dict):
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl', mode='w') as writer:
@@ -167,7 +167,29 @@ def download_data():
     excel_data = to_excel(df_dict)
     return excel_data
 
+
+def select_caregory_at_side():
+    category = {
+        "TV": "tv",
+        "GAMING": "gaming"
+    }
+
+    selected_key = st.sidebar.radio("", list(category.keys()))
+    return category.get(selected_key,"tv")
+
+
+
 def display_indicators():
+
+
+    category = select_caregory_at_side()
+    if category == 'tv':
+        makers = ["SONY", "LG", "SAMSUNG", "PANASONIC"]
+    if category == 'gaming':
+        makers = ["SONY", "LG", "SAMSUNG"]
+        makers = [f"{maker}_{category.upper()}" for maker in makers]
+        
+    
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
     
     st.sidebar.write("")    
@@ -185,7 +207,7 @@ def display_indicators():
     today_date = datetime.now().strftime("%d_%m_%Y")
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
-        data=download_data(),
+        data=download_data(makers),
         file_name = f'{selected_maker}_web_sepcs_{today_date}.xlsx',
         mime='application/vnd.ms-excel',
         use_container_width=True)

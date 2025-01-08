@@ -50,7 +50,10 @@ class ModelScraper_l(Scraper, Modeler):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            df_models = df_models.drop(['Series', 'Size'], axis=1)
+            try: 
+                df_models = df_models.drop(['Series', 'Size'], axis=1)
+            except Exception as e:
+                pass 
             df_models = df_models.dropna(subset=['price'])
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
@@ -58,6 +61,7 @@ class ModelScraper_l(Scraper, Modeler):
         print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
+    
         df_models = transform_format(dict_models, json_file_name="l_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
@@ -183,7 +187,8 @@ class ModelScraper_l(Scraper, Modeler):
             descriptions = [
                 ('h2', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
                 ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
-                ('h1', 'MuiTypography-root MuiTypography-h5 css-vnteo9')
+                ('h1', 'MuiTypography-root MuiTypography-h5 css-vnteo9'),
+                ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-1ee9l5')
             ]
             for tag, class_name in descriptions:
                 try:
@@ -298,7 +303,7 @@ class ModelScraper_l(Scraper, Modeler):
     
     
 
-    @Scraper.try_loop(try_total=10)
+    @Scraper.try_loop(try_total=20)
     def _extract_global_specs(self, url: str) -> dict:
       
         def find_spec_tab(driver):
@@ -317,10 +322,13 @@ class ModelScraper_l(Scraper, Modeler):
                     self.web_driver.move_element_to_center(element_all_specs)
                     time.sleep(self.wait_time)
                 except:
-                    element_all_specs = driver.find_element(By.CLASS_NAME, 'MuiTypography-root.MuiTypography-h5.css-14uiqdv')
-                    self.web_driver.move_element_to_center(element_all_specs)
-                    time.sleep(self.wait_time)
-                
+                    try:
+                        element_all_specs = driver.find_element(By.CLASS_NAME, 'MuiTypography-root.MuiTypography-h5.css-14uiqdv')
+                        self.web_driver.move_element_to_center(element_all_specs)
+                        time.sleep(self.wait_time)
+                    except Exception as e:
+                        if self.verbose:
+                            print("error find_spec_tab")
                 
             return None 
         
