@@ -40,15 +40,24 @@ def loading_webdata_version(selected_maker:str):
                 "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
                 "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
                 "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
-                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}'
+                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}',
+                "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
+                "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
+                "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
+                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}',
                 }
     
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data_241114.json',
-                "lg": './json/l_scrape_model_data_241114.json',
+                "sony": './json/s_scrape_model_data_250106.json',
+                "lg": './json/l_scrape_model_data_250109.json',
                 "samsung": './json/se_scrape_model_data_241114.json',
-                "panasonic": './json/p_scrape_model_data_250104.json'}
+                "panasonic": './json/p_scrape_model_data_250109.json',
+                "tcl": './json/t_scrape_model_data_250109',
+                "sony_gaming": './json/s_g_scrape_model_data_250106',
+                "lg_gaming": './json/l_g_scrape_model_data_250109',
+                "samsung_gaming": './json/se_g_scrape_model_data_250109',
+                }
 
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
