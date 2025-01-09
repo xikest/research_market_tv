@@ -54,18 +54,24 @@ class ModelScraper_se_g(Scraper, Modeler):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            df_models = df_models.drop(['Series'], axis=1)
+            try:
+                df_models = df_models.drop(['Series'], axis=1)
+            except:
+                pass
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
-            valid_indices = df_models['Color*'].dropna().index
-            df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
+            try:
+                valid_indices = df_models['Color*'].dropna().index
+                df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
+            except:
+                pass
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         print("start collecting data")
         url_dict = find_urls()
         dict_models = extract_sepcs(url_dict)
         
-        df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
+        df_models = transform_format(dict_models, json_file_name="se_g_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
         return df_models
@@ -76,7 +82,7 @@ class ModelScraper_se_g(Scraper, Modeler):
         def extract_urls_from_segments():
             seg_urls = {
                 "featured_gaming_monitors": "https://www.samsung.com/us/computing/monitors/gaming/?technology=Featured-gaming-monitors",
-                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
+                # "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
                 }
             url_series = set()
             
@@ -133,10 +139,7 @@ class ModelScraper_se_g(Scraper, Modeler):
                 driver.quit()
                
         url_series = extract_urls_from_segments()
-        ###   
-        adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
-        url_series.add(adding_ex_url)
-        ###
+
         print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
         for i, url in enumerate(url_series, start=1):
             print(f"Series: [{i}] {url.split('/')[-2]}")
@@ -145,44 +148,96 @@ class ModelScraper_se_g(Scraper, Modeler):
     @Scraper.try_loop(2)
     def _extract_models_from_series(self, url: str) -> set:
         
-        def extract_model_url(driver)->set:
-            url_models_set= set()
-            radio_btns = driver.find_elements(By.CSS_SELECTOR, '.SizeTile_button_wrapper__rIeR3')
-            for btn in radio_btns:
-                ActionChains(driver).move_to_element(btn).click().perform()
-                url =  driver.current_url
-                url_models_set.add(url.strip())
-            return url_models_set
-        url_models_set = set()
-        try: 
+        def extract_url(url, XPATH = '//*[@id="details"]/div[2]/div[3]/div[2]/div[8]/div[1]/div[2]/div[2]') -> set:
+            url_series_set= set()
+            url_series_set.add(url)
             driver = self.set_driver(url)
-            url_models_set =  extract_model_url(driver)  
+            try:
+                sereis_element = driver.find_elements(By.XPATH, XPATH)
+                for element in sereis_element:
+                    a_tags = element.find_elements(By.TAG_NAME, 'a')  # a 태그 찾기
+                    for a_tag in a_tags:
+                        href = a_tag.get_attribute('href')  # 링크(href) 속성 값 추출
+                        if href:
+                            href = href.strip()
+                            url_series_set.add(href)
+            except Exception as e:
+                print(e)
+            finally:
+                driver.quit()              
+                return url_series_set
+
+        
+        try: 
+            url_models_set = set()
+            series_url_set = extract_url(url,
+                                         '//*[@id="details"]/div[2]/div[3]/div[2]/div[8]/div[1]/div[2]/div[2]')
+            print(f"series_url_set {len(series_url_set)}")
+            for series_url in series_url_set:      
+                url_models =  extract_url(series_url, 
+                                              '//*[@id="details"]/div[2]/div[3]/div[2]/div[8]/div[1]/div[3]/div[2]')
+                
+                if self.verbose:
+                    
+                    print(f"\n url_models of :{series_url} \n")
+                    print(f"url_models: {len(url_models)}")
+                    print(url_models)
+                url_models_set.update(url_models)
         except Exception as e:
             if self.verbose:
                 print(f"error_extract_models_from_series {url}")
+        
+        if self.verbose:
+            print(url_models_set)
         return url_models_set
             
     @Scraper.try_loop(5)
     def _extract_model_details(self, url: str='') -> dict:
     
         def extract_model(driver):
-            label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
+            try:
+                label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
+            except:
+                try:
+                    label_element = driver.find_element(By.CLASS_NAME,"type-p3 product-top-nav__sku")
+                except Exception as e:
+                    if self.verbose:
+                        print(e)
+                    pass
+        
             label = label_element.text
             model = label.split()[-1]
-            # if self.verbose:
-                # print(f"label: {label}")
+            if self.verbose:  ##ss
+                print(f"label: {label}")
             return {"model": model}
             
         def extract_description(driver)->dict: 
-            description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
-            # if self.verbose:
-                # print(f"description: {description}")    
+            try:
+                description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text 
+            except:
+                try:
+                    description = driver.find_element(By.CLASS_NAME,'product-top-nav__font-name' ).text 
+                except Exception as e:
+                    if self.verbose:
+                        print(e)
+                    pass
+            if self.verbose:  ##ss
+                print(f"description: {description}")    
             return {"description": description}
              
         def extract_prices(driver)->dict:
             prices_dict = dict()
             try:
-                price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
+                try:
+                    price = driver.find_element(By.XPATH, '//*[@id="headerWrapper"]/div/div[2]/div/div/div[1]')   
+                except:
+                    try:
+                        price = driver.find_element(By.XPATH,  '//*[@id="anchor-nav-v2"]/div[2]/div[1]/div[2]/div/div[1]')
+                    except Exception as e:
+                        if self.verbose:
+                            print(e)
+                        pass
+                
                 split_price = re.split(r'[\n\s]+', price.text)
                 prices = []
                 for price_text in split_price:
@@ -261,11 +316,18 @@ class ModelScraper_se_g(Scraper, Modeler):
                 driver.execute_script("arguments[0].click();", driver.find_element(By.CSS_SELECTOR, ".keyboard_navigateable.tl-btn-expand.Specs_expandBtn__0BNA_"))
                 
                 time.sleep(self.wait_time)
-            except Exception as e :
-                if self.verbose:
-                    print(f"error find_spec_tab {e}")
-                pass
-                time.sleep(self.wait_time)
+            except:
+                try:
+                    driver.execute_script("arguments[0].click();", driver.find_element(By.CSS_SELECTOR, "a[href='#specs']"))
+                    # 'See All Specs' 버튼 클릭
+                    driver.execute_script("arguments[0].click();", driver.find_element(By.CLASS_NAME, "tl-btn-expand"))
+                
+                except Exception as e :
+                    if self.verbose:
+                        print(f"error find_spec_tab {e}")
+                    pass
+                    time.sleep(self.wait_time)
+                    
             return None 
 
         def extract_spec_detail(driver) -> dict:  

@@ -34,7 +34,7 @@ class Rurlsearcher(Scraper):
                     "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
                     "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                     "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                    "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}',
+                    # "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}',
                     }
             info_df = pd.DataFrame()
         for maker in path_dict:
