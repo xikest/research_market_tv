@@ -29,7 +29,7 @@ def get_recent_data_from_git(file_name):
     for file_url in file_list:
         if file_name in file_url:
             file_urls.append(file_url)  
-    file_urls.sort()        
+    file_urls.sort()   
     return file_urls[-1]
 
 
@@ -44,7 +44,7 @@ def loading_webdata_version(selected_maker:str):
                 "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
                 "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                 "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
+                # "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
     
     else:
@@ -56,7 +56,7 @@ def loading_webdata_version(selected_maker:str):
                 "tcl": './json/t_scrape_model_data_250109.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250106.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
-                "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
+                # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
                 }
 
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
@@ -76,7 +76,7 @@ def loading_webdata(selected_maker:str):
                 "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
                 "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                 "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
+                # "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
 
     else:
@@ -88,7 +88,7 @@ def loading_webdata(selected_maker:str):
                 "tcl": './json/t_scrape_model_data_250109.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250106.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
-                "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
+                # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
                 }
         
     data_all = pd.DataFrame()
