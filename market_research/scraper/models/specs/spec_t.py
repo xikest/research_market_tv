@@ -136,14 +136,13 @@ class ModelScraper_t(Scraper, Modeler):
         def extract_model(driver):
             model = driver.find_element(By.XPATH,
                                         '//*[@id="product-details"]/header/div/div[1]/p').text
-
-            model = model.split(":")[-1].strip()
+            
+            model = model.lower().replace("model","").strip()
             return {"model": model}
         
         def extract_description(driver)->dict:
             try:
-                description = driver.find_element(By.XPATH,
-                                                    '//*[@id="product-details"]/header/div/div[1]/h1').text
+                description = driver.find_element(By.XPATH, '//*[@id="product-details"]/header/div/div[1]/h1').text
             except:
                 description = ""
             return {"description": description}
@@ -176,7 +175,6 @@ class ModelScraper_t(Scraper, Modeler):
                             }
 
             match = re.match(r"^(\d+)([A-Za-z].*)$", model)      
-
             dict_info["size"] = match.group(1)
             dict_info["series"] = match.group(2)
             dict_info["year"] = match.group(2)[-2]
@@ -228,9 +226,11 @@ class ModelScraper_t(Scraper, Modeler):
             try:
                 elements = driver.find_elements(By.CLASS_NAME,"table.aem-GridColumn.aem-GridColumn--default--12")
                 for element in elements:
+                  
                     soup = BeautifulSoup(element.get_attribute("innerHTML"), 'html.parser')
                     table = soup.find('table')
                     rows = table.find_all('tr')
+                    
                     for row in rows:
                         columns = row.find_all('td')
                         if len(columns) == 2:
