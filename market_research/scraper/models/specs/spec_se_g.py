@@ -14,7 +14,7 @@ from selenium.webdriver.common.keys import Keys
 class ModelScraper_se_g(Scraper, Modeler):
     def __init__(self, enable_headless=True,
                  export_prefix="sse_model_info_web", intput_folder_path="input", output_folder_path="results",
-                 wait_time=2, verbose=False):
+                 wait_time=1, verbose=False):
         Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
         self.wait_time = wait_time
         self.verbose = verbose

@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -44,7 +44,7 @@ def loading_webdata_version(selected_maker:str):
                 "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
                 "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                 "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}',
+                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
     
     else:
@@ -53,10 +53,10 @@ def loading_webdata_version(selected_maker:str):
                 "lg": './json/l_scrape_model_data_250109.json',
                 "samsung": './json/se_scrape_model_data_241114.json',
                 "panasonic": './json/p_scrape_model_data_250109.json',
-                "tcl": './json/t_scrape_model_data_250109',
-                "sony_gaming": './json/s_g_scrape_model_data_250106',
-                "lg_gaming": './json/l_g_scrape_model_data_250109',
-                "samsung_gaming": './json/se_g_scrape_model_data_250109',
+                "tcl": './json/t_scrape_model_data_250109.json',
+                "sony_gaming": './json/s_g_scrape_model_data_250106.json',
+                "lg_gaming": './json/l_g_scrape_model_data_250109.json',
+                "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
                 }
 
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
@@ -72,7 +72,11 @@ def loading_webdata(selected_maker:str):
                 "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
                 "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
                 "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
-                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}'
+                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}',
+                "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
+                "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
+                "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
+                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
 
     else:
@@ -80,7 +84,12 @@ def loading_webdata(selected_maker:str):
                 "sony": './json/s_scrape_model_data_241001.json',
                 "lg": './json/l_scrape_model_data_241001.json',
                 "samsung": './json/se_scrape_model_data_241001.json',
-                "panasonic": './json/p_scrape_model_data_250104.json'}
+                "panasonic": './json/p_scrape_model_data_250104.json',
+                "tcl": './json/t_scrape_model_data_250109.json',
+                "sony_gaming": './json/s_g_scrape_model_data_250106.json',
+                "lg_gaming": './json/l_g_scrape_model_data_250109.json',
+                "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
+                }
         
     data_all = pd.DataFrame()
     if isinstance(selected_maker, list):
@@ -193,14 +202,13 @@ def display_indicators():
 
     category = select_caregory_at_side()
     if category == 'tv':
-        makers = ["SONY", "LG", "SAMSUNG", "PANASONIC"]
+        makers = ["SONY", "LG", "SAMSUNG", "PANASONIC", "TCL"]
     if category == 'gaming':
         makers = ["SONY", "LG", "SAMSUNG"]
         makers = [f"{maker}_{category.upper()}" for maker in makers]
         
     
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
-    
     st.sidebar.write("")    
     version = loading_webdata_version(selected_maker)
     st.sidebar.write(f'Updated: {version}')

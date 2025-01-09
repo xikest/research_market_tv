@@ -23,6 +23,25 @@
     "auto hdr tone mapping",
     "features for playstation5 auto hdr tone mapping"
   ],
+  "sony_gaming": [
+    "VESA DISPLAYHDR™",
+    "VARIABLE REFRESH RATE TECHNOLOGY",
+    "FLICKER FREE",
+    "LOW BLUE LIGHT",
+    "Auto HDR Tone Mapping",
+    "Auto Genre Picture Mode",
+    "BLACK EQUALIZER",
+    "GAMING ASSIST",
+    "24.5 INCH MODE",
+    "Color Gamut",
+    "REFRESH RATE",
+    "BRIGHTNESS (TYPICAL)",
+    "PEAK BRIGHTNESS (TYPICAL)",
+    "RESPONSE TIME",
+    "SCREEN COATING",
+    "VIEWING ANGLE (H/V)",
+    "PANEL TYPE"],
+
   "lg": [
     "brightness booster",
     "100% color volume",
@@ -40,6 +59,21 @@
     "g-sync compatible (nvidia)",
     "game optimizer"
   ],
+  "lg_gaming": [
+    "VESA DisplayHDR™",
+    "Brightness (Typical, Minimum)",
+    "Color Gamut (Typ.)",
+    "Display Type",
+    "Refresh Rate",
+    "Response Time (GTG)",
+    "Adaptive Sync",
+    "Black Stabilizer®",
+    "Crosshair®",
+    "Dynamic Action Sync®",
+    "FPS Counter",
+    "NVIDIA G-Sync™"
+  ],
+
   "samsung":[
     "color",
     "anti reflection",
@@ -56,6 +90,32 @@
     "ai motion enhancer",
     "freesync"
 ],
+"samsung_gaming":[
+  "UL Glare Free",
+  "Color Support",
+  "Color Gamut (DCI Coverage)",
+  "Quantum Dot Color",
+  "HDR10+",
+  "HDR (High Dynamic Range)",
+  "HDR",
+  "Panel Type",
+  "Frame Rate",
+  "Response Time (ms)",
+  "Burn-In cover in warranty",
+"Eye Saver Mode",
+"FreeSync",
+"Flicker Free",
+"Black Equalizer",
+"Super Arena Gaming UX",
+"Refresh Rate",
+"Virtual AIM Point",
+"Auto Source Switch",
+"Brightness (Typical)",
+"Brightness (Min)"
+
+
+],
+
 "panasonic":[
     "panel technology",
     "surround",
@@ -63,6 +123,12 @@
     "Panel Refresh Rate",
     "Picture Mode",
     "HDMI Support Features" 
+],
+"tcl":[
+    "Display Technology",
+    "Panel Refresh Rate",
+    "Variable Refresh Rate (VRR)",
+    "Local Dimming Type"
 ]
 
 }
