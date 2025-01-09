@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 
 
@@ -385,7 +385,7 @@ def display_indicators():
                     st.plotly_chart(fig, use_container_width=True)
                         
                     
-            if selected_maker == 'panasonic': ## temp
+            if selected_maker in ['panasonic', 'tcl','sony_gaming','lg_gaming','samsung_gaming']: ## temp
                 with tabs[1]:
                     st.write("now preparing")
                 with tabs[2]:
