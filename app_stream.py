@@ -98,22 +98,26 @@ def loading_webdata(selected_maker:str):
         else:   
             for maker in selected_maker:
                 try: 
+                    st.write(maker.lower())
                     selected_json = web_data.get(maker.lower())
                     selected_data = pd.read_json(selected_json, orient='records', lines=True)
                     selected_data.columns = selected_data.columns.str.lower().str.strip()
                     selected_data.loc[:, 'series'] = f"[{maker}] " + selected_data['series']
                     selected_data = selected_data.dropna(subset=['price'])
                     data_all = pd.concat([data_all, selected_data[["year", "size", "series", "price", "price_original", "price_gap", "description"]]], axis=0)
+                    st.write(data_all.head(1))
                 except:
                     continue
             
     if isinstance(selected_maker, str):
+        st.write(selected_maker.lower())
 
         selected_json = web_data.get(selected_maker.lower())
         selected_data = pd.read_json(selected_json, orient='records', lines=True)
         selected_data.columns = selected_data.columns.str.lower().str.strip()
         selected_data = selected_data.dropna(subset=['price'])
         data_all = selected_data
+        st.write(data_all.head(1))
     return data_all
      
      
@@ -376,6 +380,7 @@ def display_indicators():
             with tabs[0]:  
                 with st.container(): 
                     data_price = loading_webdata(selected_multi_makers)
+                    st.write(data_price.loc[:, 'description']) ##ss
                     fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
                     fig.update_layout(
                         width=500,
