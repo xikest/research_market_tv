@@ -145,6 +145,7 @@ class ModelScraper_t(Scraper, Modeler):
                 description = driver.find_element(By.XPATH, '//*[@id="product-details"]/header/div/div[1]/h1').text
             except:
                 description = ""
+            description = description.replace('"',"")
             return {"description": description}
         
         def extract_prices(driver)->dict:
@@ -236,6 +237,8 @@ class ModelScraper_t(Scraper, Modeler):
                         if len(columns) == 2:
                             label = columns[0].find('p').get_text(strip=True)
                             value = columns[1].get_text(strip=True)
+                            if label in ['model', 'description']:
+                                continue
                             dict_spec[label] = value
                 return dict_spec
             except Exception as e:

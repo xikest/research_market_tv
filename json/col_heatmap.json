@@ -24,23 +24,25 @@
     "features for playstation5 auto hdr tone mapping"
   ],
   "sony_gaming": [
-    "VESA DISPLAYHDR™",
-    "VARIABLE REFRESH RATE TECHNOLOGY",
-    "FLICKER FREE",
-    "LOW BLUE LIGHT",
-    "Auto HDR Tone Mapping",
-    "Auto Genre Picture Mode",
-    "BLACK EQUALIZER",
-    "GAMING ASSIST",
-    "24.5 INCH MODE",
-    "Color Gamut",
-    "REFRESH RATE",
-    "BRIGHTNESS (TYPICAL)",
-    "PEAK BRIGHTNESS (TYPICAL)",
-    "RESPONSE TIME",
-    "SCREEN COATING",
-    "VIEWING ANGLE (H/V)",
-    "PANEL TYPE"],
+    "vesa displayhdr™",
+    "variable refresh rate technology",
+    "flicker free",
+    "low blue light",
+    "auto hdr tone mapping",
+    "auto genre picture mode",
+    "black equalizer",
+    "gaming assist",
+    "24.5 inch mode",
+    "color gamut",
+    "refresh rate",
+    "brightness (typical)",
+    "peak brightness (typical)",
+    "response time",
+    "screen coating",
+    "viewing angle (h/v)",
+    "panel type"
+]
+,
 
   "lg": [
     "brightness booster",
@@ -60,20 +62,19 @@
     "game optimizer"
   ],
   "lg_gaming": [
-    "VESA DisplayHDR™",
-    "Brightness (Typical, Minimum)",
-    "Color Gamut (Typ.)",
-    "Display Type",
-    "Refresh Rate",
-    "Response Time (GTG)",
-    "Adaptive Sync",
-    "Black Stabilizer®",
-    "Crosshair®",
-    "Dynamic Action Sync®",
-    "FPS Counter",
-    "NVIDIA G-Sync™"
-  ],
-
+    "vesa displayhdr™",
+    "brightness (typical, minimum)",
+    "color gamut (typ.)",
+    "display type",
+    "refresh rate",
+    "response time (gtg)",
+    "adaptive sync",
+    "black stabilizer®",
+    "crosshair®",
+    "dynamic action sync®",
+    "fps counter",
+    "nvidia g-sync™"
+],
   "samsung":[
     "color",
     "anti reflection",
@@ -91,44 +92,41 @@
     "freesync"
 ],
 "samsung_gaming":[
-  "UL Glare Free",
-  "Color Support",
-  "Color Gamut (DCI Coverage)",
-  "Quantum Dot Color",
-  "HDR10+",
-  "HDR (High Dynamic Range)",
-  "HDR",
-  "Panel Type",
-  "Frame Rate",
-  "Response Time (ms)",
-  "Burn-In cover in warranty",
-"Eye Saver Mode",
-"FreeSync",
-"Flicker Free",
-"Black Equalizer",
-"Super Arena Gaming UX",
-"Refresh Rate",
-"Virtual AIM Point",
-"Auto Source Switch",
-"Brightness (Typical)",
-"Brightness (Min)"
-
-
+  "ul glare free",
+  "color support",
+  "color gamut (dci coverage)",
+  "quantum dot color",
+  "hdr10+",
+  "hdr (high dynamic range)",
+  "hdr",
+  "panel type",
+  "frame rate",
+  "response time (ms)",
+  "burn-in cover in warranty",
+  "eye saver mode",
+  "freesync",
+  "flicker free",
+  "black equalizer",
+  "super arena gaming ux",
+  "refresh rate",
+  "virtual aim point",
+  "auto source switch",
+  "brightness (typical)",
+  "brightness (min)"
 ],
 
 "panasonic":[
-    "panel technology",
-    "surround",
-    "Dolby Atmos",
-    "Panel Refresh Rate",
-    "Picture Mode",
-    "HDMI Support Features" 
-],
+  "panel technology", 
+  "surround", 
+  "dolby atmos", 
+  "panel refresh rate", 
+  "picture mode", 
+  "hdmi support features"],
 "tcl":[
-    "Display Technology",
-    "Panel Refresh Rate",
-    "Variable Refresh Rate (VRR)",
-    "Local Dimming Type"
+    "display technology",
+    "panel refresh rate",
+    "variable refresh rate (vrr)",
+    "local dimming type"
 ]
 
 }
