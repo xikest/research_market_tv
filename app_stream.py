@@ -110,12 +110,14 @@ def loading_webdata(selected_maker:str):
                     continue
             
     if isinstance(selected_maker, str):
+        st.write(selected_maker.lower())
 
         selected_json = web_data.get(selected_maker.lower())
         selected_data = pd.read_json(selected_json, orient='records', lines=True)
         selected_data.columns = selected_data.columns.str.lower().str.strip()
         selected_data = selected_data.dropna(subset=['price'])
         data_all = selected_data
+        st.write(data_all.head(1))
     return data_all
      
      
