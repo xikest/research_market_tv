@@ -98,12 +98,14 @@ def loading_webdata(selected_maker:str):
         else:   
             for maker in selected_maker:
                 try: 
+                    st.write(maker.lower())
                     selected_json = web_data.get(maker.lower())
                     selected_data = pd.read_json(selected_json, orient='records', lines=True)
                     selected_data.columns = selected_data.columns.str.lower().str.strip()
                     selected_data.loc[:, 'series'] = f"[{maker}] " + selected_data['series']
                     selected_data = selected_data.dropna(subset=['price'])
                     data_all = pd.concat([data_all, selected_data[["year", "size", "series", "price", "price_original", "price_gap", "description"]]], axis=0)
+                    st.write(data_all.head(1))
                 except:
                     continue
             
