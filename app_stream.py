@@ -376,6 +376,7 @@ def display_indicators():
             with tabs[0]:  
                 with st.container(): 
                     data_price = loading_webdata(selected_multi_makers)
+                    st.write(df.loc[:, 'description']) ##ss
                     fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
                     fig.update_layout(
                         width=500,
