@@ -237,7 +237,7 @@ class ModelScraper_t(Scraper, Modeler):
                         if len(columns) == 2:
                             label = columns[0].find('p').get_text(strip=True)
                             value = columns[1].get_text(strip=True)
-                            if label in ['model', 'description']:
+                            if label.lower() in ['model', 'description']:
                                 continue
                             dict_spec[label] = value
                 return dict_spec

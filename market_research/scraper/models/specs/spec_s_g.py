@@ -139,6 +139,7 @@ class ModelScraper_s_g(Scraper, Modeler):
                                         '//*[@id="cx-main"]/app-product-details-page/div/app-custom-product-intro/div/div/div[1]/div/span').text
 
             model = model.split(":")[-1].strip()
+            model = model.lower().replace('inzone', '')
             return {"model": model}
         
         def extract_description(driver)->dict:
@@ -160,7 +161,8 @@ class ModelScraper_s_g(Scraper, Modeler):
                 price_now = float(price_now.replace('$', '').replace(',', ''))
                 price_original = float(price_original.replace('$', '').replace(',', ''))
                 price_gap = price_original - price_now
-                
+                print(price_now)
+                print(price_original)
                 prices_dict['price'] = price_now
                 prices_dict['price_original'] = price_original
                 prices_dict['price_gap'] = round(price_gap, 1)
@@ -171,6 +173,8 @@ class ModelScraper_s_g(Scraper, Modeler):
                                                     '//*[@id="PDPOveriewLink"]/div[1]/div/div/div[2]/div/app-custom-product-summary/app-product-pricing/div/div[1]/p').text
                     
                     price_now = float(price_now.replace('$', '').replace(',', ''))
+                    print("1")
+                    print(price_now)
                     prices_dict['price'] = price_now
                     prices_dict['price_original'] = price_now
                     prices_dict['price_gap'] = 0.0
@@ -185,7 +189,7 @@ class ModelScraper_s_g(Scraper, Modeler):
             model = model.lower()
             dict_info["model"] = model
             dict_info["year"] = None
-            dict_info["series"] = model.split(" ")[1]
+            dict_info["series"] = model
             dict_info["size"] = description.split(" ")[0]
             dict_info["grade"] = model.split("-")[0]
 

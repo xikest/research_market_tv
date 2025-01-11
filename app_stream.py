@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 
 
@@ -35,6 +35,7 @@ def get_recent_data_from_git(file_name):
 
 @st.cache_data
 def loading_webdata_version(selected_maker:str):
+    
     if ONLINE:
         web_data = {
                 "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
@@ -53,12 +54,11 @@ def loading_webdata_version(selected_maker:str):
                 "lg": './json/l_scrape_model_data_250109.json',
                 "samsung": './json/se_scrape_model_data_241116.json',
                 "panasonic": './json/p_scrape_model_data_250109.json',
-                "tcl": './json/t_scrape_model_data_250111.json',
-                "sony_gaming": './json/s_g_scrape_model_data_250106.json',
+                "tcl": './json/t_scrape_model_data_250110.json',
+                "sony_gaming": './json/s_g_scrape_model_data_250110.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
                 # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
                 }
-
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
     return version_info
@@ -85,8 +85,8 @@ def loading_webdata(selected_maker:str):
                 "lg": './json/l_scrape_model_data_241001.json',
                 "samsung": './json/se_scrape_model_data_241001.json',
                 "panasonic": './json/p_scrape_model_data_250104.json',
-                "tcl": './json/t_scrape_model_data_250111.json',
-                "sony_gaming": './json/s_g_scrape_model_data_250106.json',
+                "tcl": './json/t_scrape_model_data_250110.json',
+                "sony_gaming": './json/s_g_scrape_model_data_250110.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
                 # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
                 }
@@ -137,9 +137,9 @@ def loading_rtings(data_src='measurement'):
             json_path = get_recent_data_from_git("rtings_scores_data")
     else:
         if data_src == 'measurement':
-            json_path = './json/rtings_measurement_data_241001.json'
+            json_path = './json/rtings_measurement_data_250109.json'
         elif data_src == 'scores':
-            json_path = './json/rtings_scores_data_241001.json'
+            json_path = './json/rtings_scores_data_250109.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 
@@ -203,9 +203,9 @@ def display_indicators():
     if category == 'tv':
         makers = ["SONY", "LG", "SAMSUNG", "PANASONIC", "TCL"]
     if category == 'gaming':
-        makers = ["SONY", "LG", "SAMSUNG"]
-        makers = [f"{maker}_{category.upper()}" for maker in makers]
-        
+        makers = ["SONY", "LG"]
+        # makers = ["SONY", "LG", "SAMSUNG"]
+        makers = [f"{maker}_{category.upper()}" for maker in makers]        
     
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
     st.sidebar.write("")    
@@ -375,7 +375,6 @@ def display_indicators():
             with tabs[0]:  
                 with st.container(): 
                     data_price = loading_webdata(selected_multi_makers)
-                    st.write(data_price.loc[:, 'description']) ##ss
                     fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
                     fig.update_layout(
                         width=500,
@@ -383,15 +382,14 @@ def display_indicators():
                         title='',
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
-                        
-                    
-            if selected_maker in ['samsung_gaming']: ## temp
+                             
+            if selected_maker in ['sony_gaming', 'lg_gaming', 'samsung_gaming']: ## temp    
                 with tabs[1]:
                     st.write("now preparing")
                 with tabs[2]:
                     st.write("now preparing")
                     
-            else:     
+            else:    
                 with tabs[1]:
 
                     sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
@@ -415,7 +413,7 @@ def display_indicators():
                             st.write("No information")
                             
                     with sub_tabs[2]:
-                        data = loading_rtings('measurement')
+                        data = loading_rtings('measurement')                        
                         fig = Rvisualizer(data, selected_multi_makers).heatmap_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))

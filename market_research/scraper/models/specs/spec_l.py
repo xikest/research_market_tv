@@ -22,6 +22,8 @@ class ModelScraper_l(Scraper, Modeler):
         pass
 
     def fetch_model_data(self) -> pd.DataFrame:
+        # url = "https://www.lg.com//us/tvs/lg-oled65b4pua-oled-4k-tv"
+        # dict_info = self._extract_model_details(url)
         
         def find_urls() -> dict:
             url_set = set()
@@ -154,6 +156,7 @@ class ModelScraper_l(Scraper, Modeler):
             
             label = soup.find('span', class_="MuiTypography-root MuiTypography-overline css-rrulv7").text.strip()
             model = label.split()[-1]
+            print(model)
             return {"model": model}
         
         def extract_prices(soup)->dict:
@@ -196,7 +199,7 @@ class ModelScraper_l(Scraper, Modeler):
                     if description: break  
                 except AttributeError:     
                     description =""
-                
+            print(description)
             return {"description": description}
         
         def extract_info_from_model(model: str)->dict:

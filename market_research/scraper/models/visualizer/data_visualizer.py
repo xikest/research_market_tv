@@ -25,7 +25,6 @@ class DataVisualizer(BaseVisualizer):
     def price_map(self, return_data=False, return_fig=False):
 
         data = self.dc.get_price_df().copy()
-        
         years = sorted(data['year'].unique(), reverse=True)
         series = data['series'].unique()
         

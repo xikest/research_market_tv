@@ -21,8 +21,8 @@ class ModelScraper_se_g(Scraper, Modeler):
         pass
     
     def fetch_model_data(self) -> pd.DataFrame:
-        url = "https://www.samsung.com/us/computing/monitors/gaming/32--odyssey-g55a-curved-wqhd-gaming-monitor-ls32ag552enxza/"
-        dict_info = self._extract_model_details(url)
+        # url = "https://www.samsung.com/us/computing/monitors/gaming/32--odyssey-g55a-curved-wqhd-gaming-monitor-ls32ag552enxza/"
+        # dict_info = self._extract_model_details(url)
         
         def find_urls() -> dict:
             url_set = set()
@@ -195,61 +195,27 @@ class ModelScraper_se_g(Scraper, Modeler):
     def _extract_model_details(self, url: str='') -> dict:
     
         def extract_model(driver):
-            try:
-                label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
-            except:
-                try:
-                    driver.save_screenshot("find.png")
-                    time.sleep(1)
-                    label_element =  driver.find_element(By.CLASS_NAME, 'product-top-nav__sku-container')
-                    # HTML 추출
-                    html_content = label_element.get_attribute('outerHTML')
-
-                    # BeautifulSoup으로 파싱
-                    soup = BeautifulSoup(html_content, 'html.parser')
-                    print(soup.prettify())
-                    
-                except Exception as e:
-                    if self.verbose:
-                        print(e)
-                    pass
-        
+            label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
             label = label_element.text
-            print(label)
             model = label.split()[-1]
-            if self.verbose:  ##ss
+            if self.verbose:
                 print(f"label: {label}")
             return {"model": model}
             
         def extract_description(driver)->dict: 
-            try:
-                description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text 
-            except:
-                try:
-                    description = driver.find_element(By.CLASS_NAME,'product-top-nav__font-name' ).text 
-                except Exception as e:
-                    if self.verbose:
-                        print(e)
-                    pass
-            if self.verbose:  ##ss
+            description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
+            if self.verbose:
                 print(f"description: {description}")    
             return {"description": description}
              
         def extract_prices(driver)->dict:
             prices_dict = dict()
             try:
-                try:
-                    price = driver.find_element(By.XPATH, '//*[@id="headerWrapper"]/div/div[2]/div/div/div[1]')   
-                except:
-                    try:
-                        price = driver.find_element(By.XPATH,  '//*[@id="anchor-nav-v2"]/div[2]/div[1]/div[2]/div/div[1]')
-                    except Exception as e:
-                        if self.verbose:
-                            print(e)
-                        pass
-                
+                price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
+                # split_price = price.text.split('\n')
                 split_price = re.split(r'[\n\s]+', price.text)
                 prices = []
+                # print(split_price)
                 for price_text in split_price:
                     try:
                         cleaned_price = price_text.replace('$', '').replace(',', '')
@@ -279,11 +245,10 @@ class ModelScraper_se_g(Scraper, Modeler):
                             'b': "2022",
                             'c': "2023",
                             'd': "2024"}
-                        
             dict_info["size"] = model[2:4]
             dict_info["year"] = model[4]
             dict_info["grade"] = model[:2]
-            dict_info["series"] = model.split("-")[0]
+            dict_info["series"] = model[2:8]
             dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
             return dict_info
         
