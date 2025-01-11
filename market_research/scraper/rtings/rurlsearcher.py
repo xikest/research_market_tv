@@ -40,7 +40,7 @@ class Rurlsearcher(Scraper):
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
             df = df[[ "year", "series"]]
-            df.loc[:, 'maker'] = maker
+            df.loc[:, 'maker'] = maker.replace("_gaming", " monitor")
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
         return info_df

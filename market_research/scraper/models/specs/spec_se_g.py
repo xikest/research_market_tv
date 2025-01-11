@@ -23,6 +23,7 @@ class ModelScraper_se_g(Scraper, Modeler):
     def fetch_model_data(self) -> pd.DataFrame:
         # url = "https://www.samsung.com/us/computing/monitors/gaming/32--odyssey-g55a-curved-wqhd-gaming-monitor-ls32ag552enxza/"
         # dict_info = self._extract_model_details(url)
+        # assert 1==2
         
         def find_urls() -> dict:
             url_set = set()
@@ -83,7 +84,7 @@ class ModelScraper_se_g(Scraper, Modeler):
         def extract_urls_from_segments():
             seg_urls = {
                 "featured_gaming_monitors": "https://www.samsung.com/us/computing/monitors/gaming/?technology=Featured-gaming-monitors",
-                # "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
+                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
                 }
             url_series = set()
             
@@ -187,53 +188,75 @@ class ModelScraper_se_g(Scraper, Modeler):
             if self.verbose:
                 print(f"error_extract_models_from_series {url}")
         
-        if self.verbose:
-            print(url_models_set)
+        # if self.verbose:
+            # print(url_models_set)
         return url_models_set
             
     @Scraper.try_loop(5)
     def _extract_model_details(self, url: str='') -> dict:
     
         def extract_model(driver):
-            label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
-            label = label_element.text
-            model = label.split()[-1]
-            if self.verbose:
-                print(f"label: {label}")
+            try:
+                label_element = driver.find_element(By.XPATH,'//*[@id="details"]/div[2]/div[3]/div[2]/div[1]/div[1]/strong[2]')
+                label = label_element.text
+                model = label.split()[-1]
+            except:
+                try:
+                    soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    label = soup.find('span', {'data-testid': 'atom_label'}).text.strip()
+                    model = label.split('/')[-1].strip()
+                except:
+                    try:
+                         title = driver.title
+                         model = title.split('|')[0].split('-')[-1].strip()
+                    except Exception as e:
+                        if self.verbose:
+                            print(e)
             return {"model": model}
             
         def extract_description(driver)->dict: 
-            description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
-            if self.verbose:
-                print(f"description: {description}")    
+            try:
+                description = driver.find_element(By.XPATH,'//*[@id="details"]/div[2]/div[3]/div[2]/h1').text    
+
+            except:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+                try:
+                    description = soup.find('div', class_='ProductTitle_product__q2vDb').text.strip()
+                    description = description.split('/')[-1].strip()
+                except:
+                    try:
+                         title = driver.title
+                         description = title.split('-')[0].strip()
+                    except Exception as e:
+                        if self.verbose:
+                            print(e)
+                    
+                    
+            description = description.replace('"', "'") 
             return {"description": description}
              
-        def extract_prices(driver)->dict:
-            prices_dict = dict()
+        def extract_prices(driver) -> dict:
+            prices_dict = {}
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
             try:
-                price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
-                # split_price = price.text.split('\n')
-                split_price = re.split(r'[\n\s]+', price.text)
-                prices = []
-                # print(split_price)
-                for price_text in split_price:
-                    try:
-                        cleaned_price = price_text.replace('$', '').replace(',', '')
-                        prices.append(float(cleaned_price))
-                    except ValueError:
-                        continue  
-                if len(prices) > 2:
-                    dict_info["price"] = prices[0]
-                    dict_info["price_original"] = prices[1]
-                    dict_info["price_gap"] = prices[2]
-                else:
-                    dict_info["price"] = prices[0]
-                    prices_dict['price_original'] = prices[0]
-                    prices_dict['price_gap'] = 0.0
+                price_info = soup.find('div', class_='PriceInfoText_priceInfo__QEjy8')
+                price_now = float(price_info.find('b').text.strip().replace('$', '').replace(',', ''))
+                price_original = price_now  
+                strike_tag = price_info.find('strike')
+                if strike_tag and strike_tag.text.strip():
+                    price_original = float(strike_tag.text.strip().replace('$', '').replace(',', ''))
             except:
-                prices_dict['price'] = float('nan')
-                prices_dict['price_original'] = float('nan')
-                prices_dict['price_gap'] = float('nan')
+                try:
+                    price_info = soup.find('span', class_='product-top-nav__font-desc noRecycle noTradein noNEO')
+                    price_now = float(price_info.find('span', class_='epp-price price-color').text.strip().replace('$', '').replace(',', ''))
+                    price_original = price_now  
+                except Exception as e:
+                    print(e)
+                
+            prices_dict["price"] = price_now
+            prices_dict["price_original"] = price_original
+            prices_dict["price_gap"] = price_original - price_now
             return prices_dict
             
         def extract_info_from_model(model: str)->dict:
@@ -248,7 +271,7 @@ class ModelScraper_se_g(Scraper, Modeler):
             dict_info["size"] = model[2:4]
             dict_info["year"] = model[4]
             dict_info["grade"] = model[:2]
-            dict_info["series"] = model[2:8]
+            dict_info["series"] = model[1:8]
             dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
             return dict_info
         
@@ -272,6 +295,7 @@ class ModelScraper_se_g(Scraper, Modeler):
         except Exception as e:
             if self.verbose:
                 print(f"error_extract_model_details: {url}")
+                print(e)
             logging.error(f"error_extract_model_details: {url}")
             pass
         finally:

@@ -22,9 +22,7 @@ class ModelScraper_l(Scraper, Modeler):
         pass
 
     def fetch_model_data(self) -> pd.DataFrame:
-        # url = "https://www.lg.com//us/tvs/lg-oled65b4pua-oled-4k-tv"
-        # dict_info = self._extract_model_details(url)
-        
+
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
@@ -156,10 +154,10 @@ class ModelScraper_l(Scraper, Modeler):
             
             label = soup.find('span', class_="MuiTypography-root MuiTypography-overline css-rrulv7").text.strip()
             model = label.split()[-1]
-            print(model)
+            
             return {"model": model}
         
-        def extract_prices(soup)->dict:
+        def extract_prices(soup, model_size)->dict:
             prices_dict = dict()
             try:
                 price = soup.find('div', class_='MuiGrid-root MuiGrid-item css-8wacqv').text.strip()
@@ -180,10 +178,20 @@ class ModelScraper_l(Scraper, Modeler):
                     prices_dict["price_original"] = price_now
                     prices_dict["price_gap"] = 0.0
             except:
-                prices_dict["price"] = float('nan')
-                prices_dict["price_original"] = float('nan')
-                prices_dict["price_gap"] = float('nan')
-                
+                try: 
+                    products = {}
+                    for item in soup.find_all('div', class_='MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 MuiGrid-grid-md-4 css-1udb513'):
+                        size = item.find('h6').text.replace('"', '')
+                        price = item.find('p').text  #
+                        products[size]= float(price.replace('$',"").replace(',', ''))
+                    price_now = products.get(model_size)
+                    prices_dict["price"] = price_now
+                    prices_dict["price_original"] = price_now
+                    prices_dict["price_gap"] = 0.0
+                except:
+                    prices_dict["price"] = float('nan')
+                    prices_dict["price_original"] = float('nan')
+                    prices_dict["price_gap"] = float('nan')
             return prices_dict
        
         def extract_description(soup)->dict:
@@ -191,7 +199,8 @@ class ModelScraper_l(Scraper, Modeler):
                 ('h2', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
                 ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-8oa1vg'),
                 ('h1', 'MuiTypography-root MuiTypography-h5 css-vnteo9'),
-                ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-1ee9l5')
+                ('h1', 'MuiTypography-root MuiTypography-subtitle2 css-1ee9l5'),
+                ('h1', 'MuiTypography-root MuiTypography-h5 css-72m7wz')
             ]
             for tag, class_name in descriptions:
                 try:
@@ -199,7 +208,7 @@ class ModelScraper_l(Scraper, Modeler):
                     if description: break  
                 except AttributeError:     
                     description =""
-            print(description)
+            description = description.split('-')[0]
             return {"description": description}
         
         def extract_info_from_model(model: str)->dict:
@@ -289,9 +298,9 @@ class ModelScraper_l(Scraper, Modeler):
             soup = BeautifulSoup(page_content, 'html.parser')
             
             dict_info.update(extract_model(soup))
-            dict_info.update(extract_prices(soup))
             dict_info.update(extract_description(soup))
             dict_info.update(extract_info_from_model(dict_info.get("model")))
+            dict_info.update(extract_prices(soup, dict_info.get('size')))
             if self.verbose: 
                 print(dict_info)
             logging.info(dict_info)            

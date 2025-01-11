@@ -212,6 +212,7 @@ class ModelScraper_t(Scraper, Modeler):
         
         def find_spec_tab(driver) -> None:
             try: 
+                time.sleep(self.wait_time)
                 driver.execute_script("arguments[0].click();", driver.find_element(By.XPATH, '//*[@id="cmp-tabs"]/div[1]/div/ol/li[2]'))
                 time.sleep(self.wait_time)
             except Exception as e :

@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 
 
@@ -51,10 +51,10 @@ def loading_webdata_version(selected_maker:str):
     else:
         web_data = {
                 "sony": './json/s_scrape_model_data_250106.json',
-                "lg": './json/l_scrape_model_data_250109.json',
+                "lg": './json/l_scrape_model_data_250111.json',
                 "samsung": './json/se_scrape_model_data_241116.json',
                 "panasonic": './json/p_scrape_model_data_250109.json',
-                "tcl": './json/t_scrape_model_data_250110.json',
+                "tcl": './json/t_scrape_model_data_250111.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250110.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
                 # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
@@ -82,10 +82,10 @@ def loading_webdata(selected_maker:str):
     else:
         web_data = {
                 "sony": './json/s_scrape_model_data_241001.json',
-                "lg": './json/l_scrape_model_data_241001.json',
+                "lg": './json/l_scrape_model_data_250111.json',
                 "samsung": './json/se_scrape_model_data_241001.json',
-                "panasonic": './json/p_scrape_model_data_250104.json',
-                "tcl": './json/t_scrape_model_data_250110.json',
+                "panasonic": './json/p_scrape_model_data_250109.json',
+                "tcl": './json/t_scrape_model_data_250111.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250110.json',
                 "lg_gaming": './json/l_g_scrape_model_data_250109.json',
                 # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
