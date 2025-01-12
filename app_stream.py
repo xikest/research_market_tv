@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -159,9 +159,9 @@ def loading_rtings(data_src='measurement'):
             json_path = get_recent_data_from_git("rtings_scores_data")
     else:
         if data_src == 'measurement':
-            json_path = './json/rtings_measurement_data_250109.json'
+            json_path = './json/rtings_measurement_data_250112.json'
         elif data_src == 'scores':
-            json_path = './json/rtings_scores_data_250109.json'
+            json_path = './json/rtings_scores_data_250112.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
 

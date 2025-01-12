@@ -252,7 +252,7 @@ class ModelScraper_se_g(Scraper, Modeler):
             dict_info["year"] = model[4]
             dict_info["grade"] = model[:2]
             dict_info["series"] = model[1:8]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), "0---")
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), "0000")
             return dict_info
         
         dict_info = {}
