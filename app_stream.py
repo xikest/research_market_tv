@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
