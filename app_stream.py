@@ -401,8 +401,8 @@ def display_indicators():
 
             with tabs[0]:  
                 with st.container(): 
-                    data_price = loading_webdata(selected_multi_makers)
-                    fig = DataVisualizer(data_price, maker=selected_maker_for_viz).price_map(return_fig=True)  
+                    data_price = loading_webdata(selected_maker) ## 'sony'
+                    fig = DataVisualizer(data_price, maker=selected_maker_for_viz).price_map(return_fig=True)   ## 'sony_tv'
                     fig.update_layout(
                         width=500,
                         height=col2_plot_height,
