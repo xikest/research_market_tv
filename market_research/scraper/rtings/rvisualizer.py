@@ -11,7 +11,7 @@ import plotly.colors as colors
 
 class Rvisualizer(BaseVisualizer):
 
-    def __init__(self, data:dict=None, maker_filter=None, output_folder_path="results"):
+    def __init__(self, data:dict=None, maker_filter=None, pruduct_type:str = 'tv', output_folder_path="results"):
         
         def initialize_data(data:dict, maker_filter=None, measurement_selection:dict=None):
             def retrim(ds: pd.Series, mark: str = ","):
@@ -46,10 +46,10 @@ class Rvisualizer(BaseVisualizer):
                 for target, label in label_dict.items():
                     df.loc[:, "label"] = df.label.map(lambda x: x.replace(target, label))
                 df.loc[:, "result_value"] = df.loc[:, "result_value"].map(lambda x:x.lower())    
-                value_dict = {"n/a": "0", "inf": "1000000000"}
+                value_dict = {"n/a": "0", "inf": "1000000000", "yes":'1', "no":'0'}
                 for target, value in value_dict.items():
                     df.loc[:, "result_value"] = df.result_value.map(lambda x: x.replace(target, value))
-                trim_marks = ["cd/m²", ",", "%", "°", "k", "ms", "hz", "db", ": 1", "w"]
+                trim_marks = ["cd/m²", ",", "%", "°", "k", "ms", "hz", "db", ": 1", "w", "bit", "rgb", "mp", "ppi", "ms"]
                 for trim_mark in trim_marks:
                     try:
                         df.loc[:, "result_value"] = retrim(df["result_value"], trim_mark)
@@ -96,29 +96,60 @@ class Rvisualizer(BaseVisualizer):
         
         super().__init__(output_folder_path=output_folder_path)
         pio.templates.default='ggplot2'
-        self.dataset = initialize_data(data, maker_filter, Rvisualizer.get_measurement_selection())
+        self.measurement_selection_dict = Rvisualizer.get_measurement_selection(pruduct_type)
+        self.dataset = initialize_data(data, maker_filter, self.measurement_selection_dict)
         self.font='Arial, sans-serif'
         self.fontsize= 10
         self.data_detail_dict: dict = {}
+        
         pass
         
     @staticmethod
-    def get_measurement_selection():
-        measurement_selection = {
-            "HDR Brightness": "cd/m²",
-            "SDR Brightness": "cd/m²",
-            "Black Uniformity": "%",
-            "Contrast": "",
-            "Color Gamut": "%",
-            'Color Volume':"",
-            "Gray Uniformity": "%",
-            "Reflections": "%",
-            "Viewing Angle": "°",
-            "Pre Calibration":"",
-            "Lighting Zone Transitions":"",
-            "Variable Refresh Rate": "Hz",
-             "Misc": "W"
-        } 
+    def get_measurement_selection(type:str='tv'):
+        if type == 'tv':
+            measurement_selection = {
+                "HDR Brightness": "cd/m²",
+                "SDR Brightness": "cd/m²",
+                "Black Uniformity": "%",
+                "Contrast": "",
+                "Color Gamut": "%",
+                'Color Volume':"",
+                "Gray Uniformity": "%",
+                "Reflections": "%",
+                "Viewing Angle": "°",
+                "Pre Calibration":"",
+                "Lighting Zone Transitions":"",
+                "Variable Refresh Rate": "Hz",
+                "Misc": "W"
+            } 
+        elif type == 'gaming':
+                        measurement_selection = {
+                    "Contrast": "",
+                    # "Local Dimming": "",
+                    "HDR Brightness": "cd/m²",
+                    "SDR Brightness": "cd/m²",
+                    "Horizontal Viewing Angle": "°", 
+                    "Vertical Viewing Angle" : "°",
+                    "Gray Uniformity": "%",
+                    "Black Uniformity" : "%",
+                    # "SDR Color Gamut": "%", 
+                    "HDR Color Gamut" : "%",
+                    "HDR Color Volume": "%",
+                    # "Text Clarity" : "",
+                    "Reflections" : "%",
+                    # "Gradient" : "Bit",
+                    "Refresh Rate" : "Hz",
+                    # "Variable Refresh Rate (VRR)" : "Hz",
+                    "VRR Motion Performance" :"",
+                    "Refresh Rate Compliance": "%",
+                    "CAD @ Max Refresh Rate":"",
+                    # "CAD @ 120Hz" :"",
+                    # "CAD @ 60Hz" :"",
+                    "VRR Flicker" :"RGB",
+                    # "Image Flicker" :"Hz",
+                    # "Input Lag":"ms",
+                    "Resolution" :"PPI"
+            } 
         return measurement_selection
 
     def plot_facet_bar(self, select_label, return_fig:bool=False):
@@ -130,12 +161,20 @@ class Rvisualizer(BaseVisualizer):
         categories = df['label'].unique()
         if select_label == "Pre Calibration":
             div_group = 3
+        elif select_label == "Horizontal Viewing Angle":
+            div_group = 5  
+        elif select_label == "Vertical Viewing Angle":
+            div_group = 5  
+        elif select_label == "Refresh Rate":
+            div_group = 3  
         else:
             div_group = 2
+            
+            
+            
         first_group = categories[:div_group]
         second_group = categories[div_group:]
-        measurement_selection_dict = self.get_measurement_selection()
-        plot_unit = measurement_selection_dict.get(select_label, "")
+        plot_unit = self.measurement_selection_dict.get(select_label, "")
         colors = px.colors.qualitative.Plotly  # Plotly 기본 팔레트
         years = sorted(df['year'].unique(), reverse=True)
         
@@ -255,10 +294,7 @@ class Rvisualizer(BaseVisualizer):
         for idx, series in enumerate(series_group):
             data_series = data_df.xs((series), level=(2), axis=1)
             year = data_series.columns.get_level_values(1).unique().item()
-            
             maker = data_series.columns.get_level_values(0).unique().item()
-            
-
             
             try:
                 suffix = f": {data_series.loc['Mixed Usage'].item()}"

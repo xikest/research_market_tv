@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -421,7 +421,7 @@ def display_indicators():
                     
                     with sub_tabs[0]:
                         data = loading_rtings('scores')
-                        fig = Rvisualizer(data, selected_multi_makers_for_viz).radar_scores(return_fig=True)   
+                        fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).radar_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
                             st.plotly_chart(fig, use_container_width=True)
@@ -430,7 +430,7 @@ def display_indicators():
                             
                     with sub_tabs[1]:
                         data = loading_rtings( 'measurement')
-                        fig = Rvisualizer(data, selected_multi_makers_for_viz).radar_scores(return_fig=True)   
+                        fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).radar_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
                             st.plotly_chart(fig, use_container_width=True)
@@ -439,7 +439,7 @@ def display_indicators():
                             
                     with sub_tabs[2]:
                         data = loading_rtings('measurement')                        
-                        fig = Rvisualizer(data, selected_multi_makers_for_viz).heatmap_scores(return_fig=True)   
+                        fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).heatmap_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
                             st.plotly_chart(fig, use_container_width=True)
@@ -450,7 +450,7 @@ def display_indicators():
                         data = loading_rtings('measurement')
                         
                         try:
-                            fig = Rvisualizer(data, selected_multi_makers_for_viz).plot_pca(return_fig=True)   
+                            fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).plot_pca(return_fig=True)   
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
                             st.plotly_chart(fig, use_container_width=True)
                         except:
@@ -458,13 +458,13 @@ def display_indicators():
                         
                         
                 with tabs[2]:
-                    sub_category = Rvisualizer.get_measurement_selection()
+                    sub_category = Rvisualizer.get_measurement_selection(st.session_state["category"])
                     sub_tabs = st.tabs(sub_category)
                     
                     for i, category in enumerate(sub_category):
                         with sub_tabs[i]:
                             data = loading_rtings('measurement')
-                            fig = Rvisualizer(data, selected_multi_makers_for_viz).plot_facet_bar(category, return_fig=True)   
+                            fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).plot_facet_bar(category, return_fig=True)   
                             if fig != None:
                                 fig.update_layout(width=600, height=col2_plot_height, 
                                                 margin=dict(t=0, r=0, b=20))
