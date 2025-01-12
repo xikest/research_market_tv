@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -388,11 +388,13 @@ def display_indicators():
             selected_multi_makers = st.multiselect(label="maker_label", options=makers, placeholder='Select Makers', 
                                                     key='key_for_scores', label_visibility='hidden')
             if not selected_multi_makers: 
-                selected_multi_makers =  selected_maker
+                # selected_multi_makers =  selected_maker
                 selected_multi_makers_for_viz = f"{selected_maker}_{category}"
+
             else:
-                selected_multi_makers = list(map(str.lower, selected_multi_makers))
-                selected_multi_makers_for_viz = list(map(str.lower, f"{selected_maker}_{category}"))
+                # selected_multi_makers = list(map(str.lower, selected_multi_makers))
+                selected_multi_makers_for_viz = [f"{maker.lower()}_{category.lower()}" for maker in selected_multi_makers]
+
                 
             tab_name = [ "Price", "Scores", "Data"]
             tabs = st.tabs(tab_name)
