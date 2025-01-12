@@ -9,10 +9,10 @@ from tools.file.github import GitMgt
 
 
 class Rurlsearcher(Scraper):
-    def __init__(self, enable_headless=True):
+    def __init__(self, enable_headless=True, verbose=False):
         super().__init__(enable_headless=enable_headless)
         self.wait_time = 2
-        
+        self.verbose=  verbose
 
         
     def _get_model_info_from_mkrt(self, path_dict:dict=None) ->set:
@@ -40,7 +40,7 @@ class Rurlsearcher(Scraper):
         for maker in path_dict:
             df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
             df = df[[ "year", "series"]]
-            df.loc[:, 'maker'] = maker.replace("_gaming", " monitor")
+            df["maker"] = maker
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
         return info_df
@@ -52,13 +52,19 @@ class Rurlsearcher(Scraper):
         failed_series = []
         info_dict = {}
         for _, row in tqdm(info_df.iterrows()):
+            
             maker = row['maker']
             series = row['series']
             year = row['year']
             try:
                 keywords = f"{maker} {series}"
-                url = self._search_and_extract_url(search_query=keywords)
-                if self._check_url_with_keywords(url, keywords) is None:
+                search_query = f"{keywords +' '+ 'review'}"
+                search_query = search_query.replace("gaming", "monitor").replace("_"," ")
+                url_check = search_query.split()[1] ## "tv", "monitor"
+                url = self._search_and_extract_url(search_query=search_query, url_check=url_check)
+  
+                check_keywords = f"{maker.split('_')[0]} {series}" ## "sony", "xr90"
+                if self._check_url_with_keywords(url, check_keywords) is None:
                   raise ValueError
                 info_dict[url] = {"maker":maker, 
                                   "series":series, 
@@ -74,11 +80,16 @@ class Rurlsearcher(Scraper):
     def _check_url_with_keywords(self, url: str, keywords: list):
         driver = self.web_driver.get_chrome()
         driver.get(url)
+
+       
+
         try:
           page_source = driver.page_source
           soup = BeautifulSoup(page_source, 'html.parser')
           if soup.title and soup.title.string:
             title = soup.title.string.lower().replace("\u200b", "")
+            if self.verbose:
+                print(f"checking [{keywords}] in title[{title}]")##ss
             if all(keyword in title for keyword in keywords.split()):
               return url 
             else:
@@ -100,8 +111,11 @@ class Rurlsearcher(Scraper):
     
 
 
-    def _search_and_extract_url(self, search_query: str, base_url="https://www.rtings.com"):
+    def _search_and_extract_url(self, search_query: str, url_check:str=None, base_url="https://www.rtings.com"):
         driver = self.web_driver.get_chrome()
+        if self.verbose:
+                print(f"search_query: {search_query}")
+                print(f"checking [{url_check}/review] in url") 
         try:
             driver.get(base_url)
             search_input = driver.find_element("class name", "searchbar-input")
@@ -111,14 +125,25 @@ class Rurlsearcher(Scraper):
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'html.parser')
             search_results = soup.find_all('div', class_='searchbar_results-main')
-            extracted_urls = [result.find('a')['href'] for result in search_results]
+            extracted_urls = [result.find('a')['href'] for result in search_results][:2]
 
             # 추출된 URL을 /로 분할하고, 검색 결과와 비교하여 일치하는 경우 반환
+            if url_check:
+              url_condition= f"{url_check}/reviews"
+            else:
+              url_condition= f"reviews"
+
             for url in extracted_urls:
-                if "tv/reviews" in url:
+                if url_condition in url:
                     split_url = url.split('/')
                     if len(split_url) == 5:
+                        if self.verbose:
+                            print(base_url + url)
                         return base_url + url
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            pass
+
         finally:
             # 브라우저 종료
             driver.quit()
