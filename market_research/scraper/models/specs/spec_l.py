@@ -244,7 +244,7 @@ class ModelScraper_l(Scraper, Modeler):
                     dict_info["year"] = model[-1]
                     dict_info["series"] = model[-2:]
                     dict_info["size"] = model[:-2]
-                    dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), None)
+                    dict_info["year"] = year_mapping.get('oled').get(dict_info.get("year"), "na")
                     
                 
                 # "qned" 또는 "nano"가 포함된 모델 처리

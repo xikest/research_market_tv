@@ -20,11 +20,7 @@ class ModelScraper_se_g(Scraper, Modeler):
         self.verbose = verbose
         pass
     
-    def fetch_model_data(self) -> pd.DataFrame:
-        # url = "https://www.samsung.com/us/computing/monitors/gaming/32--odyssey-g55a-curved-wqhd-gaming-monitor-ls32ag552enxza/"
-        # dict_info = self._extract_model_details(url)
-        # assert 1==2
-        
+    def fetch_model_data(self) -> pd.DataFrame:        
         def find_urls() -> dict:
             url_set = set()
             url_series_set = self._get_series_urls()
@@ -56,17 +52,8 @@ class ModelScraper_se_g(Scraper, Modeler):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            try:
-                df_models = df_models.drop(['Series'], axis=1)
-            except:
-                pass
             df_models = df_models.rename(columns={'Type':'display type'})
             df_models = df_models.dropna(subset=['price'])
-            try:
-                valid_indices = df_models['Color*'].dropna().index
-                df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
-            except:
-                pass
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
         print("start collecting data")
@@ -83,8 +70,10 @@ class ModelScraper_se_g(Scraper, Modeler):
 
         def extract_urls_from_segments():
             seg_urls = {
-                "featured_gaming_monitors": "https://www.samsung.com/us/computing/monitors/gaming/?technology=Featured-gaming-monitors",
-                "gaming": "https://www.samsung.com/us/computing/monitors/gaming/"
+                "gaming_price_under200":"https://www.samsung.com/us/computing/monitors/gaming/?technology=Gaming&price=Under+%24200",
+                "gaming_price_200to500":"https://www.samsung.com/us/computing/monitors/gaming/?technology=Gaming&price=%24200+-+%24500",
+                "gaming_price_over500":"https://www.samsung.com/us/computing/monitors/gaming/?price=Over+%24500&technology=Gaming",
+                "featured_gaming_monitors": "https://www.samsung.com/us/computing/monitors/gaming/?technology=Featured-gaming-monitors"
                 }
             url_series = set()
             
@@ -93,17 +82,7 @@ class ModelScraper_se_g(Scraper, Modeler):
                 url_series.update(urls)
             return url_series   
         
-        def click_view_all(driver):
-            clickalble = True
-            while clickalble:
-                try:
-                    switch_element = driver.find_element(By.XPATH, '//*[@id="results"]/div/div/div/div[4]/div[3]/div[2]')
-                    driver.execute_script("arguments[0].click();", switch_element)
-                    time.sleep(1)
-                except Exception as e:
-                    # print(e)
-                    clickalble = False
-        
+
                 
         def find_series_urls(url:str, prefix:str) -> set:
         
@@ -116,9 +95,6 @@ class ModelScraper_se_g(Scraper, Modeler):
 
             try:
                 driver = self.set_driver(url)
-                click_view_all(driver)
-
-                
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
                 
@@ -132,6 +108,10 @@ class ModelScraper_se_g(Scraper, Modeler):
                         driver.execute_script(f"window.scrollBy(0, {step});")
                         time.sleep(self.wait_time)
                         scroll_distance += step
+                        tt= url.split('/')[-1]
+                        driver.save_screenshot(f'ss/{tt}distance{scroll_distance}.png')    
+                    
+                        
                 return url_series
             except Exception as e:
                 if self.verbose:
@@ -157,9 +137,9 @@ class ModelScraper_se_g(Scraper, Modeler):
             try:
                 sereis_element = driver.find_elements(By.XPATH, XPATH)
                 for element in sereis_element:
-                    a_tags = element.find_elements(By.TAG_NAME, 'a')  # a 태그 찾기
+                    a_tags = element.find_elements(By.TAG_NAME, 'a')  
                     for a_tag in a_tags:
-                        href = a_tag.get_attribute('href')  # 링크(href) 속성 값 추출
+                        href = a_tag.get_attribute('href')  
                         if href:
                             href = href.strip()
                             url_series_set.add(href)
@@ -272,7 +252,7 @@ class ModelScraper_se_g(Scraper, Modeler):
             dict_info["year"] = model[4]
             dict_info["grade"] = model[:2]
             dict_info["series"] = model[1:8]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), "0000")
             return dict_info
         
         dict_info = {}

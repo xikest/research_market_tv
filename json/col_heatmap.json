@@ -1,5 +1,5 @@
 {
-  "sony": [
+  "sony_tv": [
     "high peak luminance",
     "peak luminance",
     "contrast enhancement",
@@ -42,7 +42,7 @@
 ]
 ,
 
-  "lg": [
+  "lg_tv": [
     "brightness booster",
     "100% color volume",
     "100% color fidelity",
@@ -60,20 +60,21 @@
     "game optimizer"
   ],
   "lg_gaming": [
-    "vesa displayhdr™",
+    "vesa displayhdr",
     "brightness (typical, minimum)",
     "color gamut (typ.)",
     "display type",
     "refresh rate",
     "response time (gtg)",
+    "Live Color Low Blue Light",
     "adaptive sync",
-    "black stabilizer®",
-    "crosshair®",
-    "dynamic action sync®",
+    "black stabilizer",
+    "crosshair",
+    "dynamic action sync",
     "fps counter",
     "nvidia g-sync™"
 ],
-  "samsung":[
+  "samsung_tv":[
     "color",
     "anti reflection",
     "contrast",
@@ -113,14 +114,14 @@
   "brightness (min)"
 ],
 
-"panasonic":[
+"panasonic_tv":[
   "panel technology", 
   "surround", 
   "dolby atmos", 
   "panel refresh rate", 
   "picture mode", 
   "hdmi support features"],
-"tcl":[
+"tcl_tv":[
     "display technology",
     "panel refresh rate",
     "variable refresh rate (vrr)",

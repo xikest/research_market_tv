@@ -262,11 +262,11 @@ class ModelScraper_se(Scraper, Modeler):
             dict_info["series"] = model
             
             if "qn" in dict_info["grade"] or "kq" in dict_info["grade"]:         
-                dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], None)
+                dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], "na")
             elif "un" in dict_info["grade"] :
-                dict_info["year"] = year_mapping.get('un').get(dict_info["year"], None)
+                dict_info["year"] = year_mapping.get('un').get(dict_info["year"], "na")
             else:
-                dict_info["year"] = None
+                dict_info["year"] = "na"
             return dict_info
         
         dict_info = {}

@@ -190,7 +190,7 @@ class ModelScraper_s_g(Scraper, Modeler):
             dict_info["model"] = model
             dict_info["year"] = None
             dict_info["series"] = model
-            dict_info["size"] = description.split(" ")[0]
+            dict_info["size"] = description.split(" ")[0].replace("\u201d", "")
             dict_info["grade"] = model.split("-")[0]
 
             year_mapping = {

@@ -16,11 +16,30 @@ st.set_page_config(layout="wide")
 
 ONLINE = False
 pio.templates.default='ggplot2'
+st.session_state["category"] = None
 
 
+
+def modify_maker(func):
+    def wrapper(*args, **kwargs):
+        # args에 값이 있을 때
+        if args:
+            # st.write(args)  
+            selected_maker = args[0]  
+
+            if isinstance(selected_maker, str):
+                if selected_maker:
+                    args = (f"{selected_maker}_{st.session_state.get('category', 'default')}",) + args[1:]
+            
+            elif isinstance(selected_maker, list):
+                new_makers = [f"{maker}_{st.session_state.get('category', 'default')}" for maker in selected_maker]
+                args = (new_makers,) + args[1:]
+        # st.write("deco")          
+        # st.write(args)  
+        return func(*args, **kwargs)  
+    return wrapper
 
 def get_recent_data_from_git(file_name):
-    
     file_urls = []
     url  = "https://raw.githubusercontent.com/xikest/research_market_tv/main/json/stream_data_list.json"
     response = requests.get(url)
@@ -33,66 +52,68 @@ def get_recent_data_from_git(file_name):
     return file_urls[-1]
 
 
+@modify_maker
 @st.cache_data
 def loading_webdata_version(selected_maker:str):
-    
     if ONLINE:
         web_data = {
-                "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
-                "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
-                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
-                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}',
-                "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
+                "sony_tv": f'{get_recent_data_from_git("s_scrape_model_data")}',
+                "lg_tv": f'{get_recent_data_from_git("l_scrape_model_data")}',
+                "samsung_tv": f'{get_recent_data_from_git("se_scrape_model_data")}',
+                "panasonic_tv": f'{get_recent_data_from_git("p_scrape_model_data")}',
+                "tcl_tv": f'{get_recent_data_from_git("t_scrape_model_data")}',
                 "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                 "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                # "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
+                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
     
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data_250106.json',
-                "lg": './json/l_scrape_model_data_250111.json',
-                "samsung": './json/se_scrape_model_data_241116.json',
-                "panasonic": './json/p_scrape_model_data_250109.json',
-                "tcl": './json/t_scrape_model_data_250111.json',
+                "sony_tv": './json/s_scrape_model_data_250106.json',
+                "lg_tv": './json/l_scrape_model_data_250111.json',
+                "samsung_tv": './json/se_scrape_model_data_241116.json',
+                "panasonic_tv": './json/p_scrape_model_data_250109.json',
+                "tcl_tv": './json/t_scrape_model_data_250111.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250110.json',
-                "lg_gaming": './json/l_g_scrape_model_data_250109.json',
-                # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
+                "lg_gaming": './json/l_g_scrape_model_data_250111.json',
+                "samsung_gaming": './json/se_g_scrape_model_data_250112.json'
                 }
     version_info = web_data.get(selected_maker.lower()).split('_')[-1].replace('.json','')  
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
     return version_info
 
+@modify_maker
 @st.cache_data
 def loading_webdata(selected_maker:str):
-
-    
+    # st.write("loading_webdata")
+    # st.write(selected_maker)
     if ONLINE:
         web_data = {
-                "sony": f'{get_recent_data_from_git("s_scrape_model_data")}',
-                "lg": f'{get_recent_data_from_git("l_scrape_model_data")}',
-                "samsung": f'{get_recent_data_from_git("se_scrape_model_data")}',
-                "panasonic": f'{get_recent_data_from_git("p_scrape_model_data")}',
-                "tcl": f'{get_recent_data_from_git("t_scrape_model_data")}',
+                "sony_tv": f'{get_recent_data_from_git("s_scrape_model_data")}',
+                "lg_tv": f'{get_recent_data_from_git("l_scrape_model_data")}',
+                "samsung_tv": f'{get_recent_data_from_git("se_scrape_model_data")}',
+                "panasonic_tv": f'{get_recent_data_from_git("p_scrape_model_data")}',
+                "tcl_tv": f'{get_recent_data_from_git("t_scrape_model_data")}',
                 "sony_gaming": f'{get_recent_data_from_git("s_g_scrape_model_data")}',
                 "lg_gaming": f'{get_recent_data_from_git("l_g_scrape_model_data")}',
-                # "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
+                "samsung_gaming": f'{get_recent_data_from_git("se_g_scrape_model_data")}'
                 }
 
     else:
         web_data = {
-                "sony": './json/s_scrape_model_data_241001.json',
-                "lg": './json/l_scrape_model_data_250111.json',
-                "samsung": './json/se_scrape_model_data_241001.json',
-                "panasonic": './json/p_scrape_model_data_250109.json',
-                "tcl": './json/t_scrape_model_data_250111.json',
+                "sony_tv": './json/s_scrape_model_data_241001.json',
+                "lg_tv": './json/l_scrape_model_data_250111.json',
+                "samsung_tv": './json/se_scrape_model_data_241001.json',
+                "panasonic_tv": './json/p_scrape_model_data_250109.json',
+                "tcl_tv": './json/t_scrape_model_data_250111.json',
                 "sony_gaming": './json/s_g_scrape_model_data_250110.json',
-                "lg_gaming": './json/l_g_scrape_model_data_250109.json',
-                # "samsung_gaming": './json/se_g_scrape_model_data_250109.json'
+                "lg_gaming": './json/l_g_scrape_model_data_250111.json',
+                "samsung_gaming": './json/se_g_scrape_model_data_250112.json'
                 }
         
     data_all = pd.DataFrame()
     if isinstance(selected_maker, list):
+        
         if len(selected_maker) == 1:
             selected_maker = selected_maker[0] 
         else:   
@@ -168,8 +189,7 @@ def display_html_table(df: pd.DataFrame, title: str):
     else:
         st.write("No material.")
 
-                       
-
+     
 def download_data(makers):
     def to_excel(df_dict):
         output = BytesIO()
@@ -178,8 +198,8 @@ def download_data(makers):
                 df.to_excel(writer, index=False, sheet_name=sheet_name)  # 시트 이름은 딕셔너리의 키
         processed_data = output.getvalue()
         return processed_data
-       
-    df_dict = {maker.lower(): loading_webdata(maker.lower()) for maker in makers}    
+    
+    df_dict = {maker.lower(): loading_webdata(maker.lower()) for maker in makers}  
     df_dict.update({category: loading_rtings(category).get(category) for category in ['measurement', 'scores']})
     excel_data = to_excel(df_dict)
     return excel_data
@@ -203,11 +223,11 @@ def display_indicators():
     if category == 'tv':
         makers = ["SONY", "LG", "SAMSUNG", "PANASONIC", "TCL"]
     if category == 'gaming':
-        makers = ["SONY", "LG"]
-        # makers = ["SONY", "LG", "SAMSUNG"]
-        makers = [f"{maker}_{category.upper()}" for maker in makers]        
+        makers = ["SONY", "LG", "SAMSUNG"]      
+    st.session_state["category"] = category
     
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
+
     st.sidebar.write("")    
     version = loading_webdata_version(selected_maker)
     st.sidebar.write(f'Updated: {version}')

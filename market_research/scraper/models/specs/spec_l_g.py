@@ -50,7 +50,6 @@ class ModelScraper_l_g(Scraper, Modeler):
         
         def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
             df_models = pd.DataFrame.from_dict(dict_models).T
-            df_models = df_models.drop(['Series', 'Size'], axis=1)
             df_models = df_models.dropna(subset=['price'])
             df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
@@ -65,11 +64,23 @@ class ModelScraper_l_g(Scraper, Modeler):
     
     @Scraper.try_loop(2)
     def _get_series_urls(self) -> set:
-        # url = "https://www.lg.com/us/monitors/lg-32gn600-b-gaming-monitor"
-        # dict_info = self._extract_model_details(url)
-        # assert 1==2
-
-                
+        
+        def click_load_more(driver):     
+            for _ in range(5):
+                try:
+                    load_more_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[4]/div/div/div[2]/div/div/div[4]/div[2]/div[2]/button')
+                    self.web_driver.move_element_to_center(load_more_button)
+                    load_more_button.click()
+                    time.sleep(1)
+                except:
+                    try:
+                        load_more_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[3]/div/div/div[2]/div/div/div[4]/div[2]/div[2]/button')
+                        self.web_driver.move_element_to_center(load_more_button)
+                        load_more_button.click()
+                        time.sleep(1)
+                    except:
+                        pass
+                            
         def extract_urls_from_segments():
             def find_series_urls(url, prefix) -> set:
                 print(f"Starting to scrape series URLs from: {url}")
@@ -79,8 +90,7 @@ class ModelScraper_l_g(Scraper, Modeler):
                 step = 200
                 try:
                     driver = self.set_driver(url)
-                    
-                    # click_view_all(driver)
+                    click_load_more()
                     scroll_distance_total = self.web_driver.get_scroll_distance_total()
                     scroll_distance = 0
 
@@ -95,14 +105,7 @@ class ModelScraper_l_g(Scraper, Modeler):
                             driver.execute_script(f"window.scrollBy(0, {step});")
                             time.sleep(self.wait_time)
                             scroll_distance += step
-                            
-                            try:
-                                load_more_button = driver.find_element(By.XPATH, '//button[contains(@class, "MuiButton-outlinedSecondary") and text()="Load More"]')
-                                load_more_button.click()
-                                driver.save_screenshot(f"click{scroll_distance}.png")
-                            except:
-                                pass
-                            
+                               
                     return url_series
                 except Exception as e:
                     pass
@@ -113,7 +116,27 @@ class ModelScraper_l_g(Scraper, Modeler):
             seg_urls = {
                 "oled-gaming-monitors": "https://www.lg.com/us/ultragear-oled-gaming-monitors",
                 "gaming-monitors": "https://www.lg.com/us/gaming-monitors",
-                }
+                # 'gaming-monitors_0to50': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=0..50',
+                # 'gaming-monitors_50to100': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=50..100',
+                # 'gaming-monitors_100to150': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=100..150',
+                # 'gaming-monitors_150to200': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=150..200',
+                # 'gaming-monitors_200to250': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=200..250',
+                # 'gaming-monitors_250to300': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=250..300',
+                # 'gaming-monitors_300to350': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=300..350',
+                # 'gaming-monitors_350to400': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=350..400',
+                # 'gaming-monitors_400to450': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=400..450',
+                # 'gaming-monitors_450to500': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=450..500',
+                # 'gaming-monitors_500to600': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=500..600',
+                # 'gaming-monitors_600to700': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=600..700',
+                # 'gaming-monitors_700to800': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=700..800',
+                # 'gaming-monitors_800to900': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=800..900',
+                # 'gaming-monitors_900to1000': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=900..1000',
+                # 'gaming-monitors_1000to1500': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=1000..1500',
+                # 'gaming-monitors_1500to2000': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=1500..2000',
+                # 'gaming-monitors_2000to3000': 'https://www.lg.com/us/gaming-monitors?nf-ec_final_price_filter=2000..3000'
+            }
+                
+            
             url_series = set()
             
             for seg, seg_url in seg_urls.items():
@@ -180,7 +203,7 @@ class ModelScraper_l_g(Scraper, Modeler):
                         products = {}
                         for item in soup.find_all('div', class_='MuiTypography-root MuiTypography-subtitle1 css-12myda0'):
                             size = item.find('h6').text.replace('"', '')
-                            price = item.find('p').text  #
+                            price = item.find('p').text  
                             products[size]= float(price.replace('$',"").replace(',', ''))
                         price_now = products.get(model_size)
                         prices_dict["price"] = price_now
@@ -208,13 +231,14 @@ class ModelScraper_l_g(Scraper, Modeler):
                             'p': "2021",
                             'q': "2022",
                             'r': "2023",
-                            's': "2024"}
+                            's': "2024",
+                            'x':"2025"}
                         
             dict_info["size"] = model[:2]
             dict_info["grade"] = model[2]
             dict_info["series"] = model.split("-")[0]
             dict_info["year"] = model[3]
-            dict_info["year"] = year_mapping.get(dict_info.get("year"), None)
+            dict_info["year"] = year_mapping.get(dict_info.get("year"), "0000")
             return dict_info
 
         
@@ -316,9 +340,6 @@ class ModelScraper_l_g(Scraper, Modeler):
             if driver:  
                 driver.quit()    
         return dict_spec
-            
-
-            
             
     def set_driver(self, url):
         driver = self.web_driver.get_chrome()
