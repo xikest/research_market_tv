@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -226,8 +226,10 @@ def display_indicators():
         makers = ["SONY", "LG", "SAMSUNG"]      
     st.session_state["category"] = category
     
+    
     selected_maker = st.sidebar.selectbox(" ", makers, label_visibility='hidden').lower()
-
+    selected_maker_for_viz = f"{selected_maker}_{category}"
+    
     st.sidebar.write("")    
     version = loading_webdata_version(selected_maker)
     st.sidebar.write(f'Updated: {version}')
@@ -273,7 +275,7 @@ def display_indicators():
                 
             with sub_tabs[0]:
                 with st.container(): 
-                    fig = DataVisualizer(data, maker=selected_maker).heatmap_spec(return_fig=True)   
+                    fig = DataVisualizer(data, maker=selected_maker_for_viz).heatmap_spec(return_fig=True)   
                     fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
                     st.plotly_chart(fig, use_container_width=True)            
                     
@@ -281,7 +283,7 @@ def display_indicators():
             if selected_maker == "sony":
                 with sub_tabs[1]:
                     with st.container():              
-                        fig = DataVisualizer(data, maker=selected_maker).plot_headertxt(return_fig=True)  
+                        fig = DataVisualizer(data, maker=selected_maker_for_viz).plot_headertxt(return_fig=True)  
                         fig.update_layout(
                             width=500,
                             height=col1_plot_height,
@@ -395,7 +397,7 @@ def display_indicators():
             with tabs[0]:  
                 with st.container(): 
                     data_price = loading_webdata(selected_multi_makers)
-                    fig = DataVisualizer(data_price, maker=selected_maker).price_map(return_fig=True)  
+                    fig = DataVisualizer(data_price, maker=selected_maker_for_viz).price_map(return_fig=True)  
                     fig.update_layout(
                         width=500,
                         height=col2_plot_height,

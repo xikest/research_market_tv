@@ -186,7 +186,7 @@ class ModelScraper_s_g(Scraper, Modeler):
         
         def extract_info_from_model(model: str, description:str)->dict:
             dict_info = {}
-            model = model.lower()
+            model = model.lower().strip()
             dict_info["model"] = model
             dict_info["year"] = None
             dict_info["series"] = model

@@ -94,6 +94,9 @@ class DataVisualizer(BaseVisualizer):
         ticks_below_3000 = list(range(0, 3001, 500))
         ticks_above_3000 = list(range(4000, max(int(data['price_original'].max()), int(data['price'].max())) + 2000, 1000))
         tickvals = ticks_below_3000 + ticks_above_3000
+        x_range_min = data['size'].min()//10*10
+        x_range_max = data['size'].max()//10*10+11
+
 
         fig.update_layout(
             updatemenus=[{
@@ -120,10 +123,10 @@ class DataVisualizer(BaseVisualizer):
                 tickvals=tickvals
             ),
             xaxis=dict(
-                range=[30, 100],
+                range=[x_range_min, x_range_max],
                 showgrid=True,
                 tickmode='array',  
-                tickvals=list(range(30, 100, 10))
+                tickvals=list(range(x_range_min, x_range_max, 10))
             ),
             
             width=1000,
@@ -271,6 +274,9 @@ class DataVisualizer(BaseVisualizer):
                 raise ValueError
         
         data_df = self.dc.get_df_cleaned().copy()
+        import streamlit as st
+        
+        
         available_columns = [col for col in col_selected if col in data_df.columns]
         missing_columns = [col for col in col_selected if col not in data_df.columns]
         if missing_columns:
@@ -311,7 +317,9 @@ class DataVisualizer(BaseVisualizer):
             year_maskdf = mask_data.xs(year, level=0, axis=1)
             year_heatmapdf_dict[year] = year_heatmapdf.loc[(year_heatmapdf != 0).any(axis=1)]
             year_mask_dict[year] = year_maskdf.loc[year_heatmapdf_dict[year].index, year_heatmapdf_dict[year].columns]
-            
+       
+        # st.dataframe(year_heatmapdf_dict.get("2024"))    
+        # st.write([idx for idx in year_heatmapdf_dict.get("2024").columns])
         initial_year = years[0]
         fig = go.Figure(data=go.Heatmap(
             z=year_heatmapdf_dict.get(initial_year).values,  
@@ -332,7 +340,7 @@ class DataVisualizer(BaseVisualizer):
                     method='update',
                     args=[{
                         'z': [year_heatmapdf_dict.get(year).values],
-                        'x': [[f"{str(idx[0]).upper()} ({year})" for idx in year_heatmapdf_dict.get(year).columns]],
+                        'x': [[f"{str(idx).upper()} ({year})" for idx in year_heatmapdf_dict.get(year).columns]],
                         'y': [year_heatmapdf_dict.get(year).index.str.capitalize()],
                         'customdata':[year_mask_dict.get(year).values],
                     }]
