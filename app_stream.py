@@ -20,24 +20,7 @@ st.session_state["category"] = None
 
 
 
-def modify_maker(func):
-    def wrapper(*args, **kwargs):
-        # args에 값이 있을 때
-        if args:
-            # st.write(args)  
-            selected_maker = args[0]  
 
-            if isinstance(selected_maker, str):
-                if selected_maker:
-                    args = (f"{selected_maker}_{st.session_state.get('category', 'default')}",) + args[1:]
-            
-            elif isinstance(selected_maker, list):
-                new_makers = [f"{maker}_{st.session_state.get('category', 'default')}" for maker in selected_maker]
-                args = (new_makers,) + args[1:]
-        # st.write("deco")          
-        # st.write(args)  
-        return func(*args, **kwargs)  
-    return wrapper
 
 def get_recent_data_from_git(file_name):
     file_urls = []
@@ -53,7 +36,7 @@ def get_recent_data_from_git(file_name):
     return file_urls[-1]
 
 
-@modify_maker
+
 @st.cache_data
 def loading_webdata_version(selected_maker:str):
     if ONLINE:
@@ -83,7 +66,7 @@ def loading_webdata_version(selected_maker:str):
     version_info = datetime.strptime(version_info, "%y%m%d").strftime("%y-%m-%d")
     return version_info
 
-@modify_maker
+
 @st.cache_data
 def loading_webdata(selected_maker:str):
     # st.write("loading_webdata")
@@ -232,7 +215,7 @@ def display_indicators():
     selected_maker_for_viz = f"{selected_maker}_{category}"
     
     st.sidebar.write("")    
-    version = loading_webdata_version(selected_maker)
+    version = loading_webdata_version(selected_maker_for_viz)
     st.sidebar.write(f'Updated: {version}')
     
     st.sidebar.write("")   
@@ -244,10 +227,12 @@ def display_indicators():
     
     st.sidebar.write("")   
     today_date = datetime.now().strftime("%d_%m_%Y")
+   
+    
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
-        data=download_data(makers),
-        file_name = f'{selected_maker}_web_sepcs_{today_date}.xlsx',
+        data=download_data([f"{maker}_{category}" for maker in makers]),
+        file_name = f'{selected_maker_for_viz}_web_sepcs_{today_date}.xlsx',
         mime='application/vnd.ms-excel',
         use_container_width=True)
     
@@ -267,9 +252,9 @@ def display_indicators():
         with col1:
             col1_plot_height = 800
             st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
-            data = loading_webdata(selected_maker)
+            data = loading_webdata(selected_maker_for_viz)
             
-            if selected_maker == "sony":
+            if selected_maker == 'sony':
                 sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
             else:
                 sub_tabs = st.tabs(["Specification"])
@@ -281,7 +266,7 @@ def display_indicators():
                     st.plotly_chart(fig, use_container_width=True)            
                     
                         
-            if selected_maker == "sony":
+            if selected_maker == "sony" :
                 with sub_tabs[1]:
                     with st.container():              
                         fig = DataVisualizer(data, maker=selected_maker_for_viz).plot_headertxt(return_fig=True)  
@@ -292,7 +277,7 @@ def display_indicators():
                             margin=dict(t=20, b=0))
                         st.plotly_chart(fig, use_container_width=True)
                 with sub_tabs[2]:
-                    calendar_url = loading_calendar(selected_maker)
+                    calendar_url = loading_calendar(selected_maker_for_viz)
                     if calendar_url is not None:
                         st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
 
@@ -389,7 +374,7 @@ def display_indicators():
                                                     key='key_for_scores', label_visibility='hidden')
             if not selected_multi_makers: 
                 # selected_multi_makers =  selected_maker
-                selected_multi_makers_for_viz = f"{selected_maker}_{category}"
+                selected_multi_makers_for_viz = selected_maker_for_viz
 
             else:
                 # selected_multi_makers = list(map(str.lower, selected_multi_makers))
@@ -401,8 +386,8 @@ def display_indicators():
 
             with tabs[0]:  
                 with st.container(): 
-                    data_price = loading_webdata(selected_maker) ## 'sony'
-                    fig = DataVisualizer(data_price, maker=selected_maker_for_viz).price_map(return_fig=True)   ## 'sony_tv'
+                    data_price = loading_webdata(selected_multi_makers_for_viz) 
+                    fig = DataVisualizer(data_price, maker=selected_multi_makers_for_viz).price_map(return_fig=True)   
                     fig.update_layout(
                         width=500,
                         height=col2_plot_height,
@@ -410,7 +395,7 @@ def display_indicators():
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
                              
-            if selected_maker in ['sony_gaming', 'lg_gaming', 'samsung_gaming']: ## temp    
+            if selected_maker_for_viz in ['sony_gaming', 'lg_gaming', 'samsung_gaming']: ## temp    
                 with tabs[1]:
                     st.write("now preparing")
                 with tabs[2]:
