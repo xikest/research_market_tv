@@ -395,7 +395,7 @@ def display_indicators():
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
                              
-            if selected_maker_for_viz in ['sony_gaming', 'lg_gaming', 'samsung_gaming']: ## temp    
+            if selected_maker_for_viz in ['']: ## temp    
                 with tabs[1]:
                     st.write("now preparing")
                 with tabs[2]:
