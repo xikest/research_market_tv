@@ -14,3 +14,5 @@ from .models.visualizer.data_visualizer import DataVisualizer
 from .rtings.rtings import Rtings
 from .rtings.rvisualizer import Rvisualizer
 from .rtings.rurlsearcher import Rurlsearcher
+
+from .eu_erp.erp import Erpsearcher

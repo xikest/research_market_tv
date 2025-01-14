@@ -23,6 +23,7 @@ class Erpsearcher(Scraper):
             model_erp_data.append(model_erp_dict)  
         
         model_erp_df = pd.DataFrame(model_erp_data)
+        model_erp_df = model_erp_df.set_index("model")
         model_erp_df.to_excel("model_erp_data.xlsx", index=False)
         model_erp_df.to_json(self.output_folder / "model_erp_data.json", orient='records', lines=True)
         return model_erp_df
