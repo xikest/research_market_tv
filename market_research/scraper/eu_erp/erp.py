@@ -129,9 +129,9 @@ class Erpsearcher(Scraper):
                 title_element = soup.find('div', class_='ecl-u-media-bg-position-center')
                 if title_element and title_element.get('title'):
                     title = title_element['title']
-                    label = title[:-1].strip()
-                    grade = title[-1].strip()
-                    result[label] = grade
+                    label = title[:-1]
+                    grade = title[-1]
+                    result[label] = grade.strip()
                     print(f"{label}: {grade}")
                 else:
                     print('Energy class not found.')
