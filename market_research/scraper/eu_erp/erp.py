@@ -3,6 +3,7 @@ import pandas as pd
 from market_research.scraper._scraper_scheme import Scraper
 from tools.file.github import GitMgt
 from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
 
 class Erpsearcher(Scraper):
     def __init__(self, enable_headless=True, verbose=False):
@@ -16,14 +17,14 @@ class Erpsearcher(Scraper):
         
         for model, maker in info_models.items():
             brand_input = maker.split("_")[0]  
-            model_erp_dict = self._search_and_extract_url(model, brand_input)  
-            model_erp_dict['model'] = model  
+            model_erp_dict = self._search_and_extract_url(model, brand_input)
             model_erp_dict['maker'] = maker  
+            model_erp_dict['query'] = model  
             
             model_erp_data.append(model_erp_dict)  
         
         model_erp_df = pd.DataFrame(model_erp_data)
-        model_erp_df = model_erp_df.set_index("model")
+        model_erp_df = model_erp_df.set_index("query").reset_index()
         model_erp_df.to_excel("model_erp_data.xlsx", index=False)
         model_erp_df.to_json(self.output_folder / "model_erp_data.json", orient='records', lines=True)
         return model_erp_df
@@ -53,8 +54,12 @@ class Erpsearcher(Scraper):
                     }
             info_df = pd.DataFrame()
         for maker in path_dict:
-            df = pd.read_json(path_dict.get(maker), orient='records', lines=True)
-            df = df[["model"]]
+            df = pd.DataFrame()
+            df_model = pd.read_json(path_dict.get(maker), orient='records', lines=True)
+            if 'gaming' in maker.lower(): 
+                df["model"] = df_model["series"]
+            else:
+                df["model"] = df_model["size"].astype(str) + df_model["series"].astype(str)
             df.loc[:, "maker"] = maker
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
@@ -96,6 +101,8 @@ class Erpsearcher(Scraper):
                        
                     if model_input.lower() in model_name.lower():
                         print(f"{supplier_name}: {model_name}")
+                        result['brand']=supplier_name
+                        result['model']=model_name
                         details_button = item.find_element(By.CSS_SELECTOR, ".ecl-u-width-100.ecl-button.ecl-button--primary")
                         driver.execute_script("arguments[0].click();", details_button)
                         if self.verbose:
@@ -104,20 +111,41 @@ class Erpsearcher(Scraper):
                     break
                 except Exception as e:
                     print(e)
-
-            elements = driver.find_elements(By.CLASS_NAME, "ecl-u-align-items-l-end")
-            for element in elements:
-                try:
-                    key = element.find_element(By.CLASS_NAME, "ecl-row").text.strip()  # 첫 번째 텍스트 (키)
-                    value = element.find_element(By.CLASS_NAME, "ecl-u-flex-grow-0").text.strip()  # 두 번째 텍스트 (값)
-                    value = value.replace("\n", " ").strip()
+                    
+            
+   
+            try:
+                
+                page_source = driver.page_source
+                soup = BeautifulSoup(page_source, 'html.parser')
+                
+                title_element = soup.find('div', class_='ecl-u-media-bg-position-center')
+                if title_element and title_element.get('title'):
+                    title = title_element['title']
+                    key = title[:-1]
+                    value = title[-1]
                     result[key] = value
                     if self.verbose:
                         print(f"{key}: {value}")
+                else:
+                    print('Energy class not found.')
 
-                except Exception as e:
-                    print(f"에러 발생: {e}")
-            
+                elements = soup.find_all('div', class_='ecl-u-align-items-l-end')
+                for element in elements:
+                    # 하위 요소 검색
+                    key_element = element.find('div', class_='ecl-row')  # 키가 있는 요소
+                    value_element = element.find('div', class_='ecl-u-flex-grow-0')  # 값이 있는 요소
+
+                    # 키와 값 추출
+                    key = key_element.get_text(strip=True) if key_element else None
+                    value = value_element.get_text(strip=True).replace("\n", " ") if value_element else None
+
+                    if key and value:  # 키와 값이 모두 존재하는 경우만 저장
+                        result[key] = value
+                        if self.verbose:
+                            print(f"{key}: {value}")
+            except Exception as e:
+                print(f"Detail pages: {e}")
    
         except Exception as e:
             print(f"An error occurred: {e}")
