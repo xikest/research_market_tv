@@ -79,18 +79,21 @@ class Erpsearcher(Scraper):
             print(f"search_query: {model_input}, {brand_input}")
         try:
             driver.get(base_url)
-
-            input_model_element = driver.find_element(By.ID, "model-identifier")
-            input_model_element.send_keys(model_input)
-            
-            input_supplier_element = driver.find_element(By.ID, "supplier-name")
-            input_supplier_element.send_keys(brand_input)
-            
-            search_button = driver.find_element(By.ID, "search")
-            driver.execute_script("arguments[0].click();", search_button)
-            time.sleep(self.wait_time)
-            search_result_items = driver.find_elements(By.TAG_NAME, "app-search-result-item")
-
+            for _ in range(5):
+                try:
+                    input_model_element = driver.find_element(By.ID, "model-identifier")
+                    input_model_element.send_keys(model_input)
+                    
+                    input_supplier_element = driver.find_element(By.ID, "supplier-name")
+                    input_supplier_element.send_keys(brand_input)
+                    
+                    search_button = driver.find_element(By.ID, "search")
+                    driver.execute_script("arguments[0].click();", search_button)
+                    time.sleep(self.wait_time)
+                    search_result_items = driver.find_elements(By.TAG_NAME, "app-search-result-item")
+                    break
+                except:
+                    continue
 
             for idx, item in enumerate(search_result_items):
                 try:
@@ -126,8 +129,8 @@ class Erpsearcher(Scraper):
                 title_element = soup.find('div', class_='ecl-u-media-bg-position-center')
                 if title_element and title_element.get('title'):
                     title = title_element['title']
-                    label = title[:-1]
-                    grade = title[-1]
+                    label = title[:-1].strip()
+                    grade = title[-1].strip()
                     result[label] = grade
                     print(f"{label}: {grade}")
                 else:
@@ -140,8 +143,8 @@ class Erpsearcher(Scraper):
                     value_element = element.find('div', class_='ecl-u-flex-grow-0')  # 값이 있는 요소
 
                     # 키와 값 추출
-                    key = key_element.get_text(strip=True) if key_element else None
-                    value = value_element.get_text(strip=True).replace("\n", " ") if value_element else None
+                    key = key_element.get_text(strip=True).strip() if key_element else None
+                    value = value_element.get_text(strip=True).replace("\n", " ").strip() if value_element else None
 
                     if key and value:  # 키와 값이 모두 존재하는 경우만 저장
                         result[key] = value
