@@ -17,7 +17,9 @@ class Erpsearcher(Scraper):
         
         for model, maker in info_models.items():
             brand_input = maker.split("_")[0]  
-            model_erp_dict = self._search_and_extract_url(model, brand_input)
+            model_erp_dict = self._search_data(model, brand_input)
+            if model_erp_dict is None:
+                continue
             model_erp_dict['maker'] = maker  
             model_erp_dict['query'] = model  
             
@@ -69,12 +71,12 @@ class Erpsearcher(Scraper):
 
 
 
-    def _search_and_extract_url(self, model_input:str, brand_input:str, base_url="https://eprel.ec.europa.eu/screen/product/electronicdisplays") ->dict:
+    def _search_data(self, model_input:str, brand_input:str, base_url="https://eprel.ec.europa.eu/screen/product/electronicdisplays") ->dict:
         
         result = {}
         driver = self.web_driver.get_chrome()
         if self.verbose:
-                print(f"search_query: {model_input}, {brand_input}")
+            print(f"search_query: {model_input}, {brand_input}")
         try:
             driver.get(base_url)
 
@@ -90,7 +92,7 @@ class Erpsearcher(Scraper):
             search_result_items = driver.find_elements(By.TAG_NAME, "app-search-result-item")
 
 
-            for index, item in enumerate(search_result_items):
+            for idx, item in enumerate(search_result_items):
                 try:
                     supplier_name = item.find_element(By.XPATH, ".//span[contains(@class, 'ecl-u-type-2xl') and contains(@class, 'ecl-u-type-bold') and contains(@class, 'ecl-u-type-color-blue') and contains(@class, 'ecl-u-type-family-alt')]")
                     model_name = item.find_element(By.XPATH, ".//span[contains(@class, 'ecl-u-type-l') and contains(@class, 'ecl-u-type-color-black') and contains(@class, 'ecl-u-type-family-alt') and contains(@class, 'ecl-u-mt-xs')]")
@@ -107,13 +109,15 @@ class Erpsearcher(Scraper):
                         driver.execute_script("arguments[0].click();", details_button)
                         if self.verbose:
                             driver.save_screenshot(f"click_on_details_of_{model_name}_with_{model_input}.png")
-                        
-                    break
+                        break
                 except Exception as e:
                     print(e)
-                    
+                   
+            if 'brand' not in result or 'model' not in result:
+                if self.verbose:
+                    print(f"Model '{model_input}' not found in the search results.")
+                return None
             
-   
             try:
                 
                 page_source = driver.page_source
@@ -122,11 +126,10 @@ class Erpsearcher(Scraper):
                 title_element = soup.find('div', class_='ecl-u-media-bg-position-center')
                 if title_element and title_element.get('title'):
                     title = title_element['title']
-                    key = title[:-1]
-                    value = title[-1]
-                    result[key] = value
-                    if self.verbose:
-                        print(f"{key}: {value}")
+                    label = title[:-1]
+                    grade = title[-1]
+                    result[label] = grade
+                    print(f"{label}: {grade}")
                 else:
                     print('Energy class not found.')
 
