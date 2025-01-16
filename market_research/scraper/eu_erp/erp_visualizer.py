@@ -6,16 +6,21 @@ import requests
 import plotly.io as pio
 import plotly.express as px
 
-class DataVisualizer(BaseVisualizer):
-    def __init__(self, df:pd.DataFrame, maker:str,  output_folder_path="results"):
+class ERPvisualizer(BaseVisualizer):
+    def __init__(self, df:pd.DataFrame, maker_filter:str,  output_folder_path="results"):
         
         pio.templates.default='ggplot2'
         self.colors = px.colors.qualitative.Plotly 
         self.markers = ['circle', 'x', 'square', 'star', 'diamond', 'pentagon', 'hexagon', 'cross', 'octagon', 'hexagon2']
         
-        self.maker = maker
+        self.maker = maker_filter
         super().__init__(output_folder_path = output_folder_path)
         FileManager.make_dir(output_folder_path)
+        
+        if maker_filter:
+            if isinstance(maker_filter, str): maker_filter = [maker_filter]
+            filtered_mask = df['maker'].isin(maker_filter)
+            df = df[filtered_mask]
         self.data= self.data_cleaning(df)
         
         

@@ -16,3 +16,4 @@ from .rtings.rvisualizer import Rvisualizer
 from .rtings.rurlsearcher import Rurlsearcher
 
 from .eu_erp.erp import Erpsearcher
+from .eu_erp.erp_visualizer import ERPvisualizer

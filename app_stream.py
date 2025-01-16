@@ -5,6 +5,7 @@ from io import BytesIO
 import requests
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
+from market_research.scraper import ERPvisualizer
 from market_research.ir import Calendar
 from market_research.ir import SONY_IR
 from market_research.ir import MACRO
@@ -14,7 +15,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = False
+ONLINE = True
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -151,10 +152,10 @@ def loading_rtings(data_src='measurement'):
 @st.cache_data
 def loading_erp_class():
     if ONLINE:
-        json_path = get_recent_data_from_git("'model_erp_data'")
+        json_path = get_recent_data_from_git("erp_data")
 
     else:
-        json_path = './json/model_erp_data_250116.json'
+        json_path = './json/erp_data_250116.json'
 
     data = pd.read_json(json_path, orient='records', lines=True)
     return data
@@ -393,7 +394,7 @@ def display_indicators():
                 selected_multi_makers_for_viz = [f"{maker.lower()}_{category.lower()}" for maker in selected_multi_makers]
 
                 
-            tab_name = [ "Price", "Scores", "Data"]
+            tab_name = [ "Price", "Scores", "Data",'ErP']
             tabs = st.tabs(tab_name)
 
             with tabs[0]:  
@@ -469,8 +470,17 @@ def display_indicators():
                                                 margin=dict(t=0, r=0, b=20))
                                 
                                 st.plotly_chart(fig, use_container_width=True)
-
-                        
+                with tabs[3]:
+                    with st.container(): 
+                        data_erp = loading_erp_class() 
+                        fig = ERPvisualizer(data_erp, maker_filter=selected_multi_makers_for_viz).erp_map(return_fig=True)   
+                        fig.update_layout(
+                            width=500,
+                            height=col2_plot_height,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                                
 
 if __name__ == "__main__":
     display_indicators()
