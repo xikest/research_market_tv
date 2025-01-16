@@ -474,14 +474,16 @@ def display_indicators():
                 with tabs[3]:
                     with st.container(): 
                         data_erp = loading_erp_class() 
-                        fig = ERPvisualizer(data_erp, maker_filter=selected_multi_makers_for_viz).erp_map(return_fig=True)   
-                        fig.update_layout(
-                            width=500,
-                            height=col2_plot_height,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
-                                
+                        try:
+                            fig = ERPvisualizer(data_erp, maker_filter=selected_multi_makers_for_viz).erp_map(return_fig=True)   
+                            fig.update_layout(
+                                width=500,
+                                height=col2_plot_height,
+                                title='',
+                                margin=dict(t=20, b=0))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except Exception as e:
+                            st.write("no data")        
 
 if __name__ == "__main__":
     display_indicators()
