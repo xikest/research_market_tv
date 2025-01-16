@@ -7,7 +7,7 @@ import logging
 
 class Scraper(ABC):
 
-    def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path = None, output_folder_path=None):
+    def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path :str= "input", output_folder_path:str="results"):
         """
         enable_headless=True,
         export_prefix:str="scaper",

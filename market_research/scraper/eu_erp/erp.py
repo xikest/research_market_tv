@@ -13,16 +13,23 @@ class Erpsearcher(Scraper):
 
     def fetch_model_data(self):
         model_erp_data = [] 
-        info_models = self._get_model_info_from_mkrt()  
-        
-        for model, maker in info_models.items():
+        # info_models = self._get_model_info_from_mkrt()  
+        info_df = self._get_model_info_from_mkrt() 
+
+        info_models = zip(info_df['model'], info_df['maker'], info_df['price'],  info_df['size'], info_df['series'])
+
+        for model, maker, price, size, series in info_models:
+            
             brand_input = maker.split("_")[0]  
             model_erp_dict = self._search_data(model, brand_input)
             if model_erp_dict is None:
                 continue
             model_erp_dict['maker'] = maker  
-            model_erp_dict['query'] = model  
-            
+            model_erp_dict['query'] = model
+            model_erp_dict['series'] = series
+            model_erp_dict['size'] = size
+            model_erp_dict['price'] = price
+
             model_erp_data.append(model_erp_dict)  
         
         model_erp_df = pd.DataFrame(model_erp_data)
@@ -62,12 +69,15 @@ class Erpsearcher(Scraper):
                 df["model"] = df_model["series"]
             else:
                 df["model"] = df_model["size"].astype(str) + df_model["series"].astype(str)
+
+            df["price"] = df_model["price_original"]
+            df["size"] = df_model["size"]
+            df["series"] = df_model["series"]
             df.loc[:, "maker"] = maker
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
 
-        info_models = dict(zip(info_df['model'], info_df['maker']))
-        return info_models
+        return info_df
 
 
 
@@ -121,6 +131,8 @@ class Erpsearcher(Scraper):
                     print(f"Model '{model_input}' not found in the search results.")
                 return None
             
+            time.sleep(self.wait_time)
+
             try:
                 
                 page_source = driver.page_source
@@ -129,9 +141,9 @@ class Erpsearcher(Scraper):
                 title_element = soup.find('div', class_='ecl-u-media-bg-position-center')
                 if title_element and title_element.get('title'):
                     title = title_element['title']
-                    label = title[:-1].strip()
-                    grade = title[-1].strip()
-                    result[label] = grade
+                    label = title[:-1]
+                    grade = title[-1]
+                    result[label] = grade.strip()
                     print(f"{label}: {grade}")
                 else:
                     print('Energy class not found.')
