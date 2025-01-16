@@ -16,9 +16,9 @@ class Erpsearcher(Scraper):
         # info_models = self._get_model_info_from_mkrt()  
         info_df = self._get_model_info_from_mkrt() 
 
-        info_models = zip(info_df['model'], info_df['maker'], info_df['price'],  info_df['size'], info_df['series'])
+        info_models = zip(info_df['model'], info_df['maker'], info_df['price'],  info_df['size'], info_df['series'],info_df['year'], info_df['description'])
 
-        for model, maker, price, size, series in info_models:
+        for model, maker, price, size, series, year, description in info_models:
             
             brand_input = maker.split("_")[0]  
             model_erp_dict = self._search_data(model, brand_input)
@@ -29,6 +29,8 @@ class Erpsearcher(Scraper):
             model_erp_dict['series'] = series
             model_erp_dict['size'] = size
             model_erp_dict['price'] = price
+            model_erp_dict['year'] = year
+            model_erp_dict['description'] = description
 
             model_erp_data.append(model_erp_dict)  
         
@@ -73,6 +75,8 @@ class Erpsearcher(Scraper):
             df["price"] = df_model["price_original"]
             df["size"] = df_model["size"]
             df["series"] = df_model["series"]
+            df["year"] = df_model["year"]
+            df["description"] = df_model["description"]
             df.loc[:, "maker"] = maker
             info_df = pd.concat([info_df, df], axis=0)
         info_df =info_df.drop_duplicates()
@@ -142,6 +146,7 @@ class Erpsearcher(Scraper):
                 if title_element and title_element.get('title'):
                     title = title_element['title']
                     label = title[:-1]
+                    label= label.strip()
                     grade = title[-1]
                     result[label] = grade.strip()
                     print(f"{label}: {grade}")

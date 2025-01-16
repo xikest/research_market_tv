@@ -14,7 +14,7 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")  
 
-ONLINE = True
+ONLINE = False
 pio.templates.default='ggplot2'
 st.session_state["category"] = None
 
@@ -147,6 +147,18 @@ def loading_rtings(data_src='measurement'):
             json_path = './json/rtings_scores_data_250112.json'
     data = pd.read_json(json_path, orient='records', lines=True)
     return {data_src: data}
+
+@st.cache_data
+def loading_erp_class():
+    if ONLINE:
+        json_path = get_recent_data_from_git("'model_erp_data'")
+
+    else:
+        json_path = './json/model_erp_data_250116.json'
+
+    data = pd.read_json(json_path, orient='records', lines=True)
+    return data
+
 
 @st.cache_data
 def loading_ir_script():
