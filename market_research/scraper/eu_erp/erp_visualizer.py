@@ -112,7 +112,9 @@ class ERPvisualizer(BaseVisualizer):
         )
 
         x_range_min = data['size'].min()//10*10
+        x_range_min = int(x_range_min)
         x_range_max = data['size'].max()//10*10+11
+        x_range_max = int(x_range_max)
 
 
         fig.update_layout(
