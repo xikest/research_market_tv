@@ -66,6 +66,7 @@ class ModelScraper_se(Scraper, Modeler):
             return df_models
         print("start collecting data")
         url_dict = find_urls()
+        # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/55-class-oled-s95d-qn55s95dafxza/"}
         dict_models = extract_sepcs(url_dict)
         
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
@@ -113,7 +114,7 @@ class ModelScraper_se(Scraper, Modeler):
 
             try:
                 driver = self.set_driver(url)
-                click_view_all(driver)
+                # click_view_all(driver)
                 
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
