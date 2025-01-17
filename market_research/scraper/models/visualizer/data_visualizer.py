@@ -111,7 +111,7 @@ class DataVisualizer(BaseVisualizer):
             title='Price map',
             xaxis_title='Size (Inch)',
             yaxis_title='Current Price ($)',
-            legend_title='Year',
+            legend_title='Model',
             showlegend=True,
             template='simple_white',
             # ),

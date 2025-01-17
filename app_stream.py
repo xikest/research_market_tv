@@ -394,8 +394,8 @@ def display_indicators():
                 # selected_multi_makers = list(map(str.lower, selected_multi_makers))
                 selected_multi_makers_for_viz = [f"{maker.lower()}_{category.lower()}" for maker in selected_multi_makers]
 
-                
-            tab_name = [ "Price", "Scores", "Data",'ErP']
+
+            tab_name = [ "Price", 'Rtings','ErP']
             tabs = st.tabs(tab_name)
 
             with tabs[0]:  
@@ -409,14 +409,10 @@ def display_indicators():
                         margin=dict(t=20, b=0))
                     st.plotly_chart(fig, use_container_width=True)
                              
-            if selected_maker_for_viz in ['']: ## temp    
-                with tabs[1]:
-                    st.write("now preparing")
-                with tabs[2]:
-                    st.write("now preparing")
-                    
-            else:    
-                with tabs[1]:
+            with tabs[1]:
+                tab_r_name = [ "Scores", "Data",]
+                tabs_r = st.tabs(tab_r_name)
+                with tabs_r[0]:
 
                     sub_tabs = st.tabs(["Total", "Sub", "Heat map", "PCA"])
                     
@@ -458,7 +454,7 @@ def display_indicators():
                             st.write("No information")            
                         
                         
-                with tabs[2]:
+                with tabs_r[1]:
                     sub_category = Rvisualizer.get_measurement_selection(st.session_state["category"])
                     sub_tabs = st.tabs(sub_category)
                     
@@ -471,11 +467,16 @@ def display_indicators():
                                                 margin=dict(t=0, r=0, b=20))
                                 
                                 st.plotly_chart(fig, use_container_width=True)
-                with tabs[3]:
-                    with st.container(): 
-                        data_erp = loading_erp_class() 
+            with tabs[2]:
+                tab_e_name = ["SDR", "HDR"]
+                tabs_e = st.tabs(tab_e_name)
+                data_erp = loading_erp_class()
+
+                for tab_name, tab in zip(tab_e_name, tabs_e):
+                    with tab:
+                        power_type = (tab_name == "SDR")  # SDR일 때만 True
                         try:
-                            fig = ERPvisualizer(data_erp, maker_filter=selected_multi_makers_for_viz).erp_map(return_fig=True)   
+                            fig = ERPvisualizer(data_erp, maker_filter=selected_multi_makers_for_viz).erp_map(sdr=power_type, return_fig=True)
                             fig.update_layout(
                                 width=500,
                                 height=col2_plot_height,
@@ -483,7 +484,8 @@ def display_indicators():
                                 margin=dict(t=20, b=0))
                             st.plotly_chart(fig, use_container_width=True)
                         except Exception as e:
-                            st.write("no data")        
+                            st.write("no data")
+                            
 
 if __name__ == "__main__":
     display_indicators()

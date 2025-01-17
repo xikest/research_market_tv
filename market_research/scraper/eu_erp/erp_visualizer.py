@@ -12,7 +12,8 @@ class ERPvisualizer(BaseVisualizer):
         pio.templates.default='ggplot2'
         self.colors = px.colors.qualitative.Plotly 
         self.markers = ['circle', 'x', 'square', 'star', 'diamond', 'pentagon', 'hexagon', 'cross', 'octagon', 'hexagon2']
-        
+        self.sdr = 'sdr_power'
+        self.hdr = 'hdr_power'
         self.maker = maker_filter
         super().__init__(output_folder_path = output_folder_path)
         FileManager.make_dir(output_folder_path)
@@ -25,23 +26,33 @@ class ERPvisualizer(BaseVisualizer):
         
         
     def data_cleaning(self, df):
-        data = df.loc[:,['Energy class', 'On mode power demand in Standard Dynamic Range (SDR)', 
-                                        'year', 'series', 'price', 'size', 'description']]
-
-        data['On mode power demand in Standard Dynamic Range (SDR)'] = (
-            data['On mode power demand in Standard Dynamic Range (SDR)']
-            .str.replace("W", "")  
-            .str.replace(",", ".")  
-            .astype(float)  
-        )
+        data = df.loc[:,['Energy class', 
+                         'On mode power demand in Standard Dynamic Range (SDR)', 
+                         'On mode power demand in High Dynamic Range (HDR) mode',
+                         'year', 'series', 'price', 'size', 'description']]
+        
+        data.rename(columns={'On mode power demand in Standard Dynamic Range (SDR)': self.sdr}, inplace=True)
+        data.rename(columns={'On mode power demand in High Dynamic Range (HDR) mode': self.hdr}, inplace=True)
+        for power_type in [self.sdr, self.hdr]:
+            data[power_type] = (
+                data[power_type]
+                .str.replace("W", "")  
+                .str.replace(",", ".")  
+                .astype(float)  
+            )
 
         data['year'] = data['year'].astype(str)
-        data.rename(columns={'On mode power demand in Standard Dynamic Range (SDR)': 'mode_power'}, inplace=True)
 
         return data
 
 
-    def erp_map(self, return_data=False, return_fig=False):
+    def erp_map(self, sdr:bool=True, return_data=False, return_fig=False):
+
+        if sdr:
+            power_type= self.sdr
+        else:
+            power_type= self.hdr
+            
 
         data = self.data.copy()
         years = sorted(data['year'].unique(), reverse=True)
@@ -58,7 +69,7 @@ class ERPvisualizer(BaseVisualizer):
         
             fig.add_trace(go.Scatter(
                 x=data_series['size'],
-                y=data_series['mode_power'],
+                y=data_series[power_type],
                 mode='markers',
                 marker=dict(
                     size=12,
@@ -116,8 +127,8 @@ class ERPvisualizer(BaseVisualizer):
             
             title='ErP Class',
             xaxis_title='Size (Inch)',
-            yaxis_title='On mode power demand in Standard Dynamic Range (SDR)[W]',
-            legend_title='Year',
+            yaxis_title=f'On mode power demand in Standard Dynamic Range ({power_type.split("_")[0].upper()})[W]',
+            legend_title='Model',
             showlegend=True,
             template='simple_white',
             # ),
