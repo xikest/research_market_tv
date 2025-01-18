@@ -66,7 +66,7 @@ class ModelScraper_se(Scraper, Modeler):
             return df_models
         print("start collecting data")
         url_dict = find_urls()
-        # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/55-class-oled-s95d-qn55s95dafxza/"}
+        # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/crystal-uhd-tvs/50-class-crystal-uhd-du8000-un50du8000fxza/#reviews"}
         dict_models = extract_sepcs(url_dict)
         
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
@@ -92,17 +92,7 @@ class ModelScraper_se(Scraper, Modeler):
                 urls=find_series_urls(seg_url, prefix = "https://www.samsung.com")
                 url_series.update(urls)
             return url_series   
-        
-        def click_view_all(driver):
-            clickalble = True
-            while clickalble:
-                try:
-                    switch_element = driver.find_element(By.XPATH, '//*[@id="results"]/div/div/div/div[4]/div[3]/div[2]')
-                    driver.execute_script("arguments[0].click();", switch_element)
-                    time.sleep(1)
-                except Exception as e:
-                    # print(e)
-                    clickalble = False
+
             
         def find_series_urls(url:str, prefix:str) -> set:
             print(f"Starting to scrape series URLs from: {url}")
@@ -114,7 +104,6 @@ class ModelScraper_se(Scraper, Modeler):
 
             try:
                 driver = self.set_driver(url)
-                # click_view_all(driver)
                 
                 scroll_distance_total = self.web_driver.get_scroll_distance_total()
                 scroll_distance = 0
@@ -150,7 +139,9 @@ class ModelScraper_se(Scraper, Modeler):
         
         def extract_model_url(driver)->set:
             url_models_set= set()
-            radio_btns = driver.find_elements(By.CSS_SELECTOR, '.SizeTile_button_wrapper__rIeR3')
+            
+            radio_btns = driver.find_elements(By.CLASS_NAME, 'SizeTile_details__KWHIy')
+            # radio_btns = driver.find_elements(By.CSS_SELECTOR, '.SizeTile_button_wrapper__rIeR3')
             for btn in radio_btns:
                 ActionChains(driver).move_to_element(btn).click().perform()
                 url =  driver.current_url
@@ -227,11 +218,12 @@ class ModelScraper_se(Scraper, Modeler):
                     return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
 
             def extract_year_and_model(model: str):
-            
-                match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
+                # match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
+                match = re.search(r'(\d*[A-Za-z]+\d*)([A-Za-z]*)', model)
                 if match:
                     year = match.group(2) if len(match.group(2)) <= 1 else match.group(2)[0]
                     model = match.group(1)  
+                    # print(f"year {year}")
                     return year, model+year
                 else:
                     return None, model    
@@ -328,7 +320,6 @@ class ModelScraper_se(Scraper, Modeler):
                         table_elements = driver.find_elements(By.CLASS_NAME, "spec-highlight__container")
                     except Exception as e:
                         print(f"error extract_spec_detail_click {e}")
-
             for element in table_elements:
                 try:
                     item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4').text
@@ -360,6 +351,7 @@ class ModelScraper_se(Scraper, Modeler):
         try:
             driver = self.set_driver(url)
             find_spec_tab(driver)
+            driver.save_screenshot("find_tab")  ##ss
             dict_spec = extract_spec_detail(driver)
             
             if self.verbose:
@@ -371,8 +363,6 @@ class ModelScraper_se(Scraper, Modeler):
         finally:
             driver.quit()  
         return dict_spec
-
-
 
     def set_driver(self, url):
         driver = self.web_driver.get_chrome()

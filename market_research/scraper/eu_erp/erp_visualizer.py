@@ -2,7 +2,7 @@ import pandas as pd
 from tools.file import FileManager
 import plotly.graph_objs as go
 from market_research.scraper._visualization_scheme import BaseVisualizer
-import requests
+import numpy as np
 import plotly.io as pio
 import plotly.express as px
 
@@ -22,7 +22,10 @@ class ERPvisualizer(BaseVisualizer):
             if isinstance(maker_filter, str): maker_filter = [maker_filter]
             filtered_mask = df['maker'].isin(maker_filter)
             df = df[filtered_mask]
+        
+        
         self.data= self.data_cleaning(df)
+        
         
         
     def data_cleaning(self, df):
@@ -38,9 +41,9 @@ class ERPvisualizer(BaseVisualizer):
                 data[power_type]
                 .str.replace("W", "")  
                 .str.replace(",", ".")  
+                .apply(lambda x: np.nan if '-' in str(x) else x)
                 .astype(float)  
             )
-
         data['year'] = data['year'].astype(str)
 
         return data

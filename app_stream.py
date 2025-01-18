@@ -135,7 +135,7 @@ def loading_calendar(indicator_type):
       
      
 @st.cache_data
-def loading_rtings(data_src='measurement'):
+def loading_rtings(data_src='measurement', maker:str=None):
     if ONLINE:
         if data_src == 'measurement':
             json_path = get_recent_data_from_git("rtings_measurement_data")
@@ -147,17 +147,21 @@ def loading_rtings(data_src='measurement'):
         elif data_src == 'scores':
             json_path = './json/rtings_scores_data_250112.json'
     data = pd.read_json(json_path, orient='records', lines=True)
+    if maker:
+        data = data[data['maker'] == maker]
     return {data_src: data}
 
 @st.cache_data
-def loading_erp_class():
+def loading_erp_class(maker:str=None):
     if ONLINE:
         json_path = get_recent_data_from_git("erp_data")
 
     else:
-        json_path = './json/erp_data_250116.json'
+        json_path = './json/erp_data_250117.json'
 
     data = pd.read_json(json_path, orient='records', lines=True)
+    if maker:
+        data = data[data['maker'] == maker]
     return data
 
 
@@ -196,8 +200,11 @@ def download_data(makers):
         processed_data = output.getvalue()
         return processed_data
     
-    df_dict = {maker.lower(): loading_webdata(maker.lower()) for maker in makers}  
-    df_dict.update({category: loading_rtings(category).get(category) for category in ['measurement', 'scores']})
+    df_dict = {f"web {maker.lower()}": loading_webdata(maker.lower()) for maker in makers}  
+    for data_category in ['measurement', 'scores']:
+        df_dict.update({f"rtings {data_category}": pd.concat([loading_rtings(data_category, maker.lower()).get(data_category) for maker in makers], axis=0)})
+        
+    df_dict.update({f"ErP Class": pd.concat([loading_erp_class(maker.lower()) for maker in makers], axis=0)})
     excel_data = to_excel(df_dict)
     return excel_data
 
@@ -239,13 +246,13 @@ def display_indicators():
         value="Multi" )
     
     st.sidebar.write("")   
-    today_date = datetime.now().strftime("%d_%m_%Y")
+    today_date = datetime.now().strftime("%y%m%d")
    
     
     st.sidebar.download_button(
         label="DOWNLOAD DATA",
         data=download_data([f"{maker}_{category}" for maker in makers]),
-        file_name = f'{selected_maker_for_viz}_web_sepcs_{today_date}.xlsx',
+        file_name = f'web_{category}_data_{today_date}.xlsx',
         mime='application/vnd.ms-excel',
         use_container_width=True)
     
@@ -484,6 +491,7 @@ def display_indicators():
                                 margin=dict(t=20, b=0))
                             st.plotly_chart(fig, use_container_width=True)
                         except Exception as e:
+                            st.write(e)
                             st.write("no data")
                             
 
