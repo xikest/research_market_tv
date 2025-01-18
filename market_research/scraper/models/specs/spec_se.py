@@ -69,6 +69,7 @@ class ModelScraper_se(Scraper, Modeler):
         # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/crystal-uhd-tvs/50-class-crystal-uhd-du8000-un50du8000fxza/#reviews"}
         dict_models = extract_sepcs(url_dict)
         
+        return dict_models
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
@@ -79,12 +80,11 @@ class ModelScraper_se(Scraper, Modeler):
 
         def extract_urls_from_segments():
             seg_urls = {
-                "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
-                "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
-                "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
-                "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
+                # "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
+                # "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
+                # "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
+                # "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
                 "crystal_uhd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
-                "hd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=HD+TVs"
                 }
             url_series = set()
             
@@ -201,14 +201,22 @@ class ModelScraper_se(Scraper, Modeler):
                 prices_dict['price_gap'] = float('nan')
             return prices_dict
             
+
         def extract_info_from_model(model: str)->dict:
-        
-            def extract_grade_and_model(model: str):
-                grade = model[:2] 
-                model=  model[2:]    
+
+        # """
+        # KQ / QN = QLED OLED
+        # KU = Crystal UHD
+        # UN = FHD, HD
+        # """
+
+            def extract_grade_and_model(model: str):  ##QN65S95DAFXZA
+                grade = model[:2] ##QN
+                model=  model[2:-4] ## 65S95DA
                 return grade, model
                 
             def extract_size_and_model(model: str):
+            ## 사이즈를 제외한 부분을 리턴
                 match = re.match(r'\d+', model)
                 if match:
                     leading_number = match.group()  # 앞의 숫자 부분
@@ -217,50 +225,52 @@ class ModelScraper_se(Scraper, Modeler):
                 else:
                     return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
 
-            def extract_year_and_model(model: str):
-                # match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
-                match = re.search(r'(\d*[A-Za-z]+\d*)([A-Za-z]*)', model)
-                if match:
-                    year = match.group(2) if len(match.group(2)) <= 1 else match.group(2)[0]
-                    model = match.group(1)  
-                    # print(f"year {year}")
-                    return year, model+year
-                else:
-                    return None, model    
-
-
-            dict_info = {}
-            model = model.lower()  # 대소문자 구분 제거
-            model = model[:-4]
-            dict_info = {}
-            year_mapping = {'qn':
-                                {
-                                't': "2021",    
-                                'b': "2022",
-                                'c': "2023",
-                                'd': "2024",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026"},
-                            'un':{ 
-                                'c': "2023",
-                                'd': "2024",
-                                'e': "2025",
-                                'f': "2026",
+            def extract_year_and_series(model: str, grade:str):
+                year_mapping = {'qn': ##kq
+                                    {
+                                    't': "2021",    
+                                    'b': "2022",
+                                    'c': "2023",
+                                    'd': "2024",
+                                    'd': "2024",
+                                    'e': "2025",
+                                    'f': "2026"},                    
+                                'un':{ 
+                                    'c': "2023",
+                                    'd': "2024",
+                                    'e': "2025",
+                                    'f': "2026",
+                                    }
                                 }
-                            }
+
+                if "qn" in grade or "kq" in grade:    ##s95d
+                    match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model) ##숫자를 기준으로 분리     
+                    year_char = match.group(2)[0]
+                    series = match.group(1) + year_char 
+                    year = year_mapping.get('qn').get(year_char, "na")  # 매핑 조회
+                    print(f"year {year}") ##ss  
+
+                elif "un" in grade: ##cu7000
+                    year_char = model[0] ##c
+                    series = model  ##cu7000
+                    year = year_mapping.get('un').get(year_char, "na")
+
+                else:
+                    year = None
+                    series = model
+
+                return year, series
+
+
+
+            dict_info = {}
+            model = model.lower()  
             dict_info["grade"], model = extract_grade_and_model(model) 
             dict_info["size"], model = extract_size_and_model(model)
-            dict_info["year"], model = extract_year_and_model(model)
-            dict_info["series"] = model
-            
-            if "qn" in dict_info["grade"] or "kq" in dict_info["grade"]:         
-                dict_info["year"] = year_mapping.get('qn').get(dict_info["year"], "na")
-            elif "un" in dict_info["grade"] :
-                dict_info["year"] = year_mapping.get('un').get(dict_info["year"], "na")
-            else:
-                dict_info["year"] = "na"
-            return dict_info
+            dict_info["year"], series = extract_year_and_series(model, dict_info["grade"])
+            dict_info["series"] = series
+
+            return dict_info  
         
         dict_info = {}
         if self.verbose:
@@ -351,7 +361,6 @@ class ModelScraper_se(Scraper, Modeler):
         try:
             driver = self.set_driver(url)
             find_spec_tab(driver)
-            driver.save_screenshot("find_tab")  ##ss
             dict_spec = extract_spec_detail(driver)
             
             if self.verbose:
