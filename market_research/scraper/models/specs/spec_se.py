@@ -80,10 +80,10 @@ class ModelScraper_se(Scraper, Modeler):
 
         def extract_urls_from_segments():
             seg_urls = {
-                # "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
-                # "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
-                # "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
-                # "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
+                "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
+                "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
+                "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
+                "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
                 "crystal_uhd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
                 }
             url_series = set()
