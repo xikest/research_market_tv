@@ -69,7 +69,6 @@ class ModelScraper_se(Scraper, Modeler):
         # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/crystal-uhd-tvs/50-class-crystal-uhd-du8000-un50du8000fxza/#reviews"}
         dict_models = extract_sepcs(url_dict)
         
-        return dict_models
         df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
             
         FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
