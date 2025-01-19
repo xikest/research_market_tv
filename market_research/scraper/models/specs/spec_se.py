@@ -248,7 +248,7 @@ class ModelScraper_se(Scraper, Modeler):
                     year_char = match.group(2)[0]
                     series = match.group(1) + year_char 
                     year = year_mapping.get('qn').get(year_char, "na")  # 매핑 조회
-                    print(f"year {year}") ##ss  
+                    # print(f"year {year}") ##ss  
 
                 elif "un" in grade: ##cu7000
                     year_char = model[0] ##c
