@@ -1,5 +1,6 @@
 import pandas as pd
-import FinanceDataReader as fdr
+# import FinanceDataReader as fdr
+from .FinanceDataReader_mdify import data as fdr
 from datetime import datetime
 import yfinance as yf
 import plotly.graph_objects as go

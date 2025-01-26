@@ -122,16 +122,6 @@ def loading_webdata(selected_maker:str):
     return data_all
      
      
-@st.cache_data
-def loading_calendar(indicator_type):
-    calendar_url = None
-    calendar_dict = {
-        "sony": f'"https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Asia%2FSeoul&showPrint=0&showTabs=0&showCalendars=0&showTz=0&showTitle=0&src=MGMyMjdhNzVlOTc2YzA2OTk0ZThjYzE1ZWVmNWRlOThlMjVmZTM4NGI2NWQwNTdiOWVkYmJiMzdhN2VkN2VmY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uamFwYW5lc2Uub2ZmaWNpYWwjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23D50000&color=%234285F4" style="border-width:0" width="800" height="600" frameborder="0" scrolling="no"',
-        "lg": None,
-        "samsung": None,
-        "panasonic": None}
-    calendar_url = calendar_dict.get(indicator_type)
-    return calendar_url
       
      
 @st.cache_data
@@ -274,118 +264,110 @@ def display_indicators():
             st.markdown(f"<h2 style='text-align: center;'>{selected_maker.upper()}</h2>", unsafe_allow_html=True)
             data = loading_webdata(selected_maker_for_viz)
             
-            # if selected_maker == 'sony':
-            #     sub_tabs = st.tabs(["Specification","Header", "News", "IR", "Macro"])
-            # else:
-            #     sub_tabs = st.tabs(["Specification"])
+            if selected_maker == 'sony':
+                sub_tabs = st.tabs(["Specification","Header", "IR", "Macro"])
+            else:
             
-            sub_tabs = st.tabs(["Specification"])
-            with sub_tabs[0]:
-                with st.container(): 
-                    fig = DataVisualizer(data, maker=selected_maker_for_viz).heatmap_spec(return_fig=True)   
-                    fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
-                    st.plotly_chart(fig, use_container_width=True)            
-                    
+                sub_tabs = st.tabs(["Specification"])
+                with sub_tabs[0]:
+                    with st.container(): 
+                        fig = DataVisualizer(data, maker=selected_maker_for_viz).heatmap_spec(return_fig=True)   
+                        fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
+                        st.plotly_chart(fig, use_container_width=True)            
                         
-            # if selected_maker == "sony" :
-            #     with sub_tabs[1]:
-            #         with st.container():              
-            #             fig = DataVisualizer(data, maker=selected_maker_for_viz).plot_headertxt(return_fig=True)  
-            #             fig.update_layout(
-            #                 width=500,
-            #                 height=col1_plot_height,
-            #                 title='',
-            #                 margin=dict(t=20, b=0))
-            #             st.plotly_chart(fig, use_container_width=True)
-            #     with sub_tabs[2]:
-            #         calendar_url = loading_calendar(selected_maker_for_viz)
-            #         if calendar_url is not None:
-            #             st.markdown(f'<iframe src="{calendar_url}" width="100%" height="{col1_plot_height}" frameborder="0"></iframe>', unsafe_allow_html=True)
-
-            #         else:
-            #             st.markdown("<h3 style='text-align: center;'>No information</h3>", unsafe_allow_html=True)
-                        
-            #     with sub_tabs[3]:
-            #         with st.container(): 
-            #             fig = loading_plot_financials_with_margin()
-            #             fig.update_layout(
-            #                 width=500,
-            #                 height=300,
-            #                 title='',
-            #                 margin=dict(t=20, b=0))
-            #             st.plotly_chart(fig, use_container_width=True)
-                        
-            #         with st.container(): 
-            #             try:
-            #                 fig = loading_plot_usd_exchange()
-            #                 fig.update_layout(
-            #                     width=500,
-            #                     height=300,
-            #                     title='',
-            #                     margin=dict(t=20, b=0))
-            #                 st.plotly_chart(fig, use_container_width=True)
-            #             except:
-            #                 st.write("no working")
                             
-            #         with st.container(): 
-            #             ir_df = loading_ir_script()
-            #             years = sorted(ir_df.year.unique(), reverse=True)
-            #             sub_tabs_irs = st.tabs(years)
+            if selected_maker == "sony" :
+                with sub_tabs[1]:
+                    with st.container():              
+                        fig = DataVisualizer(data, maker=selected_maker_for_viz).plot_headertxt(return_fig=True)  
+                        fig.update_layout(
+                            width=500,
+                            height=col1_plot_height,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
 
-            #             for i, year in enumerate(years):
-            #                 ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
-            #                 ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
-            #                 ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-            #                 ir_df_year_bs = ir_df_year[ir_df_year['category'] == "Segment"]
-            #                 with sub_tabs_irs[i]:
-            #                     col1_ir, col2_ir, col3_ir = st.columns(3)
-            #                     with col1_ir:
-            #                         display_html_table(ir_df_year_earning, "Earning")
+                with sub_tabs[2]:
+                    with st.container(): 
+                        fig = loading_plot_financials_with_margin()
+                        fig.update_layout(
+                            width=500,
+                            height=300,
+                            title='',
+                            margin=dict(t=20, b=0))
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                    with st.container(): 
+                        try:
+                            fig = loading_plot_usd_exchange()
+                            fig.update_layout(
+                                width=500,
+                                height=300,
+                                title='',
+                                margin=dict(t=20, b=0))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except:
+                            st.write("no working")
+                            
+                    with st.container(): 
+                        ir_df = loading_ir_script()
+                        years = sorted(ir_df.year.unique(), reverse=True)
+                        sub_tabs_irs = st.tabs(years)
 
-            #                     with col2_ir:
-            #                         display_html_table(ir_df_year_strategy, "Strategy")
-            #                     with col3_ir:
-            #                         display_html_table(ir_df_year_bs, "Segment")
+                        for i, year in enumerate(years):
+                            ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
+                            ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
+                            ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
+                            ir_df_year_bs = ir_df_year[ir_df_year['category'] == "Segment"]
+                            with sub_tabs_irs[i]:
+                                col1_ir, col2_ir, col3_ir = st.columns(3)
+                                with col1_ir:
+                                    display_html_table(ir_df_year_earning, "Earning")
+
+                                with col2_ir:
+                                    display_html_table(ir_df_year_strategy, "Strategy")
+                                with col3_ir:
+                                    display_html_table(ir_df_year_bs, "Segment")
                                     
-            #     with sub_tabs[4]:
+                with sub_tabs[3]:
 
-            #             sub_tabs_height = 150
-            #             st.write("fixing")
-            #             # fig = MACRO.plot_economic_indicator('RSEAS')
-            #             # fig.update_layout(
-            #             #     width=500,
-            #             #     height=sub_tabs_height,
-            #             #     title='Advance Retail Sales: Electronics and Appliance Stores')
+                        sub_tabs_height = 150
+                        # st.write("fixing")
+                        fig = MACRO.plot_economic_indicator('RSEAS')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Advance Retail Sales: Electronics and Appliance Stores')
 
-            #             # st.plotly_chart(fig, use_container_width=True)
-            #             # fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
-            #             # fig.update_layout(
-            #             #     width=500,
-            #             #     height=sub_tabs_height,
-            #             #     title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
-            #             # st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True)
+                        fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
+                        st.plotly_chart(fig, use_container_width=True)
                 
                         
-            #             # fig = MACRO.plot_economic_indicator('CPIAUCSL')
-            #             # fig.update_layout(
-            #             #     width=500,
-            #             #     height=sub_tabs_height,
-            #             #     title='CPI: for All Urban Consumers')
-            #             # st.plotly_chart(fig, use_container_width=True)
+                        fig = MACRO.plot_economic_indicator('CPIAUCSL')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='CPI: for All Urban Consumers')
+                        st.plotly_chart(fig, use_container_width=True)
                         
-            #             # fig = MACRO.plot_economic_indicator('A35SNO')
-            #             # fig.update_layout(
-            #             #     width=500,
-            #             #     height=sub_tabs_height,
-            #             #     title='New Orders: Electrical Equipment, Appliances and Components')
-            #             # st.plotly_chart(fig, use_container_width=True)
+                        fig = MACRO.plot_economic_indicator('A35SNO')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='New Orders: Electrical Equipment, Appliances and Components')
+                        st.plotly_chart(fig, use_container_width=True)
                         
-            #             # fig = MACRO.plot_economic_indicator('POILBREUSDM')
-            #             # fig.update_layout(
-            #             #     width=500,
-            #             #     height=sub_tabs_height,
-            #             #     title='Global price of Brent Crude')
-            #             # st.plotly_chart(fig, use_container_width=True)
+                        fig = MACRO.plot_economic_indicator('POILBREUSDM')
+                        fig.update_layout(
+                            width=500,
+                            height=sub_tabs_height,
+                            title='Global price of Brent Crude')
+                        st.plotly_chart(fig, use_container_width=True)
                         
     if selected_value == options[1] or selected_value == options[2] :
                                
