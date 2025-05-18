@@ -1,379 +1,267 @@
 from bs4 import BeautifulSoup
-import time
 import pandas as pd
 from tqdm import tqdm
 import re
-import logging
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 from market_research.scraper._scraper_scheme import Scraper, Modeler
+from playwright.async_api import async_playwright
 from tools.file import FileManager
+import logging
 
-
-class ModelScraper_se(Scraper, Modeler):
-    def __init__(self, enable_headless=True,
+class ModelScraper_se(Scraper):
+    def __init__(self, 
                  export_prefix="sse_model_info_web", intput_folder_path="input", output_folder_path="results",
                  wait_time=1, verbose=False):
-        Scraper.__init__(self, enable_headless, export_prefix, intput_folder_path, output_folder_path)
+        Scraper.__init__(self, use_web_driver=False, export_prefix= export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
         self.wait_time = wait_time
         self.verbose = verbose
+        
+        self.json_file_name = "se_scrape_model_data.json"
         pass
-    
-    def fetch_model_data(self) -> pd.DataFrame:
-    
-        
-        def find_urls() -> dict:
-            url_set = set()
-            url_series_set = self._get_series_urls()
 
-            
-            for url in tqdm(url_series_set):
-                url_models_set = self._extract_models_from_series(url=url)
-                url_set.update(url_models_set)
+    async def fetch_model_data(self) -> pd.DataFrame:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
 
-            url_dict = {idx: url for idx, url in enumerate(url_set)}
-            print(f"Total model: {len(url_dict)}")
-            return url_dict
-        
-        def extract_sepcs(url_dict):
-            dict_models = {}
-            for key, url in tqdm(url_dict.items()):
-                try:
-                    dict_info = self._extract_model_details(url)
-                    dict_models[key] = dict_info
-                    dict_spec = self._extract_global_specs(url=url)
-                    dict_spec['url'] = url
-                    dict_models[key].update(dict_spec)
-                except Exception as e:
-                    if self.verbose:
-                        print(f"fail to collect: {url}")
-                        print(e)
-                    pass
-            return dict_models
-        
-        def transform_format(dict_models, json_file_name: str) -> pd.DataFrame:
-            df_models = pd.DataFrame.from_dict(dict_models).T
-            df_models = df_models.drop(['Series'], axis=1)
-            df_models = df_models.rename(columns={'Type':'display type'})
-            df_models = df_models.dropna(subset=['price'])
-            try:
-                valid_indices = df_models['Color*'].dropna().index
-                df_models.loc[valid_indices, 'Color'] = df_models.loc[valid_indices, 'Color*']
-            except Exception as e:
-                pass
+            print("start collecting data")
+            url_dict = await self._find_urls(page)
+            dict_models = await self._extract_all_specs(page, url_dict)
+            await browser.close()
+            df_models = self._transform_format(dict_models, self.json_file_name)
+            FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
             
-            df_models.to_json(self.output_folder / json_file_name, orient='records', lines=True)
             return df_models
-        print("start collecting data")
-        url_dict = find_urls()
-        # url_dict= {"0":"https://www.samsung.com/us/televisions-home-theater/tvs/crystal-uhd-tvs/50-class-crystal-uhd-du8000-un50du8000fxza/#reviews"}
-        dict_models = extract_sepcs(url_dict)
-        
-        df_models = transform_format(dict_models, json_file_name="se_scrape_model_data.json")
-            
-        FileManager.df_to_excel(df_models.reset_index(), file_name=self.output_xlsx_name)
-        return df_models
-    
-    @Scraper.try_loop(2)
-    def _get_series_urls(self) -> set:
 
-        def extract_urls_from_segments():
-            seg_urls = {
-                "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
-                "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
-                "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
-                "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
-                "crystal_uhd_tvs":"https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
-                }
-            url_series = set()
-            
-            for seg, seg_url in seg_urls.items():
-                urls=find_series_urls(seg_url, prefix = "https://www.samsung.com")
-                url_series.update(urls)
-            return url_series   
+    async def _find_urls(self, page) -> dict:
+        url_set = set()
+        url_series_set = await self._get_series_urls(page)
 
-            
-        def find_series_urls(url:str, prefix:str) -> set:
-            print(f"Starting to scrape series URLs from: {url}")
-            prefix = "https://www.samsung.com"
-            url_series = set()
-            url = url
-            prefix = prefix
-            step = 200
 
+        for url in tqdm(url_series_set):
+            models = await self._extract_models_from_series(page, url)
+            url_set.update(models)
+
+        url_dict = {idx: url for idx, url in enumerate(url_set)}
+        print(f"Total model: {len(url_dict)}")
+        return url_dict
+
+    async def _get_series_urls(self, page) -> set:
+        seg_urls = {
+            "neo_qled": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Samsung+Neo+QLED+8K,Samsung+Neo+QLED+4K",
+            "oled": "https://www.samsung.com/us/televisions-home-theater/tvs/oled-tvs/",
+            "the_frame": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=The+Frame",
+            "qled": "https://www.samsung.com/us/televisions-home-theater/tvs/qled-4k-tvs/",
+            "crystal_uhd_tvs": "https://www.samsung.com/us/televisions-home-theater/tvs/all-tvs/?technology=Crystal+UHD+TVs",
+        }
+        url_series = set()
+        for seg, seg_url in seg_urls.items():
+            await page.goto(seg_url)
+            await page.wait_for_timeout(self.wait_time * 1000)
+            html = await page.content()
+            soup = BeautifulSoup(html, 'html.parser')
+            elements = soup.find_all('a', class_="StarReview-review-1813701344 undefined")
+            urls = {f"https://www.samsung.com{a['href'].strip()}" for a in elements}
+            url_series.update(urls)
+            logging.info(f"List of collected series URLs: {url_series}")
+        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
+        return url_series
+
+    async def _extract_models_from_series(self, page, url: str) -> set:
+        await page.goto(url)
+        await page.wait_for_timeout(self.wait_time * 1000)
+        url_models_set = set()
+        buttons = await page.query_selector_all('.SizeTile_details__09vrW')
+        for btn in buttons:
             try:
-                driver = self.set_driver(url)
-                
-                scroll_distance_total = self.web_driver.get_scroll_distance_total()
-                scroll_distance = 0
-                
-                while scroll_distance < scroll_distance_total:
-                    for _ in range(2):
-                        html = driver.page_source
-                        soup = BeautifulSoup(html, 'html.parser')
-                        elements = soup.find_all('a', class_="StarReview-review-1813701344 undefined")
-                        for element in elements:
-                            url_series.add(prefix + element['href'].strip())
-                        driver.execute_script(f"window.scrollBy(0, {step});")
-                        time.sleep(self.wait_time)
-                        scroll_distance += step
-                return url_series
+                await btn.click()
+                await page.wait_for_timeout(500)
+                curr_url = page.url
+                url_models_set.add(curr_url.strip())
+            except:
+                continue
+        return url_models_set
+
+    async def _extract_all_specs(self, page, url_dict: dict) -> dict:
+        dict_models = {}
+        for key, url in tqdm(url_dict.items()):
+            try:
+                model_info = await self._extract_model_details(page, url)
+                global_specs = await self._extract_global_specs(page, url)
+                global_specs['url'] = url
+                model_info.update(global_specs)
+                dict_models[key] = model_info
             except Exception as e:
                 if self.verbose:
-                    print(f"error find_series_urls: {e}")
-                pass
-            finally:
-                driver.quit()
-               
-        url_series = extract_urls_from_segments()
-        adding_ex_url='https://www.samsung.com/us/televisions-home-theater/tvs/samsung-neo-qled-4k/65-class-samsung-neo-qled-4k-qn95d-qn65qn95dafxza/'
-        url_series.add(adding_ex_url)
-        print(f"The website scan has been completed.\ntotal series: {len(url_series)}")
-        for i, url in enumerate(url_series, start=1):
-            print(f"Series: [{i}] {url.split('/')[-2]}")
-        return url_series
-    
-    @Scraper.try_loop(2)
-    def _extract_models_from_series(self, url: str) -> set:
-        
-        def extract_model_url(driver)->set:
-            url_models_set= set()
-            
-            radio_btns = driver.find_elements(By.CLASS_NAME, 'SizeTile_details__KWHIy')
-            # radio_btns = driver.find_elements(By.CSS_SELECTOR, '.SizeTile_button_wrapper__rIeR3')
-            for btn in radio_btns:
-                ActionChains(driver).move_to_element(btn).click().perform()
-                url =  driver.current_url
-                url_models_set.add(url.strip())
-            return url_models_set
-        url_models_set = set()
-        try: 
-            driver = self.set_driver(url)
-            url_models_set =  extract_model_url(driver)  
-        except Exception as e:
-            if self.verbose:
-                print(f"error_extract_models_from_series {url}")
-        return url_models_set
-            
-    @Scraper.try_loop(5)
-    def _extract_model_details(self, url: str='') -> dict:
-    
-        def extract_model(driver):
-            label_element = driver.find_element(By.CLASS_NAME,"ModelInfo_modalInfo__nJdjB")
-            label = label_element.text
-            model = label.split()[-1]
-            # if self.verbose:
-                # print(f"label: {label}")
-            return {"model": model}
-            
-        def extract_description(driver)->dict: 
-            description = driver.find_element(By.CLASS_NAME,'ProductTitle_product__q2vDb').text    
-            # if self.verbose:
-                # print(f"description: {description}")    
-            return {"description": description}
-             
-        def extract_prices(driver)->dict:
-            prices_dict = dict()
-            try:
-                price = driver.find_element(By.CLASS_NAME, "PriceInfoText_priceInfo__QEjy8")      
-                # split_price = price.text.split('\n')
-                split_price = re.split(r'[\n\s]+', price.text)
-                prices = []
-                # print(split_price)
-                for price_text in split_price:
-                    try:
-                        cleaned_price = price_text.replace('$', '').replace(',', '')
-                        prices.append(float(cleaned_price))
-                    except ValueError:
-                        continue  
-                if len(prices) > 2:
-                    dict_info["price"] = prices[0]
-                    dict_info["price_original"] = prices[1]
-                    dict_info["price_gap"] = prices[2]
-                else:
-                    dict_info["price"] = prices[0]
-                    prices_dict['price_original'] = prices[0]
-                    prices_dict['price_gap'] = 0.0
-            except:
-                prices_dict['price'] = float('nan')
-                prices_dict['price_original'] = float('nan')
-                prices_dict['price_gap'] = float('nan')
-            return prices_dict
-            
+                    print(f"fail to collect: {url}")
+                    print(e)
+                continue
+        return dict_models
 
-        def extract_info_from_model(model: str)->dict:
-
-        # """
-        # KQ / QN = QLED OLED
-        # KU = Crystal UHD
-        # UN = FHD, HD
-        # """
-
-            def extract_grade_and_model(model: str):  ##QN65S95DAFXZA
-                grade = model[:2] ##QN
-                model=  model[2:-4] ## 65S95DA
-                return grade, model
-                
-            def extract_size_and_model(model: str):
-            ## 사이즈를 제외한 부분을 리턴
-                match = re.match(r'\d+', model)
-                if match:
-                    leading_number = match.group()  # 앞의 숫자 부분
-                    rest = re.sub(r'^\d+', '', model)   # 숫자 제거 후 나머지 부분
-                    return leading_number, rest
-                else:
-                    return None, model  # 숫자가 없으면 None과 원래 문자열을 반환
-
-            def extract_year_and_series(model: str, grade:str):
-                year_mapping = {'qn': ##kq
-                                    {
-                                    't': "2021",    
-                                    'b': "2022",
-                                    'c': "2023",
-                                    'd': "2024",
-                                    'd': "2024",
-                                    'e': "2025",
-                                    'f': "2026"},                    
-                                'un':{ 
-                                    'c': "2023",
-                                    'd': "2024",
-                                    'e': "2025",
-                                    'f': "2026",
-                                    }
-                                }
-
-                if "qn" in grade or "kq" in grade:    ##s95d
-                    match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model) ##숫자를 기준으로 분리     
-                    year_char = match.group(2)[0]
-                    series = match.group(1) + year_char 
-                    year = year_mapping.get('qn').get(year_char, "na")  # 매핑 조회
-                    # print(f"year {year}") ##ss  
-
-                elif "un" in grade: ##cu7000
-                    year_char = model[0] ##c
-                    series = model  ##cu7000
-                    year = year_mapping.get('un').get(year_char, "na")
-
-                else:
-                    year = None
-                    series = model
-
-                return year, series
-
-
-
-            dict_info = {}
-            model = model.lower()  
-            dict_info["grade"], model = extract_grade_and_model(model) 
-            dict_info["size"], model = extract_size_and_model(model)
-            dict_info["year"], series = extract_year_and_series(model, dict_info["grade"])
-            dict_info["series"] = series
-
-            return dict_info  
-        
+    async def _extract_model_details(self, page, url: str) -> dict:
+        await page.goto(url)
+        await page.wait_for_timeout(self.wait_time * 1000)
         dict_info = {}
-        if self.verbose:
-            print(f"Connecting to {url.split('/')[-2]}: {url}")
-        logging.info(f"Connecting to {url.split('/')[-2]}: {url}")
-        try: 
-            driver = self.set_driver(url)
-            
-            # Extract model
-            dict_info.update(extract_model(driver))
-            dict_info.update(extract_description(driver))
-            dict_info.update(extract_prices(driver))
-            dict_info.update(extract_info_from_model(dict_info.get("model")))
-            if self.verbose: 
-                print(dict_info)
-            logging.info(dict_info)
-            
-            
+
+        try:
+
+            label = await page.locator('.ModelInfo_modalInfo__Dlls0').inner_text()
+            if self.verbose:
+                print(f"After getting label text: {label}")
+            logging.info(f"After getting label text: {label}")
+            model = label.split()[-1]
+            dict_info["model"] = model
+
+
+            desc = await page.locator('.ProductTitle_product__KGKRj').inner_text()
+            logging.info(f"After getting description text:{desc}")
+            if self.verbose:
+                print(f"After getting description text:{desc}")
+            dict_info["description"] = desc
+
+            price_text = await page.locator(".PriceInfoText_priceInfo__pAyUK").first.inner_text()
+            split_price = re.split(r'[\n\s]+', price_text)
+            if self.verbose:
+                print(f"After getting price text:{price_text}")
+            logging.info(f"After getting price text:{price_text}")
+
+            prices = [float(p.replace('$', '').replace(',', '')) for p in split_price if '$' in p]
+            dict_info["price"] = prices[0] if prices else None
+            dict_info["price_original"] = prices[1] if len(prices) > 1 else prices[0]
+            dict_info["price_gap"] = prices[2] if len(prices) > 2 else 0.0
+
+            model_lower = model.lower()
+            dict_info.update(self._parse_model_code(model_lower))
         except Exception as e:
             if self.verbose:
-                print(f"error_extract_model_details: {url}")
-            logging.error(f"error_extract_model_details: {url}")
-            pass
-        finally:
-            if driver:  
-                driver.quit()    
+                print(f"Error extracting model from {url}: {e}")
         return dict_info
 
-
-    @Scraper.try_loop(3)
-    def _extract_global_specs(self, url: str) -> dict:
-        def find_spec_tab(driver) -> None:
-            try: 
-                # JavaScript로 'Specs' 링크 클릭
-                driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "#specsLink"))
-                
-                # 'See All Specs' 버튼 클릭
-                driver.execute_script("arguments[0].click();", driver.find_element(By.CSS_SELECTOR, ".keyboard_navigateable.tl-btn-expand.Specs_expandBtn__0BNA_"))
-                
-                time.sleep(self.wait_time)
-            except Exception as e :
-                if self.verbose:
-                    print(f"error find_spec_tab {e}")
-                pass
-                time.sleep(self.wait_time)
-            return None 
-
-        def extract_spec_detail(driver) -> dict:  
-            dict_spec = {}
-            try:
-                table_elements = driver.find_elements(By.CLASS_NAME, "subSpecsItem.Specs_subSpecsItem__acKTN")
-            except:
-                try:
-                    table_elements = driver.find_elements(By.CLASS_NAME, "Specs_specRow__e9Ife.Specs_specDetailList__StjuR")
-                except:
-                    try:
-                        table_elements = driver.find_elements(By.CLASS_NAME, "spec-highlight__container")
-                    except Exception as e:
-                        print(f"error extract_spec_detail_click {e}")
-            for element in table_elements:
-                try:
-                    item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4').text
-                    item_value = element.find_element(By.CLASS_NAME, 'Specs_subSpecsItemValue__oWnMq').text
-                except:
-                    try:
-                        item_name = element.find_element(By.CLASS_NAME, 'Specs_subSpecItemName__IUPV4.Specs_type-p2__s07Sd').text
-                        item_value = element.find_element(By.CLASS_NAME, 'Specs_type-p2__s07Sd.Specs_subSpecsItemValue__oWnMq').text 
-                    except:
-                        try:
-                            item_name = element.find_element(By.CLASS_NAME, "spec-highlight__title").text
-                            item_value = element.find_element(By.CLASS_NAME, "spec-highlight__value").text 
-                        except Exception as e:
-                            print(f"error extract_spec_detail_table {e}")  
-
-                label = re.sub(r'[\n?]', '', item_name)
-                content = re.sub(r'[\n?]', '', item_value)
-                original_label = label
-                while label in dict_spec and dict_spec.get(label)!=content:
-                    asterisk_count = label.count('*')
-                    label = f"{original_label}{'*' * (asterisk_count + 1)}"
-                dict_spec[label] = content
-                if self.verbose: 
-                    if label == "" and content == "":
-                        print(f"[{label}] {content}")
-            return dict_spec
-    
+    async def _extract_global_specs(self, page, url: str) -> dict:
         dict_spec = {}
         try:
-            driver = self.set_driver(url)
-            find_spec_tab(driver)
-            dict_spec = extract_spec_detail(driver)
-            
+            await page.goto(url)
+            await page.wait_for_timeout(self.wait_time * 1000)
             if self.verbose:
-                print(f"Received information from {url}")
-            logging.info(f"Received information from {url}")
+                await page.screenshot(path=f"screenshots/1.png", full_page=True)
+
+            await page.click('[data-testid="#specs"]')
+            await page.wait_for_timeout(self.wait_time * 1000)
+            if self.verbose:
+                await page.screenshot(path=f"screenshots/2.png", full_page=True)
+
+
+            try:
+                await page.get_by_text("See All Specs", exact=True).first.click()
+                await page.wait_for_timeout(self.wait_time * 1000)
+            except Exception as e:
+                print(f"[오류] 'See All Specs' 클릭 실패: {e}")
+            try:
+                # 두 번째 백업: CSS 선택자를 이용
+                btn = page.locator("a.Specs_expandBtn__TAtH7").first
+                await btn.wait_for(state="visible", timeout=3000)
+                await btn.click()
+                await page.wait_for_timeout(self.wait_time * 1000)
+            except Exception as e2:
+                print(f"[오류] 백업 클릭도 실패: {e2}")
+
+
+
+            if self.verbose:
+                await page.screenshot(path=f"screenshots/3.png", full_page=True)
+            html = await page.content()
+            soup = BeautifulSoup(html, "html.parser")
+
+            # 1. 일반 스펙 (name-value 쌍)
+            for item in soup.find_all("div", class_=re.compile(r"^Specs_subSpecsItem_")):
+                try:
+                    name = item.find("div", class_=re.compile(r"^Specs_subSpecItemName_|^Specs_type-p2_"))
+                    value = item.find("div", class_=re.compile(r"^Specs_subSpecsItemValue_|^Specs_type-p2_"))
+                    if name and value:
+                        dict_spec[name.text.strip()] = value.text.strip()
+                        print(dict_spec[name.text.strip()])
+                except Exception:
+                    continue
+
+            # 2. 상세 리스트 스펙 (.Specs_specDetailList__)
+            for group in soup.find_all("ul", class_=re.compile(r"^Specs_specDetailList_")):
+                try:
+                    title_elem = group.find_previous("div", class_=re.compile(r"^Specs_specGroupName_"))
+                    title = title_elem.get_text(strip=True) if title_elem else "Detail List"
+                    items = [li.get_text(strip=True) for li in group.find_all("li") if li.get_text(strip=True)]
+                    if items:
+                        dict_spec[title] = ", ".join(items)
+                        print(dict_spec[title])
+                except Exception:
+                    continue
+
+            # 3. 요약 스펙 (.spec-highlight__container)
+            for block in soup.find_all("div", class_=re.compile(r"^spec-highlight__container")):
+                try:
+                    name = block.find("div", class_=re.compile(r"^spec-highlight__title"))
+                    value = block.find("div", class_=re.compile(r"^spec-highlight__value"))
+                    if name and value:
+                        dict_spec[name.text.strip()] = value.text.strip()
+                        print(dict_spec[name.text.strip()]) 
+                except Exception:
+                    continue
+
         except Exception as e:
-            print(f"error extract_specs_detail from {url}")
-            pass
-        finally:
-            driver.quit()  
+            if self.verbose:
+                print(f"Spec extraction failed from {url}: {e}")
         return dict_spec
 
-    def set_driver(self, url):
-        driver = self.web_driver.get_chrome()
-        driver.get(url=url)
-        time.sleep(self.wait_time)
-        return driver
+    def _transform_format(self, dict_models, json_file_name: str) -> pd.DataFrame:
+        df = pd.DataFrame.from_dict(dict_models).T
+        df = df.drop(['Series'], axis=1, errors='ignore')
+        df = df.rename(columns={'Type': 'display type'})
+        df = df.dropna(subset=['price'])
+
+        try:
+            valid = df['Color*'].dropna().index
+            df.loc[valid, 'Color'] = df.loc[valid, 'Color*']
+        except:
+            pass
+
+        df.to_json(self.output_folder / json_file_name, orient='records', lines=True)
+        return df
+
+    def _parse_model_code(self, model: str) -> dict:
+        def extract_grade_model(model):
+            return model[:2], model[2:-4]
+
+        def extract_size_model(model):
+            match = re.match(r'\d+', model)
+            if match:
+                size = match.group()
+                rest = model[len(size):]
+                return size, rest
+            return None, model
+
+        def extract_year_series(model, grade):
+            mapping = {
+                'qn': {'t': "2021", 'b': "2022", 'c': "2023", 'd': "2024", 'e': "2025"},
+                'un': {'c': "2023", 'd': "2024", 'e': "2025"},
+            }
+            year = "na"
+            series = model
+            if "qn" in grade:
+                match = re.search(r'([A-Za-z]+\d+)([A-Za-z]+)', model)
+                if match:
+                    year_char = match.group(2)[0]
+                    year = mapping.get('qn', {}).get(year_char, "na")
+                    series = match.group(1) + year_char
+            elif "un" in grade:
+                year_char = model[0]
+                year = mapping.get('un', {}).get(year_char, "na")
+                series = model
+            return year, series
+
+        info = {}
+        grade, model = extract_grade_model(model)
+        size, model = extract_size_model(model)
+        year, series = extract_year_series(model, grade)
+        info.update({"grade": grade, "size": size, "year": year, "series": series})
+        return info
+
+

@@ -4,10 +4,17 @@ from pathlib import Path
 from datetime import date
 from tools.web import WebDriver
 import logging
+import subprocess
+import os
+import logging
+
+
+
+
 
 class Scraper(ABC):
 
-    def __init__(self, enable_headless=True, export_prefix:str="scraper", intput_folder_path :str= "input", output_folder_path:str="results"):
+    def __init__(self, use_web_driver=True, export_prefix:str="scraper", intput_folder_path :str= "input", output_folder_path:str="results"):
         """
         enable_headless=True,
         export_prefix:str="scaper",
@@ -18,7 +25,29 @@ class Scraper(ABC):
         self.output_folder:Path
         self.output_xlsx_name = None
         self._initialize_data_paths(export_prefix=export_prefix, intput_folder_path=intput_folder_path, output_folder_path=output_folder_path)
-        self.web_driver = WebDriver(headless=enable_headless)
+        if use_web_driver:
+            self.web_driver = WebDriver(headless=True)
+        else: #playwright 설치치
+            # 쉘 스크립트 내용
+            shell_script_content = """
+            playwright install
+            """
+
+            script_file_path = "set_chrome.sh"
+            with open(script_file_path, "w") as script_file:
+                script_file.write(shell_script_content)
+
+            # 쉘 스크립트 실행
+            result = subprocess.run(["bash", script_file_path], capture_output=True, text=True)
+
+            # 쉘 스크립트 파일 삭제 (선택 사항)
+            os.remove(script_file_path)
+
+            if result.returncode == 0:
+                logging.info("finish playwright installing.")
+            else:
+                logging.error(f"occured error: {result.stderr}")
+
         logging.info("initialized web driver")
         self.wait_time = 1
 
@@ -56,44 +85,22 @@ class Scraper(ABC):
 
 class Modeler(ABC):
 
-    @abstractmethod
-    def fetch_model_data(self, demo_mode: bool = False) -> pd.DataFrame:
-        """
-        Collect model information from URLs and return the data in the desired format.
-        """
-        pass
+    """
+    동기/비동기 여부 상관없이 메서드 이름만 강제.
+    """
 
-    @abstractmethod
-    def _get_series_urls(self) -> set:
-        """
-        Get the series URLs by scrolling down the main page.
-        """
-        pass
+    required_methods = [
+        "fetch_model_data",
+        "_get_series_urls",
+        "_extract_models_from_series",
+        "_extract_model_details",
+        "_extract_global_specs",
+    ]
 
-    @abstractmethod
-    def _extract_models_from_series(self, url: str) -> dict:
-        """
-        Extract all model URLs from a given series URL.
-        """
-        pass
-
-    @abstractmethod
-    def _extract_model_details(self, url: str) -> dict:
-        """
-        Extract model information (name, price, description) from a given model URL.
-        """
-        pass
-
-    @abstractmethod
-    def _extract_global_specs(self, url: str) -> dict:
-        """
-        Extract global specifications from a given model URL.
-        """
-        pass
+    def __init_subclass__(cls):
+        for method_name in cls.required_methods:
+            if not hasattr(cls, method_name):
+                raise TypeError(f"{cls.__name__} is missing required method: {method_name}")
 
 
-
-class CustomException(Exception):
-    def __init__(self, message:str=""):
-        super().__init__(message) 
 
