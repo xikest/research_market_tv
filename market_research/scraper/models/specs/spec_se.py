@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import tqdm
 import re
-from market_research.scraper._scraper_scheme import Scraper, Modeler
+from market_research.scraper._scraper_scheme import Scraper
 from playwright.async_api import async_playwright
 from tools.file import FileManager
 import logging
@@ -106,9 +106,9 @@ class ModelScraper_se(Scraper):
         try:
 
             label = await page.locator('.ModelInfo_modalInfo__Dlls0').inner_text()
-            if self.verbose:
-                print(f"After getting label text: {label}")
             logging.info(f"After getting label text: {label}")
+            if self.verbose:
+                print(f"label: {label}")
             model = label.split()[-1]
             dict_info["model"] = model
 
@@ -116,13 +116,13 @@ class ModelScraper_se(Scraper):
             desc = await page.locator('.ProductTitle_product__KGKRj').inner_text()
             logging.info(f"After getting description text:{desc}")
             if self.verbose:
-                print(f"After getting description text:{desc}")
+                print(f"description:{desc}")
             dict_info["description"] = desc
 
             price_text = await page.locator(".PriceInfoText_priceInfo__pAyUK").first.inner_text()
             split_price = re.split(r'[\n\s]+', price_text)
             if self.verbose:
-                print(f"After getting price text:{price_text}")
+                print(f"price:{price_text}")
             logging.info(f"After getting price text:{price_text}")
 
             prices = [float(p.replace('$', '').replace(',', '')) for p in split_price if '$' in p]
@@ -171,40 +171,15 @@ class ModelScraper_se(Scraper):
                 await page.screenshot(path=f"screenshots/3.png", full_page=True)
             html = await page.content()
             soup = BeautifulSoup(html, "html.parser")
+            spec_items = soup.select('.subSpecsItem.Specs_subSpecsItem__2upPK')
 
-            # 1. 일반 스펙 (name-value 쌍)
-            for item in soup.find_all("div", class_=re.compile(r"^Specs_subSpecsItem_")):
-                try:
-                    name = item.find("div", class_=re.compile(r"^Specs_subSpecItemName_|^Specs_type-p2_"))
-                    value = item.find("div", class_=re.compile(r"^Specs_subSpecsItemValue_|^Specs_type-p2_"))
-                    if name and value:
-                        dict_spec[name.text.strip()] = value.text.strip()
-                        print(dict_spec[name.text.strip()])
-                except Exception:
-                    continue
+            for item in spec_items:
+                label = item.select_one('[itemprop="name"]')
+                value = item.select_one('.Specs_subSpecsItemValue__aFvGZ')
+                print(f"{label.text.strip()}: {value.text.strip()}")
+                if label and value:
+                    dict_spec[label.text.strip()] = value.text.strip()
 
-            # 2. 상세 리스트 스펙 (.Specs_specDetailList__)
-            for group in soup.find_all("ul", class_=re.compile(r"^Specs_specDetailList_")):
-                try:
-                    title_elem = group.find_previous("div", class_=re.compile(r"^Specs_specGroupName_"))
-                    title = title_elem.get_text(strip=True) if title_elem else "Detail List"
-                    items = [li.get_text(strip=True) for li in group.find_all("li") if li.get_text(strip=True)]
-                    if items:
-                        dict_spec[title] = ", ".join(items)
-                        print(dict_spec[title])
-                except Exception:
-                    continue
-
-            # 3. 요약 스펙 (.spec-highlight__container)
-            for block in soup.find_all("div", class_=re.compile(r"^spec-highlight__container")):
-                try:
-                    name = block.find("div", class_=re.compile(r"^spec-highlight__title"))
-                    value = block.find("div", class_=re.compile(r"^spec-highlight__value"))
-                    if name and value:
-                        dict_spec[name.text.strip()] = value.text.strip()
-                        print(dict_spec[name.text.strip()]) 
-                except Exception:
-                    continue
 
         except Exception as e:
             if self.verbose:
