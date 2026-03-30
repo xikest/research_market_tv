@@ -155,10 +155,6 @@ def loading_erp_class(maker:str=None):
     return data
 
 
-@st.cache_data
-def loading_ir_script():
-    ir_df = SONY_IR().get_ir_script()
-    return ir_df
     
 @st.cache_data
 def loading_plot_usd_exchange():
