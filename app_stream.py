@@ -154,27 +154,30 @@ def loading_erp_class(maker:str=None):
         data = data[data['maker'] == maker]
     return data
 
-
+# @st.cache_data
+# def loading_ir_script():
+#     ir_df = SONY_IR().get_ir_script()
+#     return ir_df
     
-@st.cache_data
-def loading_plot_usd_exchange():
-    fig = SONY_IR().plot_usd_exchange()
-    return fig
+# @st.cache_data
+# def loading_plot_usd_exchange():
+#     fig = SONY_IR().plot_usd_exchange()
+#     return fig
     
-@st.cache_data
-def loading_plot_financials_with_margin():
-    fig = SONY_IR().plot_financials_with_margin(ticker='SONY')
-    return fig
+# @st.cache_data
+# def loading_plot_financials_with_margin():
+#     fig = SONY_IR().plot_financials_with_margin(ticker='SONY')
+#     return fig
 
-@st.cache_data
-def display_html_table(df: pd.DataFrame, title: str):
-    if not df.empty:
-        df = df[['Description', 'URL']]
-        df.loc[:,'URL'] = df.loc[:,'URL'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
-        st.subheader(title)
-        st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
-    else:
-        st.write("No material.")
+# @st.cache_data
+# def display_html_table(df: pd.DataFrame, title: str):
+#     if not df.empty:
+#         df = df[['Description', 'URL']]
+#         df.loc[:,'URL'] = df.loc[:,'URL'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')  # HTML 링크로 변환
+#         st.subheader(title)
+#         st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)  # HTML로 표 표시
+#     else:
+#         st.write("No material.")
 
      
 def download_data(makers):
@@ -261,7 +264,7 @@ def display_indicators():
             data = loading_webdata(selected_maker_for_viz)
             
             if selected_maker == 'sony':
-                sub_tabs = st.tabs(["Specification","Header", "IR", "Macro"])
+                sub_tabs = st.tabs(["Specification","Header"])
             else:
             
                 sub_tabs = st.tabs(["Specification"])
@@ -283,87 +286,97 @@ def display_indicators():
                             margin=dict(t=20, b=0))
                         st.plotly_chart(fig, use_container_width=True)
 
-                with sub_tabs[2]:
-                    with st.container(): 
-                        fig = loading_plot_financials_with_margin()
-                        fig.update_layout(
-                            width=500,
-                            height=300,
-                            title='',
-                            margin=dict(t=20, b=0))
-                        st.plotly_chart(fig, use_container_width=True)
+                # with sub_tabs[2]:
+                #     with st.container(): 
+                #         fig = loading_plot_financials_with_margin()
+                #         fig.update_layout(
+                #             width=500,
+                #             height=300,
+                #             title='',
+                #             margin=dict(t=20, b=0))
+                #         st.plotly_chart(fig, use_container_width=True)
                         
-                    with st.container(): 
-                        try:
-                            fig = loading_plot_usd_exchange()
-                            fig.update_layout(
-                                width=500,
-                                height=300,
-                                title='',
-                                margin=dict(t=20, b=0))
-                            st.plotly_chart(fig, use_container_width=True)
-                        except:
-                            st.write("no working")
+                #     with st.container(): 
+                #         try:
+                #             fig = loading_plot_usd_exchange()
+                #             fig.update_layout(
+                #                 width=500,
+                #                 height=300,
+                #                 title='',
+                #                 margin=dict(t=20, b=0))
+                #             st.plotly_chart(fig, use_container_width=True)
+                #         except:
+                #             st.write("no working")
                             
-                    with st.container(): 
-                        ir_df = loading_ir_script()
-                        years = sorted(ir_df.year.unique(), reverse=True)
-                        sub_tabs_irs = st.tabs(years)
+                #     with st.container(): 
+                #         ir_df = loading_ir_script()
+                #         if ir_df is None or ir_df.empty or 'year' not in ir_df.columns:
+                #             st.info("IR data is not available.")
+                #         else:
+                #             years = sorted(ir_df['year'].dropna().unique().tolist(), reverse=True)
+                        
+                #             if not years:
+                #                 st.info("IR data is not available.")
+                #             else:
+                #                 sub_tabs_irs = st.tabs([str(y) for y in years])
+                                
+                #         # years = sorted(ir_df.year.unique(), reverse=True)
+                #         # sub_tabs_irs = st.tabs(years)
 
-                        for i, year in enumerate(years):
-                            ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
-                            ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
-                            ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
-                            ir_df_year_bs = ir_df_year[ir_df_year['category'] == "Segment"]
-                            with sub_tabs_irs[i]:
-                                col1_ir, col2_ir, col3_ir = st.columns(3)
-                                with col1_ir:
-                                    display_html_table(ir_df_year_earning, "Earning")
+                #         for i, year in enumerate(years):
+                #             ir_df_year = ir_df[ir_df['year'] == year]  # 연도별 데이터 필터링
+                #             ir_df_year_earning = ir_df_year[ir_df_year['category'] == "Earning"]
+                #             ir_df_year_strategy = ir_df_year[ir_df_year['category'] == "Strategy"]
+                #             ir_df_year_bs = ir_df_year[ir_df_year['category'] == "Segment"]
+                #             with sub_tabs_irs[i]:
+                #                 col1_ir, col2_ir, col3_ir = st.columns(3)
+                #                 with col1_ir:
+                #                     display_html_table(ir_df_year_earning, "Earning")
 
-                                with col2_ir:
-                                    display_html_table(ir_df_year_strategy, "Strategy")
-                                with col3_ir:
-                                    display_html_table(ir_df_year_bs, "Segment")
+                #                 with col2_ir:
+                #                     display_html_table(ir_df_year_strategy, "Strategy")
+                #                 with col3_ir:
+                #                     display_html_table(ir_df_year_bs, "Segment")
                                     
-                with sub_tabs[3]:
+                # with sub_tabs[3]:
 
-                        sub_tabs_height = 150
-                        # st.write("fixing")
-                        fig = MACRO.plot_economic_indicator('RSEAS')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Advance Retail Sales: Electronics and Appliance Stores')
+                #         sub_tabs_height = 150
+                #         # st.write("fixing")
+                #         fig = MACRO.plot_economic_indicator('RSEAS')
+                #         fig.update_layout(
+                #             width=500,
+                #             height=sub_tabs_height,
+                #             title='Advance Retail Sales: Electronics and Appliance Stores')
 
-                        st.plotly_chart(fig, use_container_width=True)
-                        fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
-                        st.plotly_chart(fig, use_container_width=True)
+                #         st.plotly_chart(fig, use_container_width=True)
+                #         fig = MACRO.plot_economic_indicator('MRTSIR4423XUSS')
+                #         fig.update_layout(
+                #             width=500,
+                #             height=sub_tabs_height,
+                #             title='Retail Inventories/Sales Ratio: Electronics, Appliance Stores and etc')
+                #         st.plotly_chart(fig, use_container_width=True)
                 
                         
-                        fig = MACRO.plot_economic_indicator('CPIAUCSL')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='CPI: for All Urban Consumers')
-                        st.plotly_chart(fig, use_container_width=True)
+                #         fig = MACRO.plot_economic_indicator('CPIAUCSL')
+                #         fig.update_layout(
+                #             width=500,
+                #             height=sub_tabs_height,
+                #             title='CPI: for All Urban Consumers')
+                #         st.plotly_chart(fig, use_container_width=True)
                         
-                        fig = MACRO.plot_economic_indicator('A35SNO')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='New Orders: Electrical Equipment, Appliances and Components')
-                        st.plotly_chart(fig, use_container_width=True)
+                #         fig = MACRO.plot_economic_indicator('A35SNO')
+                #         fig.update_layout(
+                #             width=500,
+                #             height=sub_tabs_height,
+                #             title='New Orders: Electrical Equipment, Appliances and Components')
+                #         st.plotly_chart(fig, use_container_width=True)
                         
-                        fig = MACRO.plot_economic_indicator('POILBREUSDM')
-                        fig.update_layout(
-                            width=500,
-                            height=sub_tabs_height,
-                            title='Global price of Brent Crude')
-                        st.plotly_chart(fig, use_container_width=True)
+                #         fig = MACRO.plot_economic_indicator('POILBREUSDM')
+                #         fig.update_layout(
+                #             width=500,
+                #             height=sub_tabs_height,
+                #             title='Global price of Brent Crude')
+                #         st.plotly_chart(fig, use_container_width=True)
                         
     if selected_value == options[1] or selected_value == options[2] :
                                
