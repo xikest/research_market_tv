@@ -6,9 +6,9 @@ import requests
 from market_research.scraper import DataVisualizer
 from market_research.scraper import Rvisualizer
 from market_research.scraper import ERPvisualizer
-from market_research.ir import Calendar
-from market_research.ir import SONY_IR
-from market_research.ir import MACRO
+# from market_research.ir import Calendar
+# from market_research.ir import SONY_IR
+# from market_research.ir import MACRO
 from datetime import datetime
 
 
