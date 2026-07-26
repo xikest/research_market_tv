@@ -253,7 +253,7 @@ def display_indicators():
                 with st.container(): 
                     fig = DataVisualizer(data, maker=selected_maker_for_viz).heatmap_spec(return_fig=True)   
                     fig.update_layout(width=500, height=col1_plot_height, title='Heat map for Spec', margin=dict(t=40, l=30, r=30, b=10))
-                    st.plotly_chart(fig, use_container_width=True)            
+                    st.plotly_chart(fig, width="stretch")            
         
                         
     if selected_value == options[1] or selected_value == options[2] :
@@ -283,7 +283,7 @@ def display_indicators():
                         height=col2_plot_height,
                         title='',
                         margin=dict(t=20, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
                              
             with tabs[1]:
                 tab_r_name = [ "Scores", "Data",]
@@ -297,7 +297,7 @@ def display_indicators():
                         fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).radar_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
                         else:
                             st.write("No information")
                             
@@ -306,7 +306,7 @@ def display_indicators():
                         fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).radar_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
                         else:
                             st.write("No information")
                             
@@ -315,7 +315,7 @@ def display_indicators():
                         fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).heatmap_scores(return_fig=True)   
                         if fig != None:
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
                         else:
                             st.write("No information")
                             
@@ -325,7 +325,7 @@ def display_indicators():
                         try:
                             fig = Rvisualizer(data, selected_multi_makers_for_viz, st.session_state["category"]).plot_pca(return_fig=True)   
                             fig.update_layout(width=600, height=col2_plot_height, margin=dict(t=0, r=0, b=20))
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
                         except:
                             st.write("No information")            
                         
@@ -347,7 +347,7 @@ def display_indicators():
                                 fig.update_layout(width=600, height=col2_plot_height, 
                                                 margin=dict(t=0, r=0, b=20))
                                 
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, width="stretch")
             with tabs[2]:
                 tab_e_name = ["SDR", "HDR"]
                 tabs_e = st.tabs(tab_e_name)
@@ -363,7 +363,7 @@ def display_indicators():
                                 height=col2_plot_height,
                                 title='',
                                 margin=dict(t=20, b=0))
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
                         except Exception as e:
                             st.write(e)
                             st.write("no data")
